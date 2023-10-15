@@ -1,8 +1,10 @@
 import React from "react";
-import { Text, StyleSheet } from "react-native";
+import { Text, StyleSheet, View, TouchableOpacity } from "react-native";
 
-const LoginScreen = () => {
-  return <Text style={styles.text}>HomeScreen</Text>;
+const LoginScreen = (props) => {
+  return (<View>
+    Don't have an account? <TouchableOpacity onPress={() => {props.navigation.navigate('SignUp')}}>Sign up</TouchableOpacity>
+  </View>);
 };
 
 const styles = StyleSheet.create({
