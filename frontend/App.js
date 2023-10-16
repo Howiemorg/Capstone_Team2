@@ -11,7 +11,7 @@ const navigator = createStackNavigator(
         Login: LoginScreen,
     },
     {
-        initialRouteName: "SignUp",
+        initialRouteName: "Login",
         defaultNavigationOptions: {
             title: "App",
         },

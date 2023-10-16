@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
     error: {
         fontSize: 12,
         color: "red",
-        marginTop: "7.5%",
+        marginTop: "2.5%",
         alignSelf: "center",
     },
     button: {
