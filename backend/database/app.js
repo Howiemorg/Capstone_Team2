@@ -1,6 +1,6 @@
 import express from 'express'
 
-import { getNotes, getNote, createNote} from './database.js'
+import { getNotes, getNote, createNote, login_validation} from './database.js'
 
 const app = express()
 
@@ -21,6 +21,14 @@ app.post("/notes", async (req, res) => {
     const { user_first_name, user_last_name, user_email, user_password, is_admin} = req.body
     const note  = await createNote(user_first_name, user_last_name, user_email, user_password, is_admin)
     res.status(201).send(note)
+})
+
+app.get("/test", async (req, res) => {
+    // const {  user_email, user_password} = req.body
+    const note  = await login_validation("luis.e.martinez@tamu.edu", "1234")
+    console.log(note)
+    res.send(note)
+    
 })
 
 app.use((err, req, res, next) => {

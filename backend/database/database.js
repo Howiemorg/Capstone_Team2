@@ -25,6 +25,24 @@ export async function getNote(id) {
     return rows[0]
 }
 
+export async function login_validation(user_email, user_password) {
+    const [rows] = await pool.query(`
+    SELECT user_email, user_password
+    FROM user
+    WHERE user_email = ? 
+        AND user_password = ?;
+    `, [user_email, user_password])
+    // Check if any rows were returned
+    if (rows.length > 0) {
+        // User with the provided email and password exists
+        return true
+    }
+    return false
+}
+
+const result = await login_validation('123@email.com', '1234')
+console.log(result)
+
 // get first index
 const note = await getNote(1)
 // console.log(note)
