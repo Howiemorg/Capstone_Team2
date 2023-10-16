@@ -1,5 +1,12 @@
 import { React, useState } from "react";
-import { View, Text, TouchableOpacity, TextInput } from "react-native";
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    TextInput,
+    ScrollView,
+    KeyboardAvoidingView,
+} from "react-native";
 import styles from "./styles";
 
 const SignUpScreen = ({ navigation }) => {
@@ -16,7 +23,7 @@ const SignUpScreen = ({ navigation }) => {
             return;
         } else if (password != password2) {
             setError("*Passwords do not match");
-            return
+            return;
         }
         // send to backend
         try {
@@ -24,69 +31,74 @@ const SignUpScreen = ({ navigation }) => {
             navigation.navigate("Home");
         } catch (err) {
             setError("Sign up Unsuccessful");
-            console.log(err)
+            console.log(err);
         }
         navigation.navigate("Login");
     };
-
     return (
-        <View>
-            <Text style={styles.title}>Carpe DM</Text>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior='padding' enabled>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                <View>
+                    <Text style={styles.title}>Carpe DM</Text>
 
-            <Text style={styles.label}>First Name</Text>
-            <TextInput
-                style={styles.input}
-                autoCapitalize='none'
-                autoCorrect={false}
-                value={firstname}
-                onChangeText={(newValue) => setFirstname(newValue)}
-            />
+                    <Text style={styles.label}>First Name</Text>
+                    <TextInput
+                        style={styles.input}
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        value={firstname}
+                        onChangeText={(newValue) => setFirstname(newValue)}
+                    />
 
-            <Text style={styles.label}>Last Name</Text>
-            <TextInput
-                style={styles.input}
-                autoCapitalize='none'
-                autoCorrect={false}
-                value={lastname}
-                onChangeText={(newValue) => setLastname(newValue)}
-            />
-            <Text style={styles.label}>Username</Text>
-            <TextInput
-                style={styles.input}
-                autoCapitalize='none'
-                autoCorrect={false}
-                value={username}
-                onChangeText={(newValue) => setUsername(newValue)}
-            />
+                    <Text style={styles.label}>Last Name</Text>
+                    <TextInput
+                        style={styles.input}
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        value={lastname}
+                        onChangeText={(newValue) => setLastname(newValue)}
+                    />
+                    <Text style={styles.label}>Username</Text>
+                    <TextInput
+                        style={styles.input}
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        value={username}
+                        onChangeText={(newValue) => setUsername(newValue)}
+                    />
 
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-                style={styles.input}
-                autoCapitalize='none'
-                autoCorrect={false}
-                value={password}
-                onChangeText={(newValue) => setPassword(newValue)}
-            />
+                    <Text style={styles.label}>Password</Text>
+                    <TextInput
+                        style={styles.input}
+                        secureTextEntry={true}
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        value={password}
+                        onChangeText={(newValue) => setPassword(newValue)}
+                    />
 
-            <Text style={styles.label}>Verify Password</Text>
-            <TextInput
-                style={styles.input}
-                autoCapitalize='none'
-                autoCorrect={false}
-                value={password2}
-                onChangeText={(newValue) => setPassword2(newValue)}
-            />
-            <Text style={styles.error}>{error}</Text>
-            <TouchableOpacity onPress={SignUp} style={styles.button}>
-                <Text
-                    style={{
-                        color: "white",
-                    }}
-                >
-                    Sign Up
-                </Text>
-            </TouchableOpacity>
-        </View>
+                    <Text style={styles.label}>Verify Password</Text>
+                    <TextInput
+                        style={styles.input}
+                        secureTextEntry={true}
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        value={password2}
+                        onChangeText={(newValue) => setPassword2(newValue)}
+                    />
+                    <Text style={styles.error}>{error}</Text>
+                    <TouchableOpacity onPress={SignUp} style={styles.button}>
+                        <Text
+                            style={{
+                                color: "white",
+                            }}
+                        >
+                            Sign Up
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
     );
 };
 

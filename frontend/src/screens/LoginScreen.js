@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Text, StyleSheet, View, TouchableOpacity, Button } from "react-native";
+import {
+    Text,
+    StyleSheet,
+    View,
+    TouchableOpacity,
+    KeyboardAvoidingView,
+    ScrollView,
+} from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import user from "../api/user";
 
@@ -25,43 +32,53 @@ const LoginScreen = ({ navigation }) => {
     };
 
     return (
-        <View>
-            <Text style={styles.title}>Carpe DM</Text>
-            <Text style={styles.label}>Username</Text>
-            <TextInput
-                style={styles.input}
-                autoCapitalize='none'
-                autoCorrect={false}
-                value={username}
-                onChangeText={(newValue) => setUsername(newValue)}
-            />
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-                secureTextEntry={true}
-                style={styles.input}
-                autoCapitalize='none'
-                autoCorrect={false}
-                value={password}
-                onChangeText={(newValue) => setPassword(newValue)}
-            />
-            <Text style={styles.label}>
-                <Text>Don't have an account?{"     "}</Text>
-                <Text
-                    style={{ fontSize: 12, color: "blue" }}
-                    onPress={() => {
-                        navigation.navigate("SignUp");
-                    }}
-                >
-                    Sign up
-                </Text>
-            </Text>
-            {error && <Text style={styles.error}>{error}</Text>}
-            <TouchableOpacity onPress={login} style={styles.button}>
-                <Text style={{ color: "white", alignSelf: "center" }}>
-                    Sign In
-                </Text>
-            </TouchableOpacity>
-        </View>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior='padding' enabled>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                <View>
+                    <Text style={styles.title}>Carpe DM</Text>
+                    <Text style={styles.label}>Username</Text>
+                    <TextInput
+                        style={styles.input}
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        value={username}
+                        onChangeText={(newValue) => setUsername(newValue)}
+                    />
+                    <Text style={styles.label}>Password</Text>
+                    <TextInput
+                        secureTextEntry={true}
+                        style={styles.input}
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        value={password}
+                        onChangeText={(newValue) => setPassword(newValue)}
+                    />
+                    <Text
+                        style={{
+                            marginLeft: "17.5%",
+                            fontSize: 12,
+                            marginTop: "2%",
+                        }}
+                    >
+                        <Text>Don't have an account? </Text>
+                        <Text
+                            style={{ fontSize: 12, color: "blue" }}
+                            onPress={() => {
+                                navigation.navigate("SignUp");
+                            }}
+                        >
+                            Sign up
+                        </Text>
+                    </Text>
+                    <Text style={styles.error}>{error}</Text>
+                    <TouchableOpacity onPress={login} style={styles.button}>
+                        <Text style={{ color: "white", alignSelf: "center" }}>
+                            Sign In
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -79,11 +96,11 @@ const styles = StyleSheet.create({
     error: {
         fontSize: 12,
         color: "red",
-        marginTop: "7.5%",
+        marginTop: "3%",
+        marginBottom: "5%",
         alignSelf: "center",
     },
     button: {
-        marginTop: "8.5%",
         width: "45%",
         borderRadius: 24,
         backgroundColor: "black",
