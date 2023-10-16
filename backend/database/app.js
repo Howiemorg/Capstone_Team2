@@ -23,11 +23,11 @@ app.post("/notes", async (req, res) => {
     res.status(201).send(note)
 })
 
-app.get("/test", async (req, res) => {
-    // const {  user_email, user_password} = req.body
-    const note  = await login_validation("luis.e.martinez@tamu.edu", "1234")
+app.post("/test", async (req, res) => {
+    const {  user_email, user_password} = req.body
+    const note  = await login_validation(user_email, user_password)
     console.log(note)
-    res.send(note)
+    res.status(201).send(note)
     
 })
 
