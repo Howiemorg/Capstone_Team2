@@ -14,7 +14,7 @@ const LoginScreen = ({ navigation }) => {
       const response = await user.get("/login");
       navigation.navigate("Home");
     } catch (err) {
-      setError(err)
+      setError(err);
     }
   };
 
@@ -50,7 +50,9 @@ const LoginScreen = ({ navigation }) => {
         </Text>
       </Text>
       {error && <Text style={styles.error}>{error}</Text>}
-      <TouchableOpacity onPress={login}>Sign In</TouchableOpacity>
+      <TouchableOpacity onPress={login} style={styles.button}>
+        <Text style={{ color: "white", alignSelf: "center" }}>Sign In</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -73,11 +75,13 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   button: {
-    marginTop: "7%",
-    width: "55%",
-    borderRadius: 20,
+    marginTop: "8.5%",
+    width: "45%",
+    borderRadius: 24,
     backgroundColor: "black",
+    alignSelf: "center",
     color: "white",
+    padding: 8,
   },
   input: {
     padding: 2.5,
