@@ -10,12 +10,13 @@ const pool = mysql.createPool({
     database: process.env.MYSQL_DATABASE
 }).promise()
 
-async function getNotes(){
+// retrieving from database
+export async function getNotes(){
     const [rows] = await pool.query("SELECT * FROM user")
     return rows
 }
 
-async function getNote(id) {
+export async function getNote(id) {
     const [rows] = await pool.query(`
     SELECT *
     FROM user
@@ -24,14 +25,22 @@ async function getNote(id) {
     return rows[0]
 }
 
-// async function createNote(title, content) {
-//     const result  = await pool.query(`
-//     INSERT INTO user (title, content)
-//     VALUES (?, ?)    
-//     `, [title, content])
-// }
-
+// get first index
 const note = await getNote(1)
-console.log(note)
+// console.log(note)
 
-// const result = 
+// get all indexes
+const bean = await getNotes()
+console.log(bean)
+
+export async function createNote(user_first_name, user_last_name, user_email, user_password, is_admin) {
+    const result  = await pool.query(`
+    INSERT INTO user (user_first_name, user_last_name, user_email, user_password, is_admin)
+    VALUES (?, ?, ?, ?, ?)    
+    `, [user_first_name, user_last_name, user_email, user_password, is_admin])
+    const id = result.insertId
+    return getNote(id)
+}
+
+// const result = await createNote('Ibrahim', 'Semary', '1234@email.com', '1234', '1')
+// console.log(result)
