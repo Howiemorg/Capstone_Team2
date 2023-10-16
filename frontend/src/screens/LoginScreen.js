@@ -1,12 +1,22 @@
 import React, { useState } from "react";
 import { Text, StyleSheet, View, TouchableOpacity, Button } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
+import user from "../api/user";
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  const login = async () => {
+    // send to backend
+    try {
+      const response = await user.get("/login");
+      navigation.navigate("Home");
+    } catch (err) {
+      setError(err)
+    }
+  };
 
   return (
     <View>
@@ -40,7 +50,7 @@ const LoginScreen = ({ navigation }) => {
         </Text>
       </Text>
       {error && <Text style={styles.error}>{error}</Text>}
-      <TouchableOpacity >Sign In</TouchableOpacity>
+      <TouchableOpacity onPress={login}>Sign In</TouchableOpacity>
     </View>
   );
 };
@@ -60,14 +70,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "red",
     marginTop: "7.5%",
-    alignSelf: "center"
+    alignSelf: "center",
   },
-  button:{
+  button: {
     marginTop: "7%",
     width: "55%",
     borderRadius: 20,
     backgroundColor: "black",
-    color: "white"
+    color: "white",
   },
   input: {
     padding: 2.5,
