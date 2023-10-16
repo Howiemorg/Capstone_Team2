@@ -5,17 +5,17 @@ import SignUpScreen from "./src/screens/SignUpScreen";
 import LoginScreen from "./src/screens/LoginScreen";
 
 const navigator = createStackNavigator(
-  {
-    Home: HomeScreen,
-    SignUp: SignUpScreen,
-    Login: LoginScreen
-  },
-  {
-    initialRouteName: "Login",
-    defaultNavigationOptions: {
-      title: "App",
+    {
+        Home: HomeScreen,
+        SignUp: SignUpScreen,
+        Login: LoginScreen,
     },
-  }
+    {
+        initialRouteName: "SignUp",
+        defaultNavigationOptions: {
+            title: "App",
+        },
+    }
 );
 
 export default createAppContainer(navigator);

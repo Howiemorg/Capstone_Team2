@@ -50,7 +50,7 @@ const LoginScreen = ({ navigation }) => {
         </Text>
       </Text>
       {error && <Text style={styles.error}>{error}</Text>}
-      <TouchableOpacity onPress={login}>Sign In</TouchableOpacity>
+      <TouchableOpacity onPress={login}><Text>Sign In</Text></TouchableOpacity>
     </View>
   );
 };
@@ -74,10 +74,9 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: "7%",
-    width: "55%",
+    alignSelf: "center",
     borderRadius: 20,
     backgroundColor: "black",
-    color: "white",
   },
   input: {
     padding: 2.5,

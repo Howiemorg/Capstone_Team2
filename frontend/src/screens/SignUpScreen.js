@@ -1,14 +1,41 @@
 import React from "react";
-import { Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Button } from "react-native";
+import styles from "./styles";
 
-const SignUpScreen = () => {
-  return <Text style={styles.text}>HomeScreen</Text>;
+const SignUpScreen = ({ navigation }) => {
+    const SignUp = () => {
+        navigation.navigate("Login");
+    };
+
+    return (
+        <View>
+            <Text style={styles.title}>Carpe DM</Text>
+
+            <Text style={styles.label}>First Name</Text>
+            <Text style={styles.input}></Text>
+
+            <Text style={styles.label}>Last Name</Text>
+            <Text style={styles.input}></Text>
+
+            <Text style={styles.label}>Username</Text>
+            <Text style={styles.input}></Text>
+
+            <Text style={styles.label}>Password</Text>
+            <Text style={styles.input}></Text>
+
+            <Text style={styles.label}>Verify Password</Text>
+            <Text style={styles.input}></Text>
+            <TouchableOpacity style={styles.button}>
+                <Text
+                    style={{
+                        color: "white",
+                    }}
+                >
+                    Sign Up
+                </Text>
+            </TouchableOpacity>
+        </View>
+    );
 };
-
-const styles = StyleSheet.create({
-  text: {
-    fontSize: 30,
-  },
-});
 
 export default SignUpScreen;
