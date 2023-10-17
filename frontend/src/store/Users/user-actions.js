@@ -6,7 +6,7 @@ export const login = (username, password) => {
     try {
       dispatch(userActions.userRequest());
 
-      const response = await user.get("/login", {username: username, password: password});
+      const response = await user.post("/login", {username: username, password: password});
 
       if (response.status !== 200 && response.statusText !== 'OK') {
         if (response.status === 401)
