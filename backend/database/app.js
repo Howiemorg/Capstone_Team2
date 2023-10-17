@@ -17,13 +17,13 @@ app.get("/notes/:id", async (req, res) => {
     res.send(note)
 })
 
-app.post("/notes", async (req, res) => {
+app.post("/signup", async (req, res) => {
     const { user_first_name, user_last_name, user_email, user_password, is_admin} = req.body
     const note  = await createNote(user_first_name, user_last_name, user_email, user_password, is_admin)
     res.status(201).send(note)
 })
 
-app.post("/test", async (req, res) => {
+app.post("/login", async (req, res) => {
     const {  user_email, user_password} = req.body
     const note  = await login_validation(user_email, user_password)
     console.log(note)

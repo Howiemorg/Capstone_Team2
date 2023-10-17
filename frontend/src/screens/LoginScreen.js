@@ -9,7 +9,6 @@ import {
   ScrollView,
 } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
-import user from "../api/user";
 import { login } from "../store/Users/user-actions";
 import { userActions } from "../store/Users/user-slice";
 
@@ -30,23 +29,21 @@ const LoginScreen = ({ navigation }) => {
       setError("*Username or Password can not be empty");
       return;
     }
-    
-    if(!is8Characters(password)){
-        setError("*Password must be 8 characters");
+
+    if (!is8Characters(password)) {
+      setError("*Password must be 8 characters");
       return;
     }
     // send to backend
     dispatch(login(username, password));
   };
 
-  useEffect =
-    (() => {
-      if (userInfo) {
-        navigation.navigate("Home");
-        dispatch(userActions.userReset());
-      }
-    },
-    [userInfo]);
+  useEffect(() => {
+    if (userInfo) {
+      navigation.navigate("Home");
+      dispatch(userActions.userReset());
+    }
+  }, [userInfo]);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" enabled>
