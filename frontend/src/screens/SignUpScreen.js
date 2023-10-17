@@ -86,6 +86,23 @@ const SignUpScreen = ({ navigation }) => {
                         value={password2}
                         onChangeText={(newValue) => setPassword2(newValue)}
                     />
+                    <Text
+                        style={{
+                            marginLeft: "17.5%",
+                            fontSize: 12,
+                            marginTop: "2%",
+                        }}
+                    >
+                        <Text>Already have an account? </Text>
+                        <Text
+                            style={{ fontSize: 12, color: "blue" }}
+                            onPress={() => {
+                                navigation.navigate("Login");
+                            }}
+                        >
+                            Login
+                        </Text>
+                    </Text>
                     <Text style={styles.error}>{error}</Text>
                     <TouchableOpacity onPress={SignUp} style={styles.button}>
                         <Text
