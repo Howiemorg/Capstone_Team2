@@ -5,10 +5,20 @@ const pg = require("pg");
 app.use(express.json());
 
 const port = 3001;
+const conString = {
+    host: 'carpedm.postgres.database.azure.com',
+    // Probably should not hard code your username and password.
+    // But this works for now.
+    user: 'main',     
+    password: 'factFood96!',
+    database: 'carpedm',
+    port: 5432,
+    ssl: { rejectUnauthorized: false }
+};
 
 
-var conString =
-    "postgresql://postgres:lvMbqbHzSrLylqXptoul@containers-us-west-183.railway.app:7302/railway";
+// var conString =
+//     "postgresql://postgres:lvMbqbHzSrLylqXptoul@containers-us-west-183.railway.app:7302/railway";
 var client = new pg.Client(conString);
 client.connect();
 
