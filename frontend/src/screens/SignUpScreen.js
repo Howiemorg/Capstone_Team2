@@ -19,7 +19,8 @@ const SignUpScreen = ({ navigation }) => {
 
     const dispatch = useDispatch();
 
-    const { error, loading, userInfo } = useSelector((state) => state.user);
+    const { userError, loading, userInfo } = useSelector((state) => state.user);
+    const [error, setError] = useState("");
 
     const [firstname, setFirstname] = useState("");
     const [lastname, setLastname] = useState("");
@@ -126,6 +127,7 @@ const SignUpScreen = ({ navigation }) => {
                         </Text>
                     </Text>
                     <Text style={styles.error}>{error}</Text>
+                    <Text style={styles.error}>{userError}</Text>
                     <TouchableOpacity onPress={SignUp} style={styles.button}>
                         <Text
                             style={{
