@@ -1,16 +1,15 @@
+const dotenv = require('dotenv').config();
 const express = require('express')
 const pg = require('pg');
 const router = express.Router()
 
 const conString = {
-    host: 'carpedm.postgres.database.azure.com',
-    // Probably should not hard code your username and password.
-    // But this works for now.
-    user: 'main',
-    password: 'factFood96!',
-    database: 'carpedm',
-    port: 5432,
-    ssl: { rejectUnauthorized: false }
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
+    ssl: process.env.DB_SSL === 'true',
 };
 var client = new pg.Client(conString);
 client.connect();
@@ -28,7 +27,7 @@ router.get("/test-db", async (req, res) => {
 });
 
 //validates the login information
-router.get("/login-info", async (req, res) => {
+router.get("/login-validation", async (req, res) => {
     const username = req.query.user_email;
     const password = req.query.user_password;
 
@@ -57,7 +56,7 @@ router.get("/login-info", async (req, res) => {
 });
 
 // adds user info during user registration process
-router.post("/user-registration-info", async (req, res) => {
+router.post("/register-user", async (req, res) => {
     const firstname = req.body.user_first_name;
     const lastname = req.body.user_last_name;
     const email = req.body.user_email;

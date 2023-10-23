@@ -1,3 +1,4 @@
+const dotenv = require('dotenv').config();
 const express = require("express");
 const app = express();
 const pg = require("pg");
@@ -8,14 +9,12 @@ app.use(cors());
 
 const port = 3000;
 const conString = {
-    host: 'carpedm.postgres.database.azure.com',
-    // Probably should not hard code your username and password.
-    // But this works for now.
-    user: 'main',
-    password: 'factFood96!',
-    database: 'carpedm',
-    port: 5432,
-    ssl: { rejectUnauthorized: false }
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
+    ssl: process.env.DB_SSL === 'true',
 };
 
 var client = new pg.Client(conString);
