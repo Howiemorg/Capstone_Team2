@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const pg = require("pg");
+const cors = require("cors");
 
 app.use(express.json());
 
@@ -9,7 +10,7 @@ const conString = {
     host: 'carpedm.postgres.database.azure.com',
     // Probably should not hard code your username and password.
     // But this works for now.
-    user: 'main',     
+    user: 'main',
     password: 'factFood96!',
     database: 'carpedm',
     port: 5432,
@@ -18,7 +19,6 @@ const conString = {
 
 var client = new pg.Client(conString);
 client.connect();
-
 
 // gets all the user table information
 app.get("/test-db", async (req, res) => {
@@ -56,6 +56,33 @@ app.get("/login-info", async (req, res) => {
         }
     } catch (err) {
         console.error(err);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+});
+
+// adds user info during user registration process
+app.post("/user-registration-info", async (req, res) => {
+    const firstname = req.body.user_first_name;
+    const lastname = req.body.user_last_name;
+    const email = req.body.user_email;
+    const password = req.body.user_password;
+
+    if (!email || !password || !firstname || !lastname) {
+        res.json({ success: false, message: "All fields are required." });
+        return;
+    }
+
+    try {
+        const query = {
+            text: "INSERT INTO users (user_first_name, user_last_name, user_email, user_password) VALUES ($1, $2, $3, $4)",
+            values: [firstname, lastname, email, password],
+        };
+
+        const result = await client.query(query);
+
+        res.json({ success: true, message: "User registered successfully." });
+    } catch (err) {
+        console.log(err.message);
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
