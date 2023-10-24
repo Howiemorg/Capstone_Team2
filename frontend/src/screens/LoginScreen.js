@@ -9,41 +9,27 @@ import {
   ScrollView,
 } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
-import { login } from "../store/Users/user-actions";
-import { userActions } from "../store/Users/user-slice";
+import axios from "axios";
 
 const LoginScreen = ({ navigation }) => {
-  const is8Characters = (value) => {
-    return value.trim().length > 7;
-  };
-
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("")
 
-  const dispatch = useDispatch();
-
-  const { error, loading, userInfo } = useSelector((state) => state.user);
 
   const loginSubmit = async () => {
     if (!username || !password) {
       setError("*Username or Password can not be empty");
       return;
     }
-
-    if (!is8Characters(password)) {
-      setError("*Password must be 8 characters");
-      return;
+    const response = await axios.get(`https://capstonebackend-ibrahimsemary.vercel.app/login-info?user_email=${username}&user_password=${password}`);
+    if(response.data.success){
+      navigation.navigate("Home")
     }
-    // send to backend
-    dispatch(login(username, password));
+    else{
+      setError("*Incorrect username or password")
+    }
   };
-
-  useEffect(() => {
-    if (userInfo) {
-      navigation.navigate("Home");
-      dispatch(userActions.userReset());
-    }
-  }, [userInfo]);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" enabled>

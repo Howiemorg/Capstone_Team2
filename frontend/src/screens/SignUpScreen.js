@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import {
     View,
     Text,
@@ -9,19 +8,9 @@ import {
     KeyboardAvoidingView,
 } from "react-native";
 import styles from "./styles";
-import { signup } from "../store/Users/user-actions";
-import { userActions } from "../store/Users/user-slice";
 
 const SignUpScreen = ({ navigation }) => {
-    const is8Characters = (value) => {
-        return value.trim().length > 7;
-    };
-
-    const dispatch = useDispatch();
-
-    const { userError, loading, userInfo } = useSelector((state) => state.user);
     const [error, setError] = useState("");
-
     const [firstname, setFirstname] = useState("");
     const [lastname, setLastname] = useState("");
     const [username, setUsername] = useState("");
@@ -40,23 +29,9 @@ const SignUpScreen = ({ navigation }) => {
             setError("*Password must be 8 characters");
           return;
         }
-        // send to backend
-        dispatch(
-            signup({
-              firstname: firstname,
-              lastname: lastname,
-              username: username,
-              password: password,
-            })
-          );
+        navigation.navigate("Login")
+        
     };
-
-    useEffect(() => {
-        if (userInfo) {
-          navigation.navigate("Home");
-          dispatch(userActions.userReset());
-        }
-      }, [userInfo]);
 
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior='padding' enabled>

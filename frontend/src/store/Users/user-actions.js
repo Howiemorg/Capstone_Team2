@@ -1,13 +1,14 @@
 import { userActions } from "./user-slice";
 import user from "../../api/user";
+import axios from "axios";
 
 export const login = (username, password) => {
   return async (dispatch) => {
     try {
       dispatch(userActions.userRequest());
-
-      const response = await user.post("/login", {username: username, password: password});
-
+      console.log("here")
+      const response = await axios.get(`http://10.229.175.240:3000/login-info?user_email=${username}&user_password=${password}`);
+      console.log(response)
       if (response.status !== 200 && response.statusText !== 'OK') {
         if (response.status === 401)
           dispatch(userActions.userFail("Incorrect Username/Password!"));

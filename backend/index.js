@@ -4,8 +4,11 @@ const pg = require("pg");
 const cors = require("cors");
 
 app.use(express.json());
-app.use(cors());
-
+app.use(cors({
+    origin: 'http://localhost:3000', // Replace with the origin you want to allow
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Adjust the HTTP methods you want to allow
+  }));
+  
 const port = 3000;
 const conString = {
     host: 'carpedm.postgres.database.azure.com',
