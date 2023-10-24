@@ -8,6 +8,7 @@ import {
     KeyboardAvoidingView,
 } from "react-native";
 import styles from "./styles";
+import axios from 'axios'
 
 const SignUpScreen = ({ navigation }) => {
     const [error, setError] = useState("");
@@ -25,11 +26,16 @@ const SignUpScreen = ({ navigation }) => {
         } else if (password != password2) {
             setError("*Passwords do not match");
             return;
-        } else if(!is8Characters(password)){
-            setError("*Password must be 8 characters");
-          return;
         }
-        navigation.navigate("Login")
+        
+        const response = await axios.post(`https://capstonebackend-ibrahimsemary.vercel.app/register-user?user_first_name=${firstname}&user_last_name=${lastname}&user_email=${username}&user_password=${password}`)
+        console.log(response.data)
+        if(response.data.success){
+            navigation.navigate("Login")
+        }
+        else{
+            setError("Could not register")
+        }
         
     };
 
@@ -102,7 +108,6 @@ const SignUpScreen = ({ navigation }) => {
                         </Text>
                     </Text>
                     <Text style={styles.error}>{error}</Text>
-                    <Text style={styles.error}>{userError}</Text>
                     <TouchableOpacity onPress={SignUp} style={styles.button}>
                         <Text
                             style={{
