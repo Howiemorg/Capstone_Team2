@@ -57,11 +57,11 @@ router.get("/login-validation", async (req, res) => {
 
 // adds user info during user registration process
 router.post("/register-user", async (req, res) => {
-    const firstname = req.body.user_first_name;
-    const lastname = req.body.user_last_name;
-    const email = req.body.user_email;
-    const password = req.body.user_password;
-
+    const firstname = req.query.user_first_name;
+    const lastname = req.query.user_last_name;
+    const email = req.query.user_email;
+    const password = req.query.user_password;
+    
     if (!email || !password || !firstname || !lastname) {
         res.json({ success: false, message: "All fields are required." });
         return;
@@ -69,7 +69,7 @@ router.post("/register-user", async (req, res) => {
 
     try {
         const query = {
-            text: "INSERT INTO users (user_first_name, user_last_name, user_email, user_password) VALUES ($1, $2, $3, $4)",
+            text: "INSERT INTO \"users\" (user_first_name, user_last_name, user_email, user_password) VALUES ($1, $2, $3, $4)",
             values: [firstname, lastname, email, password],
         };
 
