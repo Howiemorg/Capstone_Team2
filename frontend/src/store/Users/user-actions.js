@@ -9,7 +9,7 @@ export const login = (username, password) => {
       const response = await vercel.get(
         `/login-validation?user_email=${username}&user_password=${password}`
       );
-      console.log(response);
+      console.log(response.data);
       if (!response.data.success) {
         dispatch(userActions.userFail(response.data.message));
         return;
@@ -41,7 +41,7 @@ export const signup = (body) => {
         return;
       }
 
-      dispatch(userActions.userSuccess(response.data));
+      dispatch(userActions.userSuccess(response.data.userID));
     } catch (err) {
       dispatch(userActions.userFail(err));
     }

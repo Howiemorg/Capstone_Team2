@@ -19,7 +19,7 @@ const LoginScreen = ({ navigation }) => {
 
   const dispatch = useDispatch();
 
-  const { error : userError, loading, userInfo } = useSelector((state) => state.user);
+  const { error : userError, loading, userID } = useSelector((state) => state.user);
 
   const loginSubmit = async () => {
     if (!username || !password) {
@@ -30,12 +30,12 @@ const LoginScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
-    if (userInfo) {
+    if (userID) {
       navigation.navigate("Home");
       dispatch(userActions.userReset());
     } 
     setError("");
-  }, [userInfo, username, password, dispatch]);
+  }, [userID, username, password]);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" enabled>

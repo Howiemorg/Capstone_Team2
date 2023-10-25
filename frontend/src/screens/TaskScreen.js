@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import {
   Text,
   StyleSheet,
@@ -9,25 +8,24 @@ import {
   ScrollView,
 } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
-import axios from "axios";
 
 const TaskScreen = ({ navigation }) => {
-  const [name, setName] = useState("");
-  const [estimatedTime, setEstimatedTime] = useState(0.0);
-  const [dueDate, setDueDate] = useState("")
-
+  const [tasks, setTasks] = useState([]);
+  const [taskName, setTaskName] = useState("");
+  const [estimateCompletionTime, setEstimateCompletionTime] = useState("");
+  const [taskDueDate, setTaskDueDate] = useState("");
+  const [taskStartDate, setTaskStartDate] = useState("");
+  const [error, setError] = useState("");
 
   const TaskSubmit = async () => {
-    if (!username || !password) {
-      setError("*Username or Password can not be empty");
+    if (
+      !taskDueDate ||
+      !taskName ||
+      !taskStartDate ||
+      !estimateCompletionTime
+    ) {
+      setError("*All fields must be filled");
       return;
-    }
-    const response = await axios.get(`https://capstonebackend-ibrahimsemary.vercel.app/Task-validation?user_email=${username}&user_password=${password}`);
-    if(response.data.success){
-      navigation.navigate("Home")
-    }
-    else{
-      setError("*Incorrect username or password")
     }
   };
 
@@ -41,7 +39,7 @@ const TaskScreen = ({ navigation }) => {
             style={styles.input}
             autoCapitalize="none"
             autoCorrect={false}
-            value={username}
+            value={taskName}
             onChangeText={(newValue) => setUsername(newValue)}
           />
           <Text style={styles.label}>Password</Text>
@@ -50,26 +48,9 @@ const TaskScreen = ({ navigation }) => {
             style={styles.input}
             autoCapitalize="none"
             autoCorrect={false}
-            value={password}
+            value={estimateCompletionTime}
             onChangeText={(newValue) => setPassword(newValue)}
           />
-          <Text
-            style={{
-              marginLeft: "17.5%",
-              fontSize: 12,
-              marginTop: "2%",
-            }}
-          >
-            <Text>Don't have an account? </Text>
-            <Text
-              style={{ fontSize: 12, color: "blue" }}
-              onPress={() => {
-                navigation.navigate("SignUp");
-              }}
-            >
-              Sign up
-            </Text>
-          </Text>
           {error && <Text style={styles.error}>{error}</Text>}
           <TouchableOpacity onPress={TaskSubmit} style={styles.button}>
             <Text style={{ color: "white", alignSelf: "center" }}>Sign In</Text>

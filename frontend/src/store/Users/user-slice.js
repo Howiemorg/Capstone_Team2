@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const UserSlice = createSlice({
   name: "user",
   initialState: {
-    userInfo: null,
+    userID: null,
     loading: false,
     error: false,
     success: false,
@@ -15,7 +15,7 @@ const UserSlice = createSlice({
     userSuccess(state, action) {
       state.loading = false;
       state.success = true;
-      state.userInfo = action.payload;
+      state.userID = action.payload;
     },
     userFail(state, action) {
       state.loading = false;
