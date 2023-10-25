@@ -1,62 +1,69 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Text,
   StyleSheet,
   View,
   TouchableOpacity,
   KeyboardAvoidingView,
-  ScrollView,
+  FlatList,
 } from "react-native";
-import { TextInput } from "react-native-gesture-handler";
+import Modal from "react-native-modal";
+import vercel from "../api/vercel";
+import AddTaskModal from "../components/AddTaskModal";
 
 const TaskScreen = ({ navigation }) => {
   const [tasks, setTasks] = useState([]);
-  const [taskName, setTaskName] = useState("");
-  const [estimateCompletionTime, setEstimateCompletionTime] = useState("");
-  const [taskDueDate, setTaskDueDate] = useState("");
-  const [taskStartDate, setTaskStartDate] = useState("");
   const [error, setError] = useState("");
+  const [addTask, setAddTask] = useState(false);
 
-  const TaskSubmit = async () => {
-    if (
-      !taskDueDate ||
-      !taskName ||
-      !taskStartDate ||
-      !estimateCompletionTime
-    ) {
-      setError("*All fields must be filled");
-      return;
+  const { userID } = useSelector((state) => state.user);
+
+  const getTasks = async () => {
+    const response = await vercel.get(`/get-uncompleted-tasks?user_id=${userID}`);
+
+    if (response.data.success) {
+      setTasks(response.data.tasks);
+    } else {
+      setError(response.data.message);
     }
   };
 
+  useEffect(() => {
+    getTasks();
+  }, []);
+
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" enabled>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View>
-          <Text style={styles.title}>Carpe DM</Text>
-          <Text style={styles.label}>Username</Text>
-          <TextInput
-            style={styles.input}
-            autoCapitalize="none"
-            autoCorrect={false}
-            value={taskName}
-            onChangeText={(newValue) => setUsername(newValue)}
+      <View>
+        <TouchableOpacity
+          onPress={() => setAddTask(true)}
+          style={styles.button}
+        >
+          <Text style={{ alignSelf: "center" }}>Add a Task</Text>
+        </TouchableOpacity>
+        <Modal isVisible={addTask} animationIn="fadeIn" animationOut="fadeOut" style={{}} onBackdropPress={() => setAddTask(false)}>
+          <AddTaskModal
+            onHideModal={() => setAddTask(false)}
+            onAddTask={(newTask) =>
+              setTasks((prevTasks) => [...prevTasks, newTask])
+            }
           />
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            secureTextEntry={true}
-            style={styles.input}
-            autoCapitalize="none"
-            autoCorrect={false}
-            value={estimateCompletionTime}
-            onChangeText={(newValue) => setPassword(newValue)}
-          />
-          {error && <Text style={styles.error}>{error}</Text>}
-          <TouchableOpacity onPress={TaskSubmit} style={styles.button}>
-            <Text style={{ color: "white", alignSelf: "center" }}>Sign In</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </Modal>
+        <FlatList
+          data={tasks}
+          keyExtractor={(task) => task.id}
+          renderItem={({ item }) => {
+            return (
+              <View>
+                <Text>{item.name}</Text>
+                <Text>{item.estimate_completion_time}</Text>
+                <Text>{item.task_due_date}</Text>
+              </View>
+            );
+          }}
+        />
+      </View>
     </KeyboardAvoidingView>
   );
 };
@@ -66,11 +73,6 @@ const styles = StyleSheet.create({
     fontSize: 30,
     alignSelf: "center",
     marginTop: "20%",
-  },
-  label: {
-    fontSize: 12,
-    marginTop: "10%",
-    marginLeft: "17.5%",
   },
   error: {
     fontSize: 12,
@@ -82,19 +84,10 @@ const styles = StyleSheet.create({
   button: {
     width: "45%",
     borderRadius: 24,
-    backgroundColor: "black",
+    backgroundColor: "white",
+    marginTop: "10%",
     alignSelf: "center",
-    color: "white",
     padding: 8,
-  },
-  input: {
-    padding: 2.5,
-    fontSize: 16,
-    borderRadius: 12,
-    borderWidth: 3,
-    width: "65%",
-    marginTop: "2%",
-    alignSelf: "center",
   },
 });
 

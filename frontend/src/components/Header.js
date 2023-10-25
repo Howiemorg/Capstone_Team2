@@ -40,8 +40,8 @@ const styles = StyleSheet.create({
     alignItems:"center",
     justifyContent:"center"
   },
-  calendar:{borderBottomLeftRadius:12, borderTopLeftRadius: 12},
-  tree:{borderBottomRightRadius:12, borderTopRightRadius: 12},
+  calendar:{borderBottomLeftRadius:8, borderTopLeftRadius: 8},
+  tree:{borderBottomRightRadius:8, borderTopRightRadius: 8},
   not_selected: {
     fontSize: 12,
     backgroundColor: "white",
@@ -54,8 +54,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 3,
     width: "65%",
-    height: "4%",
-    marginTop: "2%",
+    height: "25%",
+    marginTop: "8%",
     alignSelf: "center",
     flexDirection: "row",
   },
