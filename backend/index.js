@@ -35,7 +35,11 @@ app.get("/test-db", async (req, res) => {
 });
 
 const users = require('./routes/users.js');
+const events = require('./routes/events.js');
+
 app.use('/', users);
+app.use('/', events);
+
 
 app.listen(port, function () {
     console.log("Server is running on port " + port);
