@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { login } from "../store/Users/user-actions";
-import { userActions } from "../store/Users/user-slice";
 import {
   Text,
   StyleSheet,
@@ -11,31 +9,27 @@ import {
   ScrollView,
 } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
+import axios from "axios";
 
-const LoginScreen = ({ navigation }) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+const TaskScreen = ({ navigation }) => {
+  const [name, setName] = useState("");
+  const [estimatedTime, setEstimatedTime] = useState(0.0);
+  const [dueDate, setDueDate] = useState("")
 
-  const dispatch = useDispatch();
 
-  const { error : userError, loading, userInfo } = useSelector((state) => state.user);
-
-  const loginSubmit = async () => {
+  const TaskSubmit = async () => {
     if (!username || !password) {
       setError("*Username or Password can not be empty");
       return;
     }
-    dispatch(login(username, password));
+    const response = await axios.get(`https://capstonebackend-ibrahimsemary.vercel.app/Task-validation?user_email=${username}&user_password=${password}`);
+    if(response.data.success){
+      navigation.navigate("Home")
+    }
+    else{
+      setError("*Incorrect username or password")
+    }
   };
-
-  useEffect(() => {
-    if (userInfo) {
-      navigation.navigate("Home");
-      dispatch(userActions.userReset());
-    } 
-    setError("");
-  }, [userInfo, username, password, dispatch]);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" enabled>
@@ -77,8 +71,7 @@ const LoginScreen = ({ navigation }) => {
             </Text>
           </Text>
           {error && <Text style={styles.error}>{error}</Text>}
-          {userError && <Text style={styles.error}>{userError}</Text>}
-          <TouchableOpacity onPress={loginSubmit} style={styles.button}>
+          <TouchableOpacity onPress={TaskSubmit} style={styles.button}>
             <Text style={{ color: "white", alignSelf: "center" }}>Sign In</Text>
           </TouchableOpacity>
         </View>
@@ -109,7 +102,6 @@ const styles = StyleSheet.create({
     width: "45%",
     borderRadius: 24,
     backgroundColor: "black",
-    marginTop: "10%",
     alignSelf: "center",
     color: "white",
     padding: 8,
@@ -125,4 +117,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default TaskScreen;
