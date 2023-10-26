@@ -1,32 +1,23 @@
 import { userActions } from "./user-slice";
-import user from "../../api/user";
+import vercel from "../../api/vercel";
 import axios from "axios";
 
 export const login = (username, password) => {
   return async (dispatch) => {
     try {
       dispatch(userActions.userRequest());
-      console.log("here")
-      const response = await axios.get(`http://10.229.175.240:3000/login-info?user_email=${username}&user_password=${password}`);
-      console.log(response)
-      if (response.status !== 200 && response.statusText !== 'OK') {
-        if (response.status === 401)
-          dispatch(userActions.userFail("Incorrect Username/Password!"));
-        else {
-          dispatch(userActions.userFail("Failed to Login!"));
-        }
+      const response = await vercel.get(
+        `/login-validation?user_email=${username}&user_password=${password}`
+      );
+      console.log(response.data);
+      if (!response.data.success) {
+        dispatch(userActions.userFail(response.data.message));
         return;
       }
 
       dispatch(userActions.userSuccess(response.data));
     } catch (err) {
-      dispatch(
-        userActions.userFail(
-          err.response && err.response.data.detail
-            ? err.response.data.detail
-            : err.message
-        )
-      );
+      dispatch(userActions.userFail(err));
     }
   };
 };
@@ -41,14 +32,16 @@ export const signup = (body) => {
     try {
       dispatch(userActions.userRequest());
 
-      const response = await user.post("/signup", body);
+      const response = await user.post(
+        `/register-user?user_first_name=${body.firstname}&user_last_name=${body.lastname}&user_email=${body.username}&user_password=${body.password}`
+      );
 
-      if (response.statusText !== 'OK' && response.status !== 200) {
+      if (response.statusText !== "OK" && response.status !== 200) {
         dispatch(userActions.userFail("Failed to Register!"));
         return;
       }
 
-      dispatch(userActions.userSuccess(response.data));
+      dispatch(userActions.userSuccess(response.data.userID));
     } catch (err) {
       dispatch(userActions.userFail(err));
     }

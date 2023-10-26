@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { login } from "../store/Users/user-actions";
+import { userActions } from "../store/Users/user-slice";
 import {
   Text,
   StyleSheet,
@@ -9,27 +11,31 @@ import {
   ScrollView,
 } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
-import axios from "axios";
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("")
+  const [error, setError] = useState("");
 
+  const dispatch = useDispatch();
+
+  const { error : userError, loading, userID } = useSelector((state) => state.user);
 
   const loginSubmit = async () => {
     if (!username || !password) {
       setError("*Username or Password can not be empty");
       return;
     }
-    const response = await axios.get(`https://capstonebackend-ibrahimsemary.vercel.app/login-info?user_email=${username}&user_password=${password}`);
-    if(response.data.success){
-      navigation.navigate("Home")
-    }
-    else{
-      setError("*Incorrect username or password")
-    }
+    dispatch(login(username, password));
   };
+
+  useEffect(() => {
+    if (userID) {
+      navigation.navigate("Home");
+      dispatch(userActions.userReset());
+    } 
+    setError("");
+  }, [userID, username, password]);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" enabled>
@@ -70,7 +76,8 @@ const LoginScreen = ({ navigation }) => {
               Sign up
             </Text>
           </Text>
-          <Text style={styles.error}>{error}</Text>
+          {error && <Text style={styles.error}>{error}</Text>}
+          {userError && <Text style={styles.error}>{userError}</Text>}
           <TouchableOpacity onPress={loginSubmit} style={styles.button}>
             <Text style={{ color: "white", alignSelf: "center" }}>Sign In</Text>
           </TouchableOpacity>
@@ -102,6 +109,7 @@ const styles = StyleSheet.create({
     width: "45%",
     borderRadius: 24,
     backgroundColor: "black",
+    marginTop: "10%",
     alignSelf: "center",
     color: "white",
     padding: 8,

@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { signup } from "../store/Users/user-actions";
+import { userActions } from "../store/Users/user-slice";
 import {
     View,
     Text,
@@ -18,6 +21,10 @@ const SignUpScreen = ({ navigation }) => {
     const [password, setPassword] = useState("");
     const [password2, setPassword2] = useState("");
 
+    const dispatch = useDispatch();
+
+    const { error : userError, loading, userID } = useSelector((state) => state.user);
+
     const SignUp = async () => {
         // check if all the fields are filled & if passwords match
         if (!firstname || !lastname || !username || !password || !password2) {
@@ -28,16 +35,17 @@ const SignUpScreen = ({ navigation }) => {
             return;
         }
         
-        const response = await axios.post(`https://capstonebackend-ibrahimsemary.vercel.app/register-user?user_first_name=${firstname}&user_last_name=${lastname}&user_email=${username}&user_password=${password}`)
-        console.log(response.data)
-        if(response.data.success){
-            navigation.navigate("Login")
-        }
-        else{
-            setError("Could not register")
-        }
+        dispatch(signup({firstname, lastname, username, password}))
         
     };
+
+    useEffect(() => {
+        if (userID) {
+          navigation.navigate("Home");
+          dispatch(userActions.userReset());
+        } 
+        setError("");
+      }, [userID, username, password, dispatch]);
 
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior='padding' enabled>
@@ -107,7 +115,8 @@ const SignUpScreen = ({ navigation }) => {
                             Login
                         </Text>
                     </Text>
-                    <Text style={styles.error}>{error}</Text>
+                    {error && <Text style={styles.error}>{error}</Text>}
+                    {userErrorrror && <Text style={styles.error}>{userError}</Text>}
                     <TouchableOpacity onPress={SignUp} style={styles.button}>
                         <Text
                             style={{

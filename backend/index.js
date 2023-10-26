@@ -36,9 +36,11 @@ app.get("/test-db", async (req, res) => {
 
 const users = require('./routes/users.js');
 const events = require('./routes/events.js');
+const tasks = require('./routes/tasks.js');
 
 app.use('/', users);
 app.use('/', events);
+app.use('/', tasks);
 
 
 app.listen(port, function () {
