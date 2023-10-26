@@ -20,7 +20,7 @@ router.get("/get-events", async (req, res) => {
     const event_date = req.query.event_date;
     try {
         const result = await client.query(
-            `SELECT * FROM events WHERE user_id = ${user_id} AND event_date = '${event_date}';`
+            `SELECT * FROM events WHERE user_id = ${user_id} AND event_date = '${event_date}' ORDER BY event_start_time;`
         );
         res.send(result.rows);
     } catch (err) {
@@ -35,7 +35,7 @@ router.get("/get-set-events", async (req, res) => {
     const event_date = req.query.event_date;
     try {
         const result = await client.query(
-            `SELECT * FROM events WHERE user_id = ${user_id} AND event_date = '${event_date}' AND task_id is NULL;`
+            `SELECT * FROM events WHERE user_id = ${user_id} AND event_date = '${event_date}' AND task_id is NULL ORDER BY event_start_time;`
         );
         res.send(result.rows);
     } catch (err) {
@@ -49,7 +49,7 @@ router.get("/get-recommended-events", async (req, res) => {
     const event_date = req.query.event_date;
     try {
         const result = await client.query(
-            `SELECT * FROM events WHERE user_id = ${user_id} AND event_date = '${event_date}' AND task_id is NOT NULL;`
+            `SELECT * FROM events WHERE user_id = ${user_id} AND event_date = '${event_date}' AND task_id is NOT NULL ORDER BY event_start_time;`
         );
         res.send(result.rows);
     } catch (err) {
