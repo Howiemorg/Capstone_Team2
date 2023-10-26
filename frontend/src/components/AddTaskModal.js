@@ -4,11 +4,8 @@ import {
   StyleSheet,
   View,
   TouchableOpacity,
-  Button,
   Platform,
   Keyboard,
-  KeyboardAvoidingView,
-  ScrollView,
 } from "react-native";
 import {
   TextInput,
@@ -42,18 +39,14 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
       return;
     }
 
-    console.log("SENDING");
-
     try {
       const response = await vercel.post(
-        `/add-tasks?user_id=${userID}&task_name=${taskName}&task_start_date=${taskStartDate.getFullYear()}-${
+        `/add-tasks?user_id=${1}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${
           taskStartDate.getMonth() + 1
-        }-${taskStartDate.getDate()}&task_due_date=${taskStartDate.getFullYear()}-${
+        }-${taskStartDate.getDate()}'&task_due_date='${taskStartDate.getFullYear()}-${
           taskStartDate.getMonth() + 1
-        }-${taskStartDate.getDate()}&progress_percent=0&priority_level=NULL&estimate_completion_time=30`
+        }-${taskStartDate.getDate()}'&progress_percent=0&priority_level=NULL&estimate_completion_time=30&completion_date='2023-12-12'`
       );
-
-      console.log(response);
 
       if (!response.data.success) {
         setError(response.data.message);
@@ -63,7 +56,7 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
       onAddTask();
       onHideModal();
     } catch (err) {
-      console.log(err);
+      setError(err)
     }
   };
 
@@ -195,7 +188,7 @@ const styles = StyleSheet.create({
     marginTop: "10%",
   },
   datePicker: {
-    width: 320,
+    width: 300,
     height: 260,
     display: "flex",
     justifyContent: "center",

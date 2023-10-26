@@ -9,7 +9,6 @@ export const login = (username, password) => {
       const response = await vercel.get(
         `/login-validation?user_email=${username}&user_password=${password}`
       );
-      console.log(response.data);
       if (!response.data.success) {
         dispatch(userActions.userFail(response.data.message));
         return;

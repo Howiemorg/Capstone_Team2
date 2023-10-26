@@ -11,60 +11,124 @@ import {
 import Modal from "react-native-modal";
 import vercel from "../api/vercel";
 import AddTaskModal from "../components/AddTaskModal";
+// import CheckBox from "@react-native-community/checkbox";
+import CheckBox from "expo-checkbox";
 
 const TaskScreen = ({ navigation }) => {
   const [tasks, setTasks] = useState([]);
   const [error, setError] = useState("");
   const [addTask, setAddTask] = useState(false);
+  const [generateTasks, setGeneratetasks] = useState([]);
 
   const { userID } = useSelector((state) => state.user);
 
   const getTasks = async () => {
-    const response = await vercel.get(`/get-uncompleted-tasks?user_id=${userID}`);
+    const response = await vercel.get(`/get-uncompleted-tasks?user_id=${1}`);
 
-    if (response.data.success) {
-      setTasks(response.data.tasks);
+    if (response.data) {
+      setTasks(response.data);
     } else {
-      setError(response.data.message);
+      setError("No data");
+    }
+
+    setGeneratetasks(
+      response.data.reduce((accumalator, currentVal) => {
+        const date = new Date(currentVal.task_due_date.substring(0, 10));
+        if (dueThisWeek(date)) {
+          accumalator.push(currentVal);
+        }
+        return accumalator;
+      }, [])
+    );
+  };
+
+  const dueThisWeek = (date) => {
+    const today = new Date();
+    return date < new Date(today.setDate(today.getDate() - today.getDay() + 6));
+  };
+
+  const isChecked = (task) => {
+    return generateTasks.includes(task);
+  };
+
+  const toggleChecked = (task) => {
+    if (isChecked(task)) {
+      setGeneratetasks((prevTasks) => prevTasks.filter((item) => item != task));
+    } else {
+      setGeneratetasks((prevTasks) => [...prevTasks, task]);
     }
   };
 
   useEffect(() => {
     getTasks();
+    generateTasks.forEach((val) => {
+      console.log(val.task_name);
+    });
   }, []);
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" enabled>
-      <View>
-        <TouchableOpacity
-          onPress={() => setAddTask(true)}
-          style={styles.button}
-        >
-          <Text style={{ alignSelf: "center" }}>Add a Task</Text>
-        </TouchableOpacity>
-        <Modal isVisible={addTask} animationIn="fadeIn" animationOut="fadeOut" style={{}} onBackdropPress={() => setAddTask(false)}>
-          <AddTaskModal
-            onHideModal={() => setAddTask(false)}
-            onAddTask={(newTask) =>
-              setTasks((prevTasks) => [...prevTasks, newTask])
-            }
-          />
-        </Modal>
-        <FlatList
-          data={tasks}
-          keyExtractor={(task) => task.id}
-          renderItem={({ item }) => {
+    <View style={styles.container}>
+      <TouchableOpacity onPress={() => setAddTask(true)} style={styles.button}>
+        <Text style={{ alignSelf: "center", color: "white" }}>Add a Task</Text>
+      </TouchableOpacity>
+      <Modal
+        isVisible={addTask}
+        animationIn="fadeIn"
+        animationOut="fadeOut"
+        style={{}}
+        onBackdropPress={() => setAddTask(false)}
+      >
+        <AddTaskModal
+          onHideModal={() => setAddTask(false)}
+          onAddTask={() => getTasks()}
+        />
+      </Modal>
+      <FlatList
+        style={styles.tasklist}
+        data={tasks}
+        scrollEnabled={true}
+        showsVerticalScrollIndicator={true}
+        keyExtractor={(task) => task.task_id}
+        renderItem={({ item }) => {
+          const date = new Date(item.task_due_date.substring(0, 10));
+
+          if (dueThisWeek(date)) {
             return (
-              <View>
-                <Text>{item.name}</Text>
-                <Text>{item.estimate_completion_time}</Text>
-                <Text>{item.task_due_date}</Text>
+              <View style={styles.task}>
+                <Text style={styles.taskName}>{item.task_name}</Text>
+                <Text>{item.estimate_completion_time} hours</Text>
+                <Text>
+                  Due: {date.toDateString()} {"   "} {date.toLocaleTimeString()}
+                </Text>
               </View>
             );
-          }}
-        />
-      </View>
-    </KeyboardAvoidingView>
+          }
+          return (
+            <View style={[styles.task, {flex: 2, flexDirection: "row"}]}>
+              <CheckBox
+                value={isChecked(item)}
+                onValueChange={() => {
+                  toggleChecked(item);
+                }}
+                style={{alignSelf: "center"}}
+              />
+              <View>
+                <Text style={styles.taskName}>{item.task_name}</Text>
+                <Text>{item.estimate_completion_time} hours</Text>
+                <Text>
+                  Due: {date.toDateString()} {"   "} {date.toLocaleTimeString()}
+                </Text>
+              </View>
+            </View>
+          );
+        }}
+      />
+      <TouchableOpacity onPress={() => {}} style={styles.button}>
+        <Text style={{ color: "white", alignSelf: "center" }}>
+          Generate Schedule
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
@@ -73,6 +137,9 @@ const styles = StyleSheet.create({
     fontSize: 30,
     alignSelf: "center",
     marginTop: "20%",
+  },
+  container: {
+    alignItems: "center",
   },
   error: {
     fontSize: 12,
@@ -84,11 +151,14 @@ const styles = StyleSheet.create({
   button: {
     width: "45%",
     borderRadius: 24,
-    backgroundColor: "white",
+    backgroundColor: "black",
     marginTop: "10%",
     alignSelf: "center",
     padding: 8,
   },
+  tasklist: { height: "65%", flexGrow: 0, marginTop: "5%" },
+  task: { marginTop: 2, padding: 3, borderWidth: 1 },
+  taskName: { fontSize: 16, fontWeight: "500" },
 });
 
 export default TaskScreen;
