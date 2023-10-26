@@ -4,7 +4,8 @@ CREATE TABLE "users"
   user_first_name VARCHAR(255) NOT NULL,
   user_last_name  VARCHAR(255) NOT NULL,
   user_email      VARCHAR(255) NOT NULL,
-  user_password   VARCHAR(255) NOT NULL
+  user_password   VARCHAR(255) NOT NULL,
+  circadian_rhythm  integer[]
 ); 
 
 CREATE TABLE User_Weekly_Metrics (
@@ -27,7 +28,8 @@ CREATE TABLE Tasks (
     task_due_date DATE,
     progress_percent INTEGER,
     priority_level INTEGER,
-    estimate_completion_time FLOAT
+    estimate_completion_time FLOAT,
+    completion_date DATE
 );
 
 CREATE TABLE Events (

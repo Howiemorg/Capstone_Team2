@@ -21,7 +21,7 @@ router.get("/get-uncompleted-tasks", async (req, res) => {
 
     try {
         const query = {
-            text: "SELECT * FROM tasks WHERE user_id = $1",
+            text: "SELECT * FROM tasks WHERE user_id = $1 AND WHERE completion_date IS NOT NULL",
             values: [user_id],
         };
 
