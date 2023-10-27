@@ -43,10 +43,12 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
       const response = await vercel.post(
         `/add-tasks?user_id=${1}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${
           taskStartDate.getMonth() + 1
-        }-${taskStartDate.getDate()}'&task_due_date='${taskStartDate.getFullYear()}-${
-          taskStartDate.getMonth() + 1
-        }-${taskStartDate.getDate()}'&progress_percent=0&priority_level=NULL&estimate_completion_time=30&completion_date='2023-12-12'`
+        }-${taskStartDate.getDate()} ${taskStartDate.getHours()}:${taskStartDate.getMinutes()}:${taskStartDate.getSeconds()}'&task_due_date='${taskDueDate.getFullYear()}-${
+          taskDueDate.getMonth() + 1
+        }-${taskDueDate.getDate()} ${taskDueDate.getHours()}:${taskDueDate.getMinutes()}:${taskDueDate.getSeconds()}'&progress_percent=0&priority_level=NULL&estimate_completion_time=30&completion_date='2023-12-12'`
       );
+
+      console.log(response);
 
       if (!response.data.success) {
         setError(response.data.message);
@@ -56,7 +58,7 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
       onAddTask();
       onHideModal();
     } catch (err) {
-      setError(err)
+      setError(err);
     }
   };
 

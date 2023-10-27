@@ -44,7 +44,13 @@ const TaskScreen = ({ navigation }) => {
 
   const dueThisWeek = (date) => {
     const today = new Date();
-    return date < new Date(today.setDate(today.getDate() - today.getDay() + 6));
+    const end_of_saturday = new Date(
+      today.setDate(today.getDate() - today.getDay() + 6)
+    );
+    end_of_saturday.setHours(23);
+    end_of_saturday.setMinutes(59);
+    end_of_saturday.setSeconds(59);
+    return date <= end_of_saturday;
   };
 
   const isChecked = (task) => {
@@ -90,33 +96,66 @@ const TaskScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={true}
         keyExtractor={(task) => task.task_id}
         renderItem={({ item }) => {
+          console.log(item.task_name);
+          console.log(item.task_due_date);
           const date = new Date(item.task_due_date.substring(0, 10));
+          date.setDate(date.getDate() + 1);
+          date.setHours(item.task_due_date.substring(11, 13));
+          date.setMinutes(item.task_due_date.substring(14, 16));
+          date.setSeconds(item.task_due_date.substring(17, 19));
 
           if (dueThisWeek(date)) {
             return (
-              <View style={styles.task}>
+              <View
+                style={[
+                  styles.task,
+                  item.priority_level === 1
+                    ? { backgroundColor: "lightgreen" }
+                    : item.priority_level === 2
+                    ? { backgroundColor: "skyblue" }
+                    : item.priority_level === 3
+                    ? { backgroundColor: "orange" }
+                    : { backgroundColor: "red" },
+                ]}
+              >
                 <Text style={styles.taskName}>{item.task_name}</Text>
                 <Text>{item.estimate_completion_time} hours</Text>
                 <Text>
-                  Due: {date.toDateString()} {"   "} {date.toLocaleTimeString()}
+                  Due: {date.toDateString()} {date.toLocaleTimeString()}
                 </Text>
               </View>
             );
           }
           return (
-            <View style={[styles.task, {flex: 2, flexDirection: "row"}]}>
+            <View
+              style={[
+                styles.task,
+                {
+                  flex: 2,
+                  flexDirection: "row",
+                  backgroundColor: "lightgreen",
+                },
+                item.priority_level === 1
+                  ? { backgroundColor: "lightgreen" }
+                  : item.priority_level === 2
+                  ? { backgroundColor: "aqua" }
+                  : item.priority_level === 3
+                  ? { backgroundColor: "orange" }
+                  : { backgroundColor: "red" },
+              ]}
+            >
               <CheckBox
                 value={isChecked(item)}
                 onValueChange={() => {
                   toggleChecked(item);
                 }}
-                style={{alignSelf: "center"}}
+                style={{ alignSelf: "center" }}
               />
               <View>
                 <Text style={styles.taskName}>{item.task_name}</Text>
                 <Text>{item.estimate_completion_time} hours</Text>
                 <Text>
-                  Due: {date.toDateString()} {"   "} {date.toLocaleTimeString()}
+                  Due: {date.toDateString()} {date.toLocaleTimeString()}
                 </Text>
               </View>
             </View>
