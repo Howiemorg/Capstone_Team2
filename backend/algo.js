@@ -13,31 +13,15 @@ function decreaseTimeByOneHour(time) {
     return newHours;
 }
 
-function listHoursBetween(start, end) {
-    // Split the start and end times into hours and minutes
-    const [startHours, startMinutes] = start.split(":").map(Number);
-    const [endHours, endMinutes] = end.split(":");
-
-    // Initialize an array to store the list of hours
-    const hoursList = [];
-    for (let i = startHours; i <= endHours; i++) {
-        let new_hour = i;
-        if (new_hour === 24) {
-            new_hour = 0;
-        }
-        new_hour = String(new_hour).padStart(2, "0");
-        hoursList.push(`${new_hour}:${endMinutes}`);
-    }
-
-    return hoursList;
-}
-
-function getScore(a, halfHourDictionary) {
+function getScore(a) {
     let s = 0;
-    a.forEach((key) => {
-        s += halfHourDictionary[key];
-    });
-    return s;
+    a.forEach(num => {
+      s += num
+    })
+    return s
+}
+function isConflicting(number, lowerBound, upperBound) {
+  return number >= lowerBound && number <= upperBound;
 }
 
 function get_available_intervals(events) {
@@ -62,6 +46,22 @@ function get_available_intervals(events) {
     }
     return available_intervals;
 }
+
+function get_best_time_intervals(available_interval, curr_task){
+  let task_time = curr_task.estimate_completion_time/60
+  let best_intervals = []
+  
+  available_intervals.forEach(interval => {
+    let r = interval.start + task_time - 1
+    for(let l = interval.start; r <= interval.end; l++){
+      best_intervals.push([getScore(circadian_rhythm.slice(l,r+1)), l, r])
+      r++
+    }
+  })
+  best_intervals.sort((a,b) => b[0] - a[0])
+  return best_intervals
+}
+
 let circadian_rhythm = [
     0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 5, 5, 4, 3, 2, 2, 2, 3, 5, 5, 5, 2, 2, 1,
 ];
@@ -160,7 +160,7 @@ const tasks = [
   {
       user_id: 1,
       task_id: 8,
-      task_name: "Studying",
+      task_name: "CSCE 121",
       task_start_date: "2023-10-31T05:00:00.000Z",
       task_due_date: "2023-11-02T05:00:00.000Z",
       progress_percent: 0,
@@ -172,11 +172,33 @@ const tasks = [
 
 let available_intervals = get_available_intervals(events);
 
+const already_recommended = [];
+const new_events = []
 tasks.forEach(task => {
-  const width = (task.estimate_completion_time/60)-1
-  console.log(width)
-  let best_intervals
+  let curr_task_recommendations =  get_best_time_intervals(available_intervals, task)
+
+  //pick first one that is not already reccommended
+  for(const rec of curr_task_recommendations){
+    let conflicting = false
+    for(const already_recommended_t of already_recommended){
+      if(isConflicting(rec[1], already_recommended_t.start, already_recommended_t.end) || isConflicting(rec[2], already_recommended.start, already_recommended.end)){
+        conflicting = true;
+        break;
+      }
+    }
+    if(!conflicting){
+      new_events.push({
+        name: task.task_name,
+        score: rec[0],
+        time: `${rec[1]}:00 - ${rec[2]+1}:00`
+      })
+      already_recommended.push({start:rec[1], end:rec[2]})
+      break
+    }
+  }
 })
+console.log(new_events)
+
 
 // let task_time = 2
 // //Find the best time interval for each available time
