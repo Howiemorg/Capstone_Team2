@@ -25,9 +25,7 @@ const CalendarScreen = () => {
         date.getMonth() + 1
       }-${date.getDate()}`
     );
-
-    console.log(response.data);
-
+    
     setTasks(response.data);
   };
 

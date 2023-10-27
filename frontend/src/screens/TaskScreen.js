@@ -67,9 +67,6 @@ const TaskScreen = ({ navigation }) => {
 
   useEffect(() => {
     getTasks();
-    generateTasks.forEach((val) => {
-      console.log(val.task_name);
-    });
   }, []);
 
   return (
@@ -96,8 +93,6 @@ const TaskScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={true}
         keyExtractor={(task) => task.task_id}
         renderItem={({ item }) => {
-          console.log(item.task_name);
-          console.log(item.task_due_date);
           const date = new Date(item.task_due_date.substring(0, 10));
           date.setDate(date.getDate() + 1);
           date.setHours(item.task_due_date.substring(11, 13));
