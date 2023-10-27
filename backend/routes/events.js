@@ -58,24 +58,4 @@ router.get("/get-recommended-events", async (req, res) => {
     }
 });
 
-//add tasks for now
-router.post("/add-tasks", async (req, res) => {
-    const user_id = req.query.user_id;
-    const task_name = req.query.task_name;
-    const task_start_date = req.query.task_start_date;
-    const task_due_date = req.query.task_due_date;
-    const estimate_completion_time =
-        req.query.estimate_completion_time;
-
-    try {
-        const result = await client.query(
-            `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
-            VALUES (${user_id}, ${task_name}, ${task_start_date}, ${task_due_date}, 0, NULL, ${estimate_completion_time});`
-        );
-        res.json({success: true, messasge: "registered task succesfully"});
-    } catch (err) {
-        console.log(err.message);
-        res.send(err.message);
-    }
-});
 module.exports = router;
