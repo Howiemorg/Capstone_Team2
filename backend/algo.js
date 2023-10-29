@@ -102,16 +102,16 @@ const generateWeeklyArray = (tasks, startDate) => {
     tasks_per_day[task.task_id] = [];
 
     const taskStartDate = stringToDate(task.task_start_date);
-    const taskEndDate = stringToDate(task.task_end_date);
+    const taskDueDate = stringToDate(task.task_due_date);
 
     const avg_time =
       task.estimate_completion_time /
-      ((taskEndDate.getTime() - taskStartDate.getTime()) * 24 * 60 * 60 * 1000);
+      ((taskDueDate.getTime() - taskStartDate.getTime()) * 24 * 60 * 60 * 1000);
 
     for (let i = 0; i < 7; ++i) {
       const currDay = new Date();
       currDay.setDate(startDate.getDate() + i);
-      if (taskStartDate <= currDay && taskEndDate >= currDay) {
+      if (taskStartDate <= currDay && taskDueDate >= currDay) {
         tasks_per_day[task.task_id].push(avg_time);
       } else {
         tasks_per_day[task.task_id].push(0);
@@ -130,106 +130,134 @@ const algorithm = (
   const startDate = stringToDate(start_date);
   const task_time_per_day = generateWeeklyArray(tasks, startDate);
 
-  tasks.sort((a, b) => {
-    if (a.priority_level == b.priority_level) {
-      return b.estimate_completion_time - a.estimate_completion_time;
-    }
-    return b.priority_level - a.priority_level;
-  });
+  for (let i = 0; i < 7; ++i) {
+    const curr_day = new Date();
+    curr_day.setDate(startDate.getDate() + i);
 
-  let available_intervals = get_available_intervals(events);
-  console.log(available_intervals);
-
-  const already_recommended = [];
-  const new_events = [];
-  tasks.forEach((task) => {
-    let curr_task_recommendations = get_best_time_intervals(
-      available_intervals,
-      task,
-      circadian_rhythm
-    );
-
-    let best_available_times = [];
-    //pick first one that is not already reccommended
-    for (const rec of curr_task_recommendations) {
-      let conflicting = false;
-      for (const already_recommended_t of already_recommended) {
-        if (
-          isConflicting(
-            rec[1],
-            already_recommended_t.start,
-            already_recommended_t.end
-          ) ||
-          isConflicting(
-            rec[2],
-            already_recommended_t.start,
-            already_recommended_t.end
-          )
-        ) {
-          conflicting = true;
-          break;
-        }
-      }
-      if (!conflicting) {
-        best_available_times.push({
-          score: rec[0],
-          start: rec[1],
-          end: rec[2],
-        });
-      }
-    }
-    const best_time =
-      best_available_times[reschedule_value % best_available_times.length];
-    console.log(best_available_times.length);
-    new_events.push({
-      name: task.task_name,
-      score: best_time.score,
-      time: `${best_time.start}:00 - ${best_time.end + 1}:00`,
+    const daily_events = events.filter((event) => {
+      stringToDate(event.event_date).getDate() == curr_day.getDate();
     });
 
-    const query = {
-      text: "INSERT INTO Events (event_name, event_start_time, event_end_time, reminder_id, user_id, task_id, work_done_pct, repetition_duration, repetition_days, repetition_frequency, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
-      values: [
-        task.task_name,
-        `${best_time.start}:00:00`,
-        `${best_time.end + 1}:00:00`,
-        "NULL",
-        task.user_id,
-        task.task_id,
-        0,
-        "NULL",
-        "NULL",
-        "NULL",
-        task.task_start_date,
-        task.priority_level,
-        0,
-        0,
-      ],
-    };
+    tasks.sort((a, b) => {
+      if (a.priority_level == b.priority_level) {
+        const a_due_date = stringToDate(a.task_due_date);
+        const b_due_date = stringToDate(b.task_due_date);
+        if (a_due_date.toDateString() == b_due_date.toDateString()) {
+          return (
+            task_time_per_day[b.task_id][i] - task_time_per_day[a.task_id][i]
+          );
+        }
+        return b_due_date.getTime() - a_due_date.getTime();
+      }
+      return b.priority_level - a.priority_level;
+    });
 
-    console.log(query);
+    let available_intervals = get_available_intervals(daily_events);
+    console.log(available_intervals);
 
-    already_recommended.push({ start: best_time.start, end: best_time.end });
-  });
+    const already_recommended = [];
+    const already_scheduled = [];
+    const new_events = [];
+    tasks.forEach((task) => {
+      task.estimate_completion_time = task_time_per_day[task.task_id][i];
+      let curr_task_recommendations = get_best_time_intervals(
+        available_intervals,
+        task,
+        circadian_rhythm
+      );
 
-  console.log("Done");
-  console.log(new_events);
+      let best_available_times = [];
+      //pick first one that is not already reccommended
+      for (const rec of curr_task_recommendations) {
+        let conflicting = false;
+        for (const already_recommended_t of already_recommended) {
+          if (
+            isConflicting(
+              rec[1],
+              already_recommended_t.start,
+              already_recommended_t.end
+            ) ||
+            isConflicting(
+              rec[2],
+              already_recommended_t.start,
+              already_recommended_t.end
+            )
+          ) {
+            conflicting = true;
+            break;
+          }
+        }
+        if (!conflicting) {
+          best_available_times.push({
+            score: rec[0],
+            start: rec[1],
+            end: rec[2],
+          });
+        }
+      }
+      const best_time =
+        best_available_times[reschedule_value % best_available_times.length];
+      console.log(best_available_times.length);
+      new_events.push({
+        name: task.task_name,
+        score: best_time.score,
+        time: `${best_time.start}:00 - ${best_time.end + 1}:00`,
+      });
 
-  // let task_time = 2
-  // //Find the best time interval for each available time
-  // let best_intervals = []
-  // avaiable_intervals.forEach(interval => {
-  //     let keys = listHoursBetween(interval.start, interval.end);
-  //     // console.log(keys)
-  //     r = task_time-1
-  //     for(let l = 0; r < keys.length; l++){
-  //       console.log(keys[l], keys[r], getScore(keys.slice(l,r+1), halfHourDictionary))
-  //       best_intervals.push([getScore(keys.slice(l,r+1), halfHourDictionary), [keys[l], keys[r]]]);
-  //       r++
-  //     }
-  //     console.log("")
-  // })
-  // best_intervals.sort((a,b) => b[0] - a[0])
+      const query = {
+        text: "INSERT INTO Events (event_name, event_start_time, event_end_time, reminder_id, user_id, task_id, work_done_pct, repetition_duration, repetition_days, repetition_frequency, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+        values: [
+          task.task_name,
+          `${best_time.start}:00:00`,
+          `${best_time.end + 1}:00:00`,
+          "NULL",
+          task.user_id,
+          task.task_id,
+          0,
+          "NULL",
+          "NULL",
+          "NULL",
+          task.task_start_date,
+          task.priority_level,
+          0,
+          0,
+        ],
+      };
+
+      console.log(query);
+
+      already_recommended.push({ start: best_time.start, end: best_time.end });
+      daily_events.push({
+        event_start_time: best_time.start,
+        event_end_time: best_time.end,
+      });
+      already_scheduled.push(task.task_id);
+    });
+
+    const tasks_not_scheduled = tasks.filter(
+      (task) => !already_scheduled.includes(task)
+    );
+    const free_time = get_available_intervals(daily_events);
+    // If there is any tasks not scheduled and there is free time, put some in the free time
+    // available intervals - already recommended to get free time
+    const total_free_time = free_time.reduce((accumalator, currentValue) => {
+      return accumalator + currentValue.end - currentValue.start;
+    }, 0);
+
+    while (total_free_time > 0) {
+      const avg_free_time = total_free_time / tasks_not_scheduled.length;
+      for (const time_interval of free_time) {
+        for (const task of tasks_not_scheduled) {
+          const tasks_free_time = Math.ceil(avg_free_time);
+
+          while (tasks_free_time > 0) {}
+        }
+      }
+    }
+
+    console.log("Done");
+    console.log(new_events);
+  }
 
   console.log();
 };
