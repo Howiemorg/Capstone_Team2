@@ -1,6 +1,14 @@
-let circadian_rhythm = [
-  0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 5, 5, 4, 3, 2, 2, 2, 4, 5, 5, 5, 2, 2, 1,
-];
+const pg = require("pg");
+const conString = {
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
+    ssl: process.env.DB_SSL === "true",
+};
+var client = new pg.Client(conString);
+client.connect();
 
 function decreaseTimeByOneHour(time) {
   // Split the time string into hours and minutes
@@ -54,7 +62,7 @@ function get_available_intervals(events) {
   return available_intervals;
 }
 
-function get_best_time_intervals(available_intervals, curr_task) {
+function get_best_time_intervals(available_intervals, curr_task, circadian_rhythm) {
   let task_time = curr_task.estimate_completion_time / 60;
   let best_intervals = [];
 
@@ -73,7 +81,8 @@ function get_best_time_intervals(available_intervals, curr_task) {
   best_intervals.sort((a, b) => b[0] - a[0]);
   return best_intervals;
 }
-function algorithm(events, tasks, reschedule_value) {
+
+function algorithm(events, tasks, circadian_rhythm, reschedule_value) {
   tasks.sort((a, b) => {
     if (a.priority_level == b.priority_level) {
       return b.estimate_completion_time - a.estimate_completion_time;
@@ -89,7 +98,8 @@ function algorithm(events, tasks, reschedule_value) {
   tasks.forEach((task) => {
     let curr_task_recommendations = get_best_time_intervals(
       available_intervals,
-      task
+      task,
+      circadian_rhythm
     );
 
     let best_available_times = [];
@@ -129,6 +139,14 @@ function algorithm(events, tasks, reschedule_value) {
       score: best_time.score,
       time: `${best_time.start}:00 - ${best_time.end + 1}:00`,
     });
+
+    const query = {
+        text: 'INSERT INTO Events (event_name, event_start_time, event_end_time, reminder_id, user_id, task_id, work_done_pct, repetition_duration, repetition_days, repetition_frequency, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
+        values: [task.task_name, `${best_time.start}:00:00`, `${best_time.end + 1}:00:00`, 'NULL', task.user_id, task.task_id, 0, 'NULL','NULL','NULL', task.task_start_date, task.priority_level, 0, 0],
+    };
+    
+    console.log(query)
+
     already_recommended.push({ start: best_time.start, end: best_time.end });
   });
 
@@ -258,6 +276,10 @@ const tasks = [
   },
 ];
 
-algorithm(events, tasks, 12);
+let circadian_rhythm = [
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 5, 5, 4, 3, 2, 2, 2, 4, 5, 5, 5, 2, 2, 1,
+  ];
+
+algorithm(events, tasks, circadian_rhythm, 12);
 
 module.exports = get_available_intervals;

@@ -1,4 +1,5 @@
 const get_available_intervals = require('../algo');
+const algorithm = require('../algo');
 
 const dotenv = require("dotenv").config();
 const express = require("express");
@@ -55,6 +56,8 @@ router.post("/get-recommendations", async (req, res) => {
             `SELECT circadian_rhythm from users WHERE user_id = ${user_id};`
         );
         circadian_rhythm = circadian_rhythm.rows[0]["circadian_rhythm"];
+        
+        algorithm(events, tasks, circadian_rhythm, 0);
 
         //get empty intervals
         res.send(get_available_intervals(events));

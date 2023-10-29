@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export default axios.create({
-    baseURL: "https://capstonebackend-ibrahimsemary.vercel.app"
+    baseURL: "https://capstone-backend-charles-tran.vercel.app/"
 })
