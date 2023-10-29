@@ -95,10 +95,8 @@ const stringToDate = (string_date) => {
   return date;
 };
 
-const generateWeeklyArray = (tasks, start_date) => {
+const generateWeeklyArray = (tasks, startDate) => {
   let tasks_per_day = {};
-
-  const startDate = stringToDate(start_date);
 
   tasks.forEach((task) => {
     tasks_per_day[task.task_id] = [];
@@ -106,20 +104,31 @@ const generateWeeklyArray = (tasks, start_date) => {
     const taskStartDate = stringToDate(task.task_start_date);
     const taskEndDate = stringToDate(task.task_end_date);
 
+    const avg_time =
+      task.estimate_completion_time /
+      ((taskEndDate.getTime() - taskStartDate.getTime()) * 24 * 60 * 60 * 1000);
+
     for (let i = 0; i < 7; ++i) {
-    
+      const currDay = new Date();
+      currDay.setDate(startDate.getDate() + i);
+      if (taskStartDate <= currDay && taskEndDate >= currDay) {
+        tasks_per_day[task.task_id].push(avg_time);
+      } else {
+        tasks_per_day[task.task_id].push(0);
+      }
     }
   });
 };
 
-function algorithm(
+const algorithm = (
   events,
   tasks,
   circadian_rhythm,
   reschedule_value,
   start_date
-) {
-  const task_time_per_day = [[tasks.length]];
+) => {
+  const startDate = stringToDate(start_date);
+  const task_time_per_day = generateWeeklyArray(tasks, startDate);
 
   tasks.sort((a, b) => {
     if (a.priority_level == b.priority_level) {
@@ -223,7 +232,7 @@ function algorithm(
   // best_intervals.sort((a,b) => b[0] - a[0])
 
   console.log();
-}
+};
 
 let events = [
   {
