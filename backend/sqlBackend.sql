@@ -42,7 +42,9 @@ CREATE TABLE Events (
     repetition_duration INTERVAL,
     repetition_days INTEGER[],
     repetition_frequency VARCHAR(255),
-    event_date DATE
+    event_date DATE,
+    regen_count INT,
+    max_reschedule BOOL
 );
 
 CREATE TABLE reminders (
