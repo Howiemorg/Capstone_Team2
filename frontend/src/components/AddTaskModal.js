@@ -45,10 +45,13 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
           taskStartDate.getMonth() + 1
         }-${taskStartDate.getDate()} ${taskStartDate.getHours()}:${taskStartDate.getMinutes()}:${taskStartDate.getSeconds()}'&task_due_date='${taskDueDate.getFullYear()}-${
           taskDueDate.getMonth() + 1
-        }-${taskDueDate.getDate()} ${taskDueDate.getHours()}:${taskDueDate.getMinutes()}:${taskDueDate.getSeconds()}'&progress_percent=0&priority_level=NULL&estimate_completion_time=30&completion_date='2023-12-12'`
+        }-${taskDueDate.getDate()} ${taskDueDate.getHours()}:${taskDueDate.getMinutes()}:${taskDueDate.getSeconds()}'&progress_percent=0&priority_level=NULL&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'`
       );
 
+      console.log(response)
+
       if (!response.data.success) {
+        console.log(response.data.message)
         setError(response.data.message);
         return;
       }

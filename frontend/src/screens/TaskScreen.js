@@ -110,6 +110,8 @@ const TaskScreen = ({ setSelected }) => {
           date.setSeconds(item.task_due_date.substring(17, 19));
 
           if (dueThisWeek(date)) {
+            console.log(item.task_name)
+            console.log(item.priority_level)
             return (
               <View
                 style={[
@@ -120,7 +122,7 @@ const TaskScreen = ({ setSelected }) => {
                     ? { backgroundColor: "skyblue" }
                     : item.priority_level === 3
                     ? { backgroundColor: "orange" }
-                    : { backgroundColor: "red" },
+                    : item.priority_level === 4 && { backgroundColor: "red" },
                 ]}
               >
                 <Text style={styles.taskName}>{item.task_name}</Text>
