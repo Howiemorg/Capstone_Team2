@@ -1,11 +1,11 @@
 const pg = require("pg");
 const conString = {
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-    ssl: process.env.DB_SSL === "true",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  ssl: process.env.DB_SSL === "true",
 };
 var client = new pg.Client(conString);
 client.connect();
@@ -62,7 +62,11 @@ function get_available_intervals(events) {
   return available_intervals;
 }
 
-function get_best_time_intervals(available_intervals, curr_task, circadian_rhythm) {
+function get_best_time_intervals(
+  available_intervals,
+  curr_task,
+  circadian_rhythm
+) {
   let task_time = curr_task.estimate_completion_time / 60;
   let best_intervals = [];
 
@@ -82,7 +86,41 @@ function get_best_time_intervals(available_intervals, curr_task, circadian_rhyth
   return best_intervals;
 }
 
-function algorithm(events, tasks, circadian_rhythm, reschedule_value) {
+const stringToDate = (string_date) => {
+  const date = new Date(string_date.substring(0, 10));
+  date.setDate(date.getDate() + 1);
+  date.setHours(string_date.substring(11, 13));
+  date.setMinutes(string_date.substring(14, 16));
+  date.setSeconds(string_date.substring(17, 19));
+  return date;
+};
+
+const generateWeeklyArray = (tasks, start_date) => {
+  let tasks_per_day = {};
+
+  const startDate = stringToDate(start_date);
+
+  tasks.forEach((task) => {
+    tasks_per_day[task.task_id] = [];
+
+    const taskStartDate = stringToDate(task.task_start_date);
+    const taskEndDate = stringToDate(task.task_end_date);
+
+    for (let i = 0; i < 7; ++i) {
+    
+    }
+  });
+};
+
+function algorithm(
+  events,
+  tasks,
+  circadian_rhythm,
+  reschedule_value,
+  start_date
+) {
+  const task_time_per_day = [[tasks.length]];
+
   tasks.sort((a, b) => {
     if (a.priority_level == b.priority_level) {
       return b.estimate_completion_time - a.estimate_completion_time;
@@ -133,7 +171,7 @@ function algorithm(events, tasks, circadian_rhythm, reschedule_value) {
     }
     const best_time =
       best_available_times[reschedule_value % best_available_times.length];
-    console.log(best_available_times.length)
+    console.log(best_available_times.length);
     new_events.push({
       name: task.task_name,
       score: best_time.score,
@@ -141,11 +179,26 @@ function algorithm(events, tasks, circadian_rhythm, reschedule_value) {
     });
 
     const query = {
-        text: 'INSERT INTO Events (event_name, event_start_time, event_end_time, reminder_id, user_id, task_id, work_done_pct, repetition_duration, repetition_days, repetition_frequency, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
-        values: [task.task_name, `${best_time.start}:00:00`, `${best_time.end + 1}:00:00`, 'NULL', task.user_id, task.task_id, 0, 'NULL','NULL','NULL', task.task_start_date, task.priority_level, 0, 0],
+      text: "INSERT INTO Events (event_name, event_start_time, event_end_time, reminder_id, user_id, task_id, work_done_pct, repetition_duration, repetition_days, repetition_frequency, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+      values: [
+        task.task_name,
+        `${best_time.start}:00:00`,
+        `${best_time.end + 1}:00:00`,
+        "NULL",
+        task.user_id,
+        task.task_id,
+        0,
+        "NULL",
+        "NULL",
+        "NULL",
+        task.task_start_date,
+        task.priority_level,
+        0,
+        0,
+      ],
     };
-    
-    console.log(query)
+
+    console.log(query);
 
     already_recommended.push({ start: best_time.start, end: best_time.end });
   });
@@ -277,8 +330,8 @@ const tasks = [
 ];
 
 let circadian_rhythm = [
-    0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 5, 5, 4, 3, 2, 2, 2, 4, 5, 5, 5, 2, 2, 1,
-  ];
+  0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 5, 5, 4, 3, 2, 2, 2, 4, 5, 5, 5, 2, 2, 1,
+];
 
 algorithm(events, tasks, circadian_rhythm, 12);
 
