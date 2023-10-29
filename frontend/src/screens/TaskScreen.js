@@ -14,7 +14,7 @@ import AddTaskModal from "../components/AddTaskModal";
 // import CheckBox from "@react-native-community/checkbox";
 import CheckBox from "expo-checkbox";
 
-const TaskScreen = ({ navigation }) => {
+const TaskScreen = ({ setSelected }) => {
   const [tasks, setTasks] = useState([]);
   const [error, setError] = useState("");
   const [addTask, setAddTask] = useState(false);
@@ -63,6 +63,16 @@ const TaskScreen = ({ navigation }) => {
     } else {
       setGeneratetasks((prevTasks) => [...prevTasks, task]);
     }
+  };
+
+  const generateSchedule = async () => {
+    // const response = await vercel.post(`/generate-schedule?user_id=${userID}&tasks=${generateTasks}`)
+
+    // if (response.data.success) {
+    setSelected("Calendar");
+    // } else {
+    //   setError(response.data.message);
+    // }
   };
 
   useEffect(() => {
@@ -157,7 +167,12 @@ const TaskScreen = ({ navigation }) => {
           );
         }}
       />
-      <TouchableOpacity onPress={() => {}} style={styles.button}>
+      <TouchableOpacity
+        onPress={() => {
+          generateSchedule();
+        }}
+        style={styles.button}
+      >
         <Text style={{ color: "white", alignSelf: "center" }}>
           Generate Schedule
         </Text>

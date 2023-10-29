@@ -11,7 +11,7 @@ const HomeScreen = () => {
     <View style={{flex: 1}}>
       <Header selected={selected} setSelected={setSelected} />
       {selected === "Calendar" && <CalendarScreen />}
-      {selected === "Task List" && <TaskScreen />}
+      {selected === "Task List" && <TaskScreen setSelected={setSelected}/>}
     </View>
   );
 };
