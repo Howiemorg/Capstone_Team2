@@ -39,7 +39,7 @@ function calculatePriorityLevel(estimate_completion_time, task_due_date, task_st
         //RED
         return (4)
     }
-    return due_date;
+    return 0;
 }
 
 //add tasks for now
