@@ -44,7 +44,7 @@ CREATE TABLE Events (
     repetition_frequency VARCHAR(255),
     event_date DATE,
     regen_count INTEGER,
-    max_reschedule INTEGER
+    max_reschedule BOOLEAN
 );
 
 CREATE TABLE reminders (

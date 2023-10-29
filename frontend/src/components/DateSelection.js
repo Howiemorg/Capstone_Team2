@@ -5,9 +5,9 @@ const DateSelection = ({ date, onSetDate }) => {
   const today = new Date();
   const sunday = new Date(today.setDate(today.getDate() - today.getDay()));
   const monday = new Date();
-  monday.setDate(sunday.getDate() + 8);
+  monday.setDate(sunday.getDate() + 1);
   const tuesday = new Date();
-  tuesday.setDate(sunday.getDate() + 9);
+  tuesday.setDate(sunday.getDate() + 2);
   const wednesday = new Date();
   wednesday.setDate(sunday.getDate() + 3);
   const thursday = new Date();
