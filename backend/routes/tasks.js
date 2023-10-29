@@ -16,11 +16,12 @@ client.connect();
 
 function calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date){
     // Calculates the days left and always rounds up to get whole day
-    const start = new Date(task_start_date);
-    const due = new Date(task_due_date);
+    const due_date = new Date(task_due_date.substring(0, 10));
+    due_date.setDate(due_date.getDate() + 1);
+    const start_date = new Date(task_start_date.substring(0, 10));
+    start_date.setDate(start_date.getDate() + 1);
     const msPerDay = 24 * 60 * 60 * 1000; 
-    let daysLeft = Math.ceil((start.getTime() - due.getTime()) / msPerDay);
-    
+    let daysLeft = Math.ceil((due_date.getTime() - start_date.getTime()) / msPerDay);
     // Priority Levels follows the guidelines we decided
     if(estimate_completion_time/daysLeft < 30 && daysLeft>=7){
         //BLUE
@@ -38,7 +39,7 @@ function calculatePriorityLevel(estimate_completion_time, task_due_date, task_st
         //RED
         return (4)
     }
-    return 0
+    return due_date;
 }
 
 //add tasks for now
@@ -49,13 +50,14 @@ router.post("/add-tasks", async (req, res) => {
     const task_due_date = req.query.task_due_date;
     const estimate_completion_time =
         req.query.estimate_completion_time;
+    const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
     
     try {
         const result = await client.query(
             `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
-            VALUES (${user_id}, ${task_name}, ${task_start_date}, ${task_due_date}, 0, ${calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date)}, ${estimate_completion_time});`
+            VALUES (${user_id}, ${task_name}, ${task_start_date}, ${task_due_date}, 0, ${priority_level}, ${estimate_completion_time});`
         );
-        res.json({success: true, messasge: "registered task succesfully"});
+        res.json({success: true, message: "registered task succesfully"});
     } catch (err) {
         console.log(err.message);
         res.send(err.message);
