@@ -116,7 +116,7 @@ const generateWeeklyArray = (tasks, startDate) => {
         tasks_per_day[task.task_id].push(0);
       }
     }
-  });
+  })
   return tasks_per_day;
 };
 
