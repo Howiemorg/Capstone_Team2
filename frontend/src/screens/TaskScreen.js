@@ -35,7 +35,7 @@ const TaskScreen = ({ setSelected }) => {
       response.data.reduce((accumalator, currentVal) => {
         const date = new Date(currentVal.task_due_date.substring(0, 10));
         if (dueThisWeek(date)) {
-          accumalator.push(currentVal);
+          accumalator.push(currentVal.task_id);
         }
         return accumalator;
       }, [])
@@ -66,18 +66,22 @@ const TaskScreen = ({ setSelected }) => {
   };
 
   const generateSchedule = async () => {
-    // const response = await vercel.post(`/generate-schedule?user_id=${userID}&tasks=${generateTasks}`)
+    const today = new Date();
+    const response = await vercel.post(`/get-recommendations?user_id=1&selected_date=${today.toISOString().substring(0,10)}&selected_tasks=(${generateTasks})`)
 
-    // if (response.data.success) {
+    console.log(response)
+    if (response.data.success) {
     setSelected("Calendar");
-    // } else {
-    //   setError(response.data.message);
-    // }
+    } else {
+      setError(response.data.message);
+    }
   };
 
   useEffect(() => {
     getTasks();
   }, []);
+
+  console.log(generateTasks);
 
   return (
     <View style={styles.container}>
@@ -110,8 +114,6 @@ const TaskScreen = ({ setSelected }) => {
           date.setSeconds(item.task_due_date.substring(17, 19));
 
           if (dueThisWeek(date)) {
-            console.log(item.task_name)
-            console.log(item.priority_level)
             return (
               <View
                 style={[
@@ -152,9 +154,9 @@ const TaskScreen = ({ setSelected }) => {
               ]}
             >
               <CheckBox
-                value={isChecked(item)}
+                value={isChecked(item.task_id)}
                 onValueChange={() => {
-                  toggleChecked(item);
+                  toggleChecked(item.task_id);
                 }}
                 style={{ alignSelf: "center" }}
               />

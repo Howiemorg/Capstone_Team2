@@ -33,7 +33,6 @@ const CalendarScreen = () => {
 
   const cancelEvent = async (eventBlockRemove) => {
     // const response = await vercel.post(`/cancel-event?user_id=${userID}&event_id=${eventBlock.event_block_id}`)
-    console.log(eventBlockRemove)
     // if (response.data.success) {
       setEventBlocks((prevEventBlocks) =>
         prevEventBlocks.filter((eventBlock) => eventBlock.event_block_id != eventBlockRemove.event_block_id)
