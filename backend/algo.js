@@ -1,14 +1,14 @@
-const pg = require("pg");
-const conString = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
-  ssl: process.env.DB_SSL === "true",
-};
-var client = new pg.Client(conString);
-client.connect();
+// const pg = require("pg");
+// const conString = {
+//   host: process.env.DB_HOST,
+//   user: process.env.DB_USER,
+//   password: process.env.DB_PASSWORD,
+//   database: process.env.DB_NAME,
+//   port: process.env.DB_PORT,
+//   ssl: process.env.DB_SSL === "true",
+// };
+// var client = new pg.Client(conString);
+// client.connect();
 
 function decreaseTimeByOneHour(time) {
   // Split the time string into hours and minutes
@@ -103,10 +103,9 @@ const generateWeeklyArray = (tasks, startDate) => {
 
     const taskStartDate = stringToDate(task.task_start_date);
     const taskDueDate = stringToDate(task.task_due_date);
-
     const avg_time =
       task.estimate_completion_time /
-      ((taskDueDate.getTime() - taskStartDate.getTime()) * 24 * 60 * 60 * 1000);
+      ((taskDueDate.getTime() - taskStartDate.getTime())/ (24 * 60 * 60 * 1000));
 
     for (let i = 0; i < 7; ++i) {
       const currDay = new Date();
@@ -118,6 +117,7 @@ const generateWeeklyArray = (tasks, startDate) => {
       }
     }
   });
+  return tasks_per_day;
 };
 
 const algorithm = (
@@ -158,7 +158,7 @@ const algorithm = (
     const already_recommended = [];
     const already_scheduled = [];
     const new_events = [];
-    tasks.forEach((task) => {
+    for(const task of tasks){
       task.estimate_completion_time = task_time_per_day[task.task_id][i];
       let curr_task_recommendations = get_best_time_intervals(
         available_intervals,
@@ -198,6 +198,9 @@ const algorithm = (
       const best_time =
         best_available_times[reschedule_value % best_available_times.length];
       console.log(best_available_times.length);
+      if(best_available_times.length==0){
+        break;
+      }
       new_events.push({
         name: task.task_name,
         score: best_time.score,
@@ -217,7 +220,7 @@ const algorithm = (
           "NULL",
           "NULL",
           "NULL",
-          task.task_start_date,
+          curr_day,
           task.priority_level,
           0,
           0,
@@ -232,28 +235,28 @@ const algorithm = (
         event_end_time: best_time.end,
       });
       already_scheduled.push(task.task_id);
-    });
+    };
 
-    const tasks_not_scheduled = tasks.filter(
-      (task) => !already_scheduled.includes(task)
-    );
-    const free_time = get_available_intervals(daily_events);
-    // If there is any tasks not scheduled and there is free time, put some in the free time
-    // available intervals - already recommended to get free time
-    const total_free_time = free_time.reduce((accumalator, currentValue) => {
-      return accumalator + currentValue.end - currentValue.start;
-    }, 0);
+    // const tasks_not_scheduled = tasks.filter(
+    //   (task) => !already_scheduled.includes(task)
+    // );
+    // const free_time = get_available_intervals(daily_events);
+    // // If there is any tasks not scheduled and there is free time, put some in the free time
+    // // available intervals - already recommended to get free time
+    // const total_free_time = free_time.reduce((accumalator, currentValue) => {
+    //   return accumalator + currentValue.end - currentValue.start;
+    // }, 0);
 
-    while (total_free_time > 0) {
-      const avg_free_time = total_free_time / tasks_not_scheduled.length;
-      for (const time_interval of free_time) {
-        for (const task of tasks_not_scheduled) {
-          const tasks_free_time = Math.ceil(avg_free_time);
+    // while (total_free_time > 0) {
+    //   const avg_free_time = total_free_time / tasks_not_scheduled.length;
+    //   for (const time_interval of free_time) {
+    //     for (const task of tasks_not_scheduled) {
+    //       const tasks_free_time = Math.ceil(avg_free_time);
 
-          while (tasks_free_time > 0) {}
-        }
-      }
-    }
+    //       while (tasks_free_time > 0) {}
+    //     }
+    //   }
+    // }
 
     console.log("Done");
     console.log(new_events);
@@ -361,7 +364,7 @@ const tasks = [
     task_due_date: "2023-11-02T05:00:00.000Z",
     progress_percent: 0,
     priority_level: 4,
-    estimate_completion_time: 60,
+    estimate_completion_time: 120,
     completion_date: null,
   },
 ];
@@ -370,6 +373,6 @@ let circadian_rhythm = [
   0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 5, 5, 4, 3, 2, 2, 2, 4, 5, 5, 5, 2, 2, 1,
 ];
 
-algorithm(events, tasks, circadian_rhythm, 12);
+algorithm(events, tasks, circadian_rhythm, 12, "2023-10-31 00:00:00");
 
 module.exports = get_available_intervals;
