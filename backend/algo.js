@@ -1,15 +1,3 @@
-// const pg = require("pg");
-// const conString = {
-//   host: process.env.DB_HOST,
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASSWORD,
-//   database: process.env.DB_NAME,
-//   port: process.env.DB_PORT,
-//   ssl: process.env.DB_SSL === "true",
-// };
-// var client = new pg.Client(conString);
-// client.connect();
-
 function decreaseTimeByOneHour(time) {
   // Split the time string into hours and minutes
   const [hours, minutes, seconds] = time.split(":").map(Number);
@@ -87,8 +75,10 @@ function get_best_time_intervals(
 }
 
 const stringToDate = (string_date) => {
+  console.log(typeof(string_date))
+  console.log((string_date))
   const date = new Date(string_date.substring(0, 10));
-  date.setDate(date.getDate() + 1);
+  date.setDate(date.getDate());
   date.setHours(string_date.substring(11, 13));
   date.setMinutes(string_date.substring(14, 16));
   date.setSeconds(string_date.substring(17, 19));
@@ -98,27 +88,40 @@ const stringToDate = (string_date) => {
 const generateWeeklyArray = (tasks, startDate) => {
   let tasks_per_day = {};
 
-  tasks.forEach((task) => {
+  for(const task of tasks) {
     tasks_per_day[task.task_id] = [];
-
-    const taskStartDate = stringToDate(task.task_start_date);
-    const taskDueDate = stringToDate(task.task_due_date);
+    // console.log(task.task_start_date.toString())
+    // console.log(typeof(task.task_start_date.toString()))
+    const taskStartDate = (task.task_start_date);
+    const taskDueDate = (task.task_due_date);
+    console.log(taskStartDate, taskDueDate)
     const avg_time =
       task.estimate_completion_time /
       ((taskDueDate.getTime() - taskStartDate.getTime())/ (24 * 60 * 60 * 1000));
 
+      let dates = [];
+
     for (let i = 0; i < 7; ++i) {
       const currDay = new Date();
+      const start = startDate.getDate() + 0;
       currDay.setDate(startDate.getDate() + i);
+      // if(currDay.getMonth() != startDate.getMonth()){
+      //   currDay.setMonth(startDate.getMonth());
+      //   return currDay;
+      // }
+      // dates.push(currDay);
       if (taskStartDate <= currDay && taskDueDate >= currDay) {
         tasks_per_day[task.task_id].push(avg_time);
       } else {
         tasks_per_day[task.task_id].push(0);
       }
     }
-  })
+  }
+  // return dates;
   return tasks_per_day;
 };
+
+
 
 const algorithm = (
   events,
@@ -127,21 +130,23 @@ const algorithm = (
   reschedule_value,
   start_date
 ) => {
+  returnEvents = [];
+  // console.log(typeof(start_date))
   const startDate = stringToDate(start_date);
   const task_time_per_day = generateWeeklyArray(tasks, startDate);
-
   for (let i = 0; i < 7; ++i) {
     const curr_day = new Date();
     curr_day.setDate(startDate.getDate() + i);
 
     const daily_events = events.filter((event) => {
-      stringToDate(event.event_date).getDate() == curr_day.getDate();
+      // console.log(event_date)
+      event.event_date.getDate() == curr_day.getDate();
     });
 
     tasks.sort((a, b) => {
       if (a.priority_level == b.priority_level) {
-        const a_due_date = stringToDate(a.task_due_date);
-        const b_due_date = stringToDate(b.task_due_date);
+        const a_due_date = (a.task_due_date);
+        const b_due_date = (b.task_due_date);
         if (a_due_date.toDateString() == b_due_date.toDateString()) {
           return (
             task_time_per_day[b.task_id][i] - task_time_per_day[a.task_id][i]
@@ -167,6 +172,9 @@ const algorithm = (
       );
 
       let best_available_times = [];
+      // return {available_intervals,
+      //   task,
+      //   circadian_rhythm, task_time_per_day};
       //pick first one that is not already reccommended
       for (const rec of curr_task_recommendations) {
         let conflicting = false;
@@ -207,27 +215,10 @@ const algorithm = (
         time: `${best_time.start}:00 - ${best_time.end + 1}:00`,
       });
 
-      const query = {
-        text: "INSERT INTO Events (event_name, event_start_time, event_end_time, reminder_id, user_id, task_id, work_done_pct, repetition_duration, repetition_days, repetition_frequency, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
-        values: [
-          task.task_name,
-          `${best_time.start}:00:00`,
-          `${best_time.end + 1}:00:00`,
-          "NULL",
-          task.user_id,
-          task.task_id,
-          0,
-          "NULL",
-          "NULL",
-          "NULL",
-          curr_day,
-          task.priority_level,
-          0,
-          0,
-        ],
-      };
+      returnEvents.push([task.task_name, `${best_time.start}:00:00`, `${best_time.end + 1}:00:00`, task.user_id, task.task_id, curr_day, task.priority_level]);
 
-      console.log(query);
+      // console.log(query);
+
 
       already_recommended.push({ start: best_time.start, end: best_time.end });
       daily_events.push({
@@ -260,119 +251,13 @@ const algorithm = (
 
     console.log("Done");
     console.log(new_events);
+    // return new_events;
   }
 
   console.log();
+  return returnEvents;
 };
 
-let events = [
-  {
-    event_block_id: 13,
-    event_name: "BIO331",
-    event_start_time: "09:00:00",
-    event_end_time: "23:00:00",
-    reminder_id: null,
-    user_id: 1,
-    task_id: null,
-    work_done_pct: null,
-    repetition_duration: {
-      minutes: 50,
-    },
-    repetition_days: [1, 3, 5],
-    repetition_frequency: "Weekly",
-    event_date: "2023-10-31T05:00:00.000Z",
-  },
-  {
-    event_block_id: 11,
-    event_name: "ART335",
-    event_start_time: "10:00:00",
-    event_end_time: "12:00:00",
-    reminder_id: null,
-    user_id: 1,
-    task_id: null,
-    work_done_pct: null,
-    repetition_duration: {
-      hours: 1,
-      minutes: 30,
-    },
-    repetition_days: [1, 3, 5],
-    repetition_frequency: "Weekly",
-    event_date: "2023-10-31T05:00:00.000Z",
-  },
-  {
-    event_block_id: 14,
-    event_name: "Study Colory Theory",
-    event_start_time: "12:00:00",
-    event_end_time: "13:00:00",
-    reminder_id: null,
-    user_id: 1,
-    task_id: 7,
-    work_done_pct: null,
-    repetition_duration: {
-      minutes: 30,
-    },
-    repetition_days: [1, 3, 5],
-    repetition_frequency: "Weekly",
-    event_date: "2023-10-31T05:00:00.000Z",
-  },
-  {
-    event_block_id: 12,
-    event_name: "ART482",
-    event_start_time: "14:00:00",
-    event_end_time: "15:00:00",
-    reminder_id: null,
-    user_id: 1,
-    task_id: null,
-    work_done_pct: null,
-    repetition_duration: {
-      hours: 1,
-    },
-    repetition_days: [2, 4],
-    repetition_frequency: "Weekly",
-    event_date: "2023-10-31T05:00:00.000Z",
-  },
-];
+// algorithm(events, tasks, circadian_rhythm, 0, selected_date);
 
-const tasks = [
-  //   {
-  //     user_id: 1,
-  //     task_id: 5,
-  //     task_name: "Work on Masterpiece",
-  //     task_start_date: "2023-10-31T05:00:00.000Z",
-  //     task_due_date: "2023-11-02T05:00:00.000Z",
-  //     progress_percent: 0,
-  //     priority_level: 4,
-  //     estimate_completion_time: 60,
-  //     completion_date: null,
-  //   },
-  //   {
-  //     user_id: 1,
-  //     task_id: 9,
-  //     task_name: "Studying",
-  //     task_start_date: "2023-10-31T05:00:00.000Z",
-  //     task_due_date: "2023-11-02T05:00:00.000Z",
-  //     progress_percent: 0,
-  //     priority_level: 2,
-  //     estimate_completion_time: 120,
-  //     completion_date: null,
-  //   },
-  {
-    user_id: 1,
-    task_id: 8,
-    task_name: "CSCE 121",
-    task_start_date: "2023-10-31T05:00:00.000Z",
-    task_due_date: "2023-11-02T05:00:00.000Z",
-    progress_percent: 0,
-    priority_level: 4,
-    estimate_completion_time: 120,
-    completion_date: null,
-  },
-];
-
-let circadian_rhythm = [
-  0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 5, 5, 4, 3, 2, 2, 2, 4, 5, 5, 5, 2, 2, 1,
-];
-
-algorithm(events, tasks, circadian_rhythm, 12, "2023-10-31 00:00:00");
-
-module.exports = get_available_intervals;
+module.exports = algorithm;
