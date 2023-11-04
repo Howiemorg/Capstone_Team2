@@ -99,18 +99,17 @@ const generateWeeklyArray = (tasks, startDate) => {
       task.estimate_completion_time /
       ((taskDueDate.getTime() - taskStartDate.getTime())/ (24 * 60 * 60 * 1000));
 
-      let dates = [];
-
     for (let i = 0; i < 7; ++i) {
       const currDay = new Date();
-      const start = startDate.getDate() + 0;
       currDay.setDate(startDate.getDate() + i);
-      // if(currDay.getMonth() != startDate.getMonth()){
-      //   currDay.setMonth(startDate.getMonth());
-      //   return currDay;
-      // }
-      // dates.push(currDay);
-      if (taskStartDate <= currDay && taskDueDate >= currDay) {
+      const start = currDay;
+      start.setHours(23);
+      start.setMinutes(59);
+      start.setSeconds(59);
+      currDay.setHours(0);
+      currDay.setMinutes(0);
+      currDay.setSeconds(0);
+      if (taskStartDate <= start && taskDueDate >= currDay) {
         tasks_per_day[task.task_id].push(avg_time);
       } else {
         tasks_per_day[task.task_id].push(0);
@@ -172,9 +171,6 @@ const algorithm = (
       );
 
       let best_available_times = [];
-      // return {available_intervals,
-      //   task,
-      //   circadian_rhythm, task_time_per_day};
       //pick first one that is not already reccommended
       for (const rec of curr_task_recommendations) {
         let conflicting = false;
