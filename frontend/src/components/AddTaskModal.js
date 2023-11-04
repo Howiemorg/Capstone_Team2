@@ -43,9 +43,9 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
       const response = await vercel.post(
         `/add-tasks?user_id=${1}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${
           taskStartDate.getMonth() + 1
-        }-${taskStartDate.getDate()} ${taskStartDate.getHours()}:${taskStartDate.getMinutes()}:${taskStartDate.getSeconds()}'&task_due_date='${taskDueDate.getFullYear()}-${
+        }-${taskStartDate.getDate()} ${taskStartDate.getHours()}:${taskStartDate.getMinutes()}:00'&task_due_date='${taskDueDate.getFullYear()}-${
           taskDueDate.getMonth() + 1
-        }-${taskDueDate.getDate()} ${taskDueDate.getHours()}:${taskDueDate.getMinutes()}:${taskDueDate.getSeconds()}'&progress_percent=0&priority_level=NULL&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'`
+        }-${taskDueDate.getDate()} ${taskDueDate.getHours()}:${taskDueDate.getMinutes()}:00'&progress_percent=0&priority_level=NULL&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'`
       );
 
       if (!response.data.success) {
@@ -86,7 +86,7 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
             value={taskName}
             onChangeText={(newValue) => setTaskName(newValue)}
           />
-          <Text style={styles.label}>Estimate Time</Text>
+          <Text style={styles.label}>Estimate Time (Minutes)</Text>
           <TextInput
             inputMode="decimal"
             style={styles.input}
@@ -108,7 +108,7 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
           >
             <Text>
               {taskStartDate.toDateString()} {"    "}{" "}
-              {taskStartDate.toLocaleTimeString()}
+              {taskStartDate.getHours()}:{taskStartDate.getMinutes()}
             </Text>
           </TouchableOpacity>
         </View>
@@ -127,7 +127,7 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
           >
             <Text>
               {taskDueDate.toDateString()} {"    "}{" "}
-              {taskDueDate.toLocaleTimeString()}
+              {taskDueDate.getHours()}:{taskDueDate.getMinutes()}
             </Text>
           </TouchableOpacity>
         </View>

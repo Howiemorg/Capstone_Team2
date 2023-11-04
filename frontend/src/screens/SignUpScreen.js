@@ -116,7 +116,7 @@ const SignUpScreen = ({ navigation }) => {
                         </Text>
                     </Text>
                     {error && <Text style={styles.error}>{error}</Text>}
-                    {userErrorrror && <Text style={styles.error}>{userError}</Text>}
+                    {userError && <Text style={styles.error}>{userError}</Text>}
                     <TouchableOpacity onPress={SignUp} style={styles.button}>
                         <Text
                             style={{

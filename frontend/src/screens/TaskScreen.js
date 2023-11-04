@@ -67,11 +67,15 @@ const TaskScreen = ({ setSelected }) => {
 
   const generateSchedule = async () => {
     const today = new Date();
-    const response = await vercel.post(`/get-recommendations?user_id=1&selected_date=${today.toISOString().substring(0,10)}&selected_tasks=(${generateTasks})`)
+    const response = await vercel.post(
+      `/get-recommendations?user_id=1&selected_date=${today
+        .toISOString()
+        .substring(0, 10)} 01:00:00&selected_tasks=(${generateTasks})`
+    );
 
-    console.log(response)
+    console.log(response);
     if (response.data.success) {
-    setSelected("Calendar");
+      setSelected("Calendar");
     } else {
       setError(response.data.message);
     }
@@ -113,22 +117,24 @@ const TaskScreen = ({ setSelected }) => {
           date.setMinutes(item.task_due_date.substring(14, 16));
           date.setSeconds(item.task_due_date.substring(17, 19));
 
+          console.log(item.priority_level);
+
           if (dueThisWeek(date)) {
             return (
               <View
                 style={[
                   styles.task,
                   item.priority_level === 1
-                    ? { backgroundColor: "lightgreen" }
-                    : item.priority_level === 2
                     ? { backgroundColor: "skyblue" }
+                    : item.priority_level === 2
+                    ? { backgroundColor: "lightgreen" }
                     : item.priority_level === 3
                     ? { backgroundColor: "orange" }
                     : item.priority_level === 4 && { backgroundColor: "red" },
                 ]}
               >
                 <Text style={styles.taskName}>{item.task_name}</Text>
-                <Text>{item.estimate_completion_time} hours</Text>
+                <Text>{item.estimate_completion_time / 60} hours</Text>
                 <Text>
                   Due: {date.toDateString()} {date.toLocaleTimeString()}
                 </Text>
@@ -145,12 +151,12 @@ const TaskScreen = ({ setSelected }) => {
                   backgroundColor: "lightgreen",
                 },
                 item.priority_level === 1
-                  ? { backgroundColor: "lightgreen" }
+                  ? { backgroundColor: "skyblue" }
                   : item.priority_level === 2
-                  ? { backgroundColor: "aqua" }
+                  ? { backgroundColor: "lightgreen" }
                   : item.priority_level === 3
                   ? { backgroundColor: "orange" }
-                  : { backgroundColor: "red" },
+                  : item.priority_level === 4 && { backgroundColor: "red" },
               ]}
             >
               <CheckBox

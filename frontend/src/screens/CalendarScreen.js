@@ -87,7 +87,13 @@ const CalendarScreen = () => {
               {item.task_id ? (
                 <View style={[styles.block]}>
                   <Text style={styles.title}>{item.event_name}</Text>
-                  <Text style={[styles.task_time]}>
+                  <Text style={[styles.task_time, item.priority_level === 1
+                    ? { backgroundColor: "skyblue" }
+                    : item.priority_level === 2
+                    ? { backgroundColor: "lightgreen" }
+                    : item.priority_level === 3
+                    ? { backgroundColor: "orange" }
+                    : item.priority_level === 4 && { backgroundColor: "red" }]}>
                     {item.event_start_time} - {item.event_end_time}
                   </Text>
                 </View>
@@ -127,6 +133,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: "2%",
     marginTop: "5%",
+    overflow: "hidden"
   },
   title: { fontSize: 18 },
   event: { backgroundColor: "black" },
