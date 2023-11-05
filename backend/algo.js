@@ -75,8 +75,8 @@ function get_best_time_intervals(
 }
 
 const stringToDate = (string_date) => {
-  console.log(typeof(string_date))
-  console.log((string_date))
+  console.log(typeof string_date);
+  console.log(string_date);
   const date = new Date(string_date.substring(0, 10));
   date.setDate(date.getDate());
   date.setHours(string_date.substring(11, 13));
@@ -88,25 +88,26 @@ const stringToDate = (string_date) => {
 const generateWeeklyArray = (tasks, startDate) => {
   let tasks_per_day = {};
 
-  for(const task of tasks) {
+  for (const task of tasks) {
     tasks_per_day[task.task_id] = [];
     // console.log(task.task_start_date.toString())
     // console.log(typeof(task.task_start_date.toString()))
-    const taskStartDate = (task.task_start_date);
-    const taskDueDate = (task.task_due_date);
-    console.log(taskStartDate, taskDueDate)
+    const taskStartDate = task.task_start_date;
+    const taskDueDate = task.task_due_date;
+    console.log(taskStartDate, taskDueDate);
     const avg_time =
       task.estimate_completion_time /
-      ((taskDueDate.getTime() - taskStartDate.getTime())/ (24 * 60 * 60 * 1000));
+      ((taskDueDate.getTime() - taskStartDate.getTime()) /
+        (24 * 60 * 60 * 1000) + 1).toFixed(0);
 
     for (let i = 0; i < 7; ++i) {
       const currDay = new Date();
       currDay.setDate(startDate.getDate() + i);
-      const start = currDay;
+      const start = new Date(currDay);
       start.setHours(23);
       start.setMinutes(59);
       start.setSeconds(59);
-      currDay.setHours(0);
+      currDay.setHours(1);
       currDay.setMinutes(0);
       currDay.setSeconds(0);
       if (taskStartDate <= start && taskDueDate >= currDay) {
@@ -114,13 +115,14 @@ const generateWeeklyArray = (tasks, startDate) => {
       } else {
         tasks_per_day[task.task_id].push(0);
       }
+      if (currDay.getDay() == 6) {
+        break;
+      }
     }
   }
   // return dates;
   return tasks_per_day;
 };
-
-
 
 const algorithm = (
   events,
@@ -133,6 +135,7 @@ const algorithm = (
   // console.log(typeof(start_date))
   const startDate = stringToDate(start_date);
   const task_time_per_day = generateWeeklyArray(tasks, startDate);
+
   for (let i = 0; i < 7; ++i) {
     const curr_day = new Date();
     curr_day.setDate(startDate.getDate() + i);
@@ -144,8 +147,8 @@ const algorithm = (
 
     tasks.sort((a, b) => {
       if (a.priority_level == b.priority_level) {
-        const a_due_date = (a.task_due_date);
-        const b_due_date = (b.task_due_date);
+        const a_due_date = a.task_due_date;
+        const b_due_date = b.task_due_date;
         if (a_due_date.toDateString() == b_due_date.toDateString()) {
           return (
             task_time_per_day[b.task_id][i] - task_time_per_day[a.task_id][i]
@@ -162,7 +165,7 @@ const algorithm = (
     const already_recommended = [];
     const already_scheduled = [];
     const new_events = [];
-    for(const task of tasks){
+    for (const task of tasks) {
       task.estimate_completion_time = task_time_per_day[task.task_id][i];
       let curr_task_recommendations = get_best_time_intervals(
         available_intervals,
@@ -202,7 +205,7 @@ const algorithm = (
       const best_time =
         best_available_times[reschedule_value % best_available_times.length];
       console.log(best_available_times.length);
-      if(best_available_times.length==0){
+      if (best_available_times.length == 0) {
         break;
       }
       new_events.push({
@@ -211,10 +214,17 @@ const algorithm = (
         time: `${best_time.start}:00 - ${best_time.end + 1}:00`,
       });
 
-      returnEvents.push([task.task_name, `${best_time.start}:00:00`, `${best_time.end + 1}:00:00`, task.user_id, task.task_id, curr_day, task.priority_level]);
+      returnEvents.push([
+        task.task_name,
+        `${best_time.start}:00:00`,
+        `${best_time.end + 1}:00:00`,
+        task.user_id,
+        task.task_id,
+        curr_day,
+        task.priority_level,
+      ]);
 
       // console.log(query);
-
 
       already_recommended.push({ start: best_time.start, end: best_time.end });
       daily_events.push({
@@ -222,7 +232,7 @@ const algorithm = (
         event_end_time: best_time.end,
       });
       already_scheduled.push(task.task_id);
-    };
+    }
 
     // const tasks_not_scheduled = tasks.filter(
     //   (task) => !already_scheduled.includes(task)
@@ -248,6 +258,10 @@ const algorithm = (
     console.log("Done");
     console.log(new_events);
     // return new_events;
+
+    if (curr_day.getDay() == 6) {
+      break;
+    }
   }
 
   console.log();

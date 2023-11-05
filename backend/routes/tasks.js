@@ -142,7 +142,7 @@ const insertEvents = (data) =>{
         console.log(tasks)
         // get all the events from the DB
         let events = await client.query(
-            `SELECT * FROM events WHERE user_id = ${user_id} AND event_date = '${selected_date}' ORDER BY event_start_time;`
+            `SELECT * FROM events WHERE user_id = ${user_id} AND event_date >= '${selected_date}' ORDER BY event_start_time;`
         );
         events = events.rows;
         console.log(events)
@@ -153,16 +153,16 @@ const insertEvents = (data) =>{
         circadian_rhythm = circadian_rhythm.rows[0]["circadian_rhythm"];
         
         const eventQuerys = algorithm(events, tasks, circadian_rhythm, 0, selected_date);
-        console.log(eventQuerys)
-        for( const query of eventQuerys){
-            const insertQuery = insertEvents(query)
-            console.log(query)
-            console.log(insertQuery)
-            let results = await client.query(insertQuery);
-        }
+        // console.log(eventQuerys)
+        // for( const query of eventQuerys){
+        //     const insertQuery = insertEvents(query)
+        //     console.log(query)
+        //     console.log(insertQuery)
+        //     let results = await client.query(insertQuery);
+        // }
         //get empty intervals
         // res.send(get_available_intervals(events));
-        res.json({success: true, message: eventQuerys});
+        res.json({success: true, message: events});
         res.send("success");
         //success
     } catch (err) {
