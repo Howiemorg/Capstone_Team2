@@ -72,8 +72,6 @@ const TaskScreen = ({ setSelected }) => {
         .toISOString()
         .substring(0, 10)} 01:00:00&selected_tasks=(${generateTasks})`
     );
-
-    console.log(response);
     if (response.data.success) {
       setSelected("Calendar");
     } else {
@@ -84,8 +82,6 @@ const TaskScreen = ({ setSelected }) => {
   useEffect(() => {
     getTasks();
   }, []);
-
-  console.log(generateTasks);
 
   return (
     <View style={styles.container}>
@@ -116,8 +112,6 @@ const TaskScreen = ({ setSelected }) => {
           date.setHours(item.task_due_date.substring(11, 13));
           date.setMinutes(item.task_due_date.substring(14, 16));
           date.setSeconds(item.task_due_date.substring(17, 19));
-
-          console.log(item.priority_level);
 
           if (dueThisWeek(date)) {
             return (

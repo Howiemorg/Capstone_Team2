@@ -2,20 +2,48 @@ import React, { useState } from "react";
 import { Text, StyleSheet, View, TouchableOpacity } from "react-native";
 
 const DateSelection = ({ date, onSetDate }) => {
+  // const numDaysInMonth = new Date(temp.y, temp.m + 1, 0).getDate()
   const today = new Date();
   const sunday = new Date(today.setDate(today.getDate() - today.getDay()));
+  if(sunday.getDate() > today.getDate()){
+    sunday.setMonth(today.getMonth() - 1);
+  }
   const monday = new Date();
+  monday.setMonth(sunday.getMonth());
   monday.setDate(sunday.getDate() + 1);
+  if(monday.getDate() < sunday.getDate()){
+    monday.setMonth(sunday.getMonth() + 1);
+  }
   const tuesday = new Date();
+  tuesday.setMonth(sunday.getMonth());
   tuesday.setDate(sunday.getDate() + 2);
+  if(tuesday.getDate() < sunday.getDate()){
+    tuesday.setMonth(sunday.getMonth() + 1);
+  }
   const wednesday = new Date();
+  wednesday.setMonth(sunday.getMonth());
   wednesday.setDate(sunday.getDate() + 3);
+  if(wednesday.getDate() < sunday.getDate()){
+    wednesday.setMonth(sunday.getMonth() + 1);
+  }
   const thursday = new Date();
+  thursday.setMonth(sunday.getMonth());
   thursday.setDate(sunday.getDate() + 4);
+  if(thursday.getDate() < sunday.getDate()){
+    thursday.setMonth(sunday.getMonth() + 1);
+  }
   const friday = new Date();
+  friday.setMonth(sunday.getMonth())
   friday.setDate(sunday.getDate() + 5);
+  if(friday.getDate() < sunday.getDate()){
+    friday.setMonth(sunday.getMonth() + 1);
+  }
   const saturday = new Date();
+  saturday.setMonth(sunday.getMonth());
   saturday.setDate(sunday.getDate() + 6);
+  if(saturday.getDate() < sunday.getDate()){
+    saturday.setMonth(sunday.getMonth() + 1);
+  }
 
   return (
     <View style={styles.container}>
