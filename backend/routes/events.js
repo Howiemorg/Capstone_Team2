@@ -58,4 +58,24 @@ router.get("/get-recommended-events", async (req, res) => {
     }
 });
 
+//add black event
+router.post("/add-black-event", async (req, res) => {
+    const user_id = req.query.user_id;
+    const event_name = req.query.event_name;
+    const event_start_time = req.query.event_start_time;
+    const event_end_time = req.query.event_end_time;
+    const event_date = req.query.event_date;
+    
+    try {
+        const result = await client.query(
+            `INSERT INTO Events (user_id, event_name, event_start_time, event_end_time, event_date)
+            VALUES (${user_id}, ${event_name}, ${event_start_time}, ${event_end_time}, ${event_date});`
+        );
+        res.json({success: true, message: "registered event succesfully"});
+    } catch (err) {
+        console.log(err.message);
+        res.send(err.message);
+    }
+});
+
 module.exports = router;
