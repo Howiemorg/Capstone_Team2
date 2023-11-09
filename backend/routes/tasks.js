@@ -83,6 +83,21 @@ router.get("/get-uncompleted-tasks", async (req, res) => {
     }
 });
 
+router.delete("/delete-task", async (req, res) => {
+    const task_id = req.query.task_id;
+    
+    try {
+        const result = await client.query(
+            `DELETE FROM events WHERE task_id = ${task_id};
+            DELETE FROM tasks WHERE task_id = ${task_id};`,
+        );
+        res.json({success: true, message: "Deleted task and events associated successfully"});
+    } catch (err) {
+        console.error(err.message);
+        res.send(err.message);
+    }
+});
+
 const insertEvents = (data) =>{
     // task_name, best_time_start, best_time_end, user_id, task_id, curr_day, priority_level
     // const query = {
