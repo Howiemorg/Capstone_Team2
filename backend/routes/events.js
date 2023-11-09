@@ -92,5 +92,30 @@ router.delete("/delete-set-event", async (req, res) => {
     }
 });
 
+router.put("/update-set-event", async (req, res) => {
+    const event_block_id = req.query.event_block_id;
+    const event_name = req.query.event_name;
+    const event_start_time = req.query.event_start_time;
+    const event_end_time = req.query.event_end_time;
+    const event_date = req.query.event_date;
+    
+    try {
+        const result = await client.query(
+            `UPDATE Events
+            SET
+              event_name = ${event_name},
+              event_start_time = ${event_start_time},
+              event_end_time = ${event_end_time},
+              event_date = ${event_date}
+            WHERE
+            event_block_id = ${event_block_id};`,
+        );
+        res.json({success: true, message: "Updated event successfully"});
+    } catch (err) {
+        console.error(err.message);
+        res.send(err.message);
+    }
+});
+
 
 module.exports = router;
