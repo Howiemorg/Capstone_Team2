@@ -58,8 +58,8 @@ router.get("/get-recommended-events", async (req, res) => {
     }
 });
 
-// add black event
-router.post("/add-black-event", async (req, res) => {
+// add set event
+router.post("/add-set-event", async (req, res) => {
     const user_id = req.query.user_id;
     const event_name = req.query.event_name;
     const event_start_time = req.query.event_start_time;
@@ -71,10 +71,24 @@ router.post("/add-black-event", async (req, res) => {
             `INSERT INTO Events (user_id, event_name, event_start_time, event_end_time, event_date)
             VALUES (${user_id}, ${event_name}, ${event_start_time}, ${event_end_time}, ${event_date});`,
         );
-        res.status(200).json({ success: true, message: "Registered event successfully" });
+        res.json({success: true, message: "Registered event successfully"});
     } catch (err) {
         console.error(err.message);
-        res.status(500).send("An error occurred while registering the event.");
+        res.send(err.message);
+    }
+});
+
+router.delete("/delete-set-event", async (req, res) => {
+    const event_block_id = req.query.event_block_id;
+    
+    try {
+        const result = await client.query(
+            `DELETE FROM events WHERE event_block_id = ${event_block_id};`,
+        );
+        res.json({success: true, message: "Deleted event successfully"});
+    } catch (err) {
+        console.error(err.message);
+        res.send(err.message);
     }
 });
 
