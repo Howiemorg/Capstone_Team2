@@ -98,6 +98,36 @@ router.delete("/delete-task", async (req, res) => {
     }
 });
 
+router.put("/update-task", async (req, res) => {
+    const task_id = req.query.task_id;
+    const task_name = req.query.task_name;
+    const task_start_date = req.query.task_start_date;
+    const task_due_date = req.query.task_due_date;
+    const estimate_completion_time =
+        req.query.estimate_completion_time;
+    const priority_level = req.query.priority_level;
+    const progress_percent = req.query.progress_percent;
+    
+    try {
+        const result = await client.query(
+            `UPDATE Tasks
+            SET
+              task_name = ${task_name},
+              task_start_date = ${task_start_date},
+              task_due_date = ${task_due_date},
+              progress_percent = ${progress_percent},
+              priority_level = ${priority_level},
+              estimate_completion_time = ${estimate_completion_time}
+            WHERE
+              task_id = ${task_id};`
+        );
+        res.json({success: true, message: "updated task succesfully"});
+    } catch (err) {
+        console.log(err.message);
+        res.send(err.message);
+    }
+});
+
 const insertEvents = (data) =>{
     // task_name, best_time_start, best_time_end, user_id, task_id, curr_day, priority_level
     // const query = {
