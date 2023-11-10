@@ -92,6 +92,7 @@ const CalendarScreen = () => {
                 <EventModal
                     onAddEvent={() => getEventBlocks()}
                     onHideModal={() => setModalVisable(false)}
+                    userID = {userID}
                 />
             </Modal>
             <DateSelection date={date} onSetDate={setDate} />

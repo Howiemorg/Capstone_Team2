@@ -5,12 +5,12 @@ import {
     StyleSheet,
     TouchableOpacity,
     Text,
+    Keyboard,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
-const EventDateInput = ({ onDateChange }) => {
+const EventDateInput = ({ onDateChange, onClick, show, setShow}) => {
     const [date, setDate] = useState(new Date());
-    const [show, setShow] = useState(false);
 
     const onChange = (event, selectedDate) => {
         const currentDate = selectedDate || date;
@@ -18,18 +18,18 @@ const EventDateInput = ({ onDateChange }) => {
         onDateChange(currentDate);
         setTimeout(() => {
             setShow(false);
-        }, 2000);
+        }, 1500);
     };
 
     const formatDate = (date) => {
-        return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+        return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
     };
 
     return (
         <View style={styles.centeredView}>
             <TouchableOpacity
                 style={styles.dateDisplay}
-                onPress={() => setShow(!show)}
+                onPress={onClick}
             >
                 <Text style={styles.dateText}>{formatDate(date)}</Text>
             </TouchableOpacity>
