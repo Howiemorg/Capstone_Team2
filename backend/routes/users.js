@@ -45,7 +45,7 @@ router.get("/login-validation", async (req, res) => {
         const result = await client.query(query);
 
         if (result.rows.length > 0) {
-            res.json({ success: true, message: "Login successful" });
+            res.json({ success: true, message: "Login Successful", userID: result.rows[0].user_id  });
         } else {
             res.json({ success: false, message: "Invalid username or password" });
         }
@@ -75,7 +75,7 @@ router.post("/register-user", async (req, res) => {
 
         const result = await client.query(query);
 
-        res.json({ success: true, message: "User registered successfully." });
+        res.json({ success: true, message: "User registered successfully.", userID: result.rows[0].user_id });
     } catch (err) {
         console.log(err.message);
         res.status(500).json({ success: false, message: "Internal server error" });

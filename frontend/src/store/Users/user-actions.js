@@ -14,7 +14,7 @@ export const login = (username, password) => {
         return;
       }
 
-      dispatch(userActions.userSuccess(response.data));
+      dispatch(userActions.userSuccess(response.data.userID));
     } catch (err) {
       dispatch(userActions.userFail(err));
     }

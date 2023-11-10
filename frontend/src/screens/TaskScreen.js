@@ -23,7 +23,7 @@ const TaskScreen = ({ setSelected }) => {
   const { userID } = useSelector((state) => state.user);
 
   const getTasks = async () => {
-    const response = await vercel.get(`/get-uncompleted-tasks?user_id=${1}`);
+    const response = await vercel.get(`/get-uncompleted-tasks?user_id=${userID}`);
 
     if (response.data) {
       setTasks(response.data);
