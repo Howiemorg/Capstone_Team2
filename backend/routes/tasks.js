@@ -49,9 +49,10 @@ router.post("/add-tasks", async (req, res) => {
     const task_name = req.query.task_name;
     const task_start_date = req.query.task_start_date;
     const task_due_date = req.query.task_due_date;
+    const priority_level = req.query.priority_level;
     const estimate_completion_time =
         req.query.estimate_completion_time;
-    const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
+    // const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
     
     try {
         const result = await client.query(
