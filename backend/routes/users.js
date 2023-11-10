@@ -69,7 +69,7 @@ router.post("/register-user", async (req, res) => {
 
     try {
         const query = {
-            text: "INSERT INTO \"users\" (user_first_name, user_last_name, user_email, user_password) VALUES ($1, $2, $3, $4)",
+            text: "INSERT INTO \"users\" (user_first_name, user_last_name, user_email, user_password, circadian_rhythm) VALUES ($1, $2, $3, $4, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,8,10,11,10,9,7,6,5,4.5,4.5,4.5,5,5.5,7,8.5,10,11,12,13,13.5,14,14,14,13,11,9,7,5,3,1})",
             values: [firstname, lastname, email, password],
         };
 
