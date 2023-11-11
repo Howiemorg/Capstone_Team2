@@ -15,34 +15,6 @@ const conString = {
 var client = new pg.Client(conString);
 client.connect();
 
-function calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date){
-    // Calculates the days left and always rounds up to get whole day
-    const due_date = new Date(task_due_date.substring(0, 10));
-    due_date.setDate(due_date.getDate() + 1);
-    const start_date = new Date(task_start_date.substring(0, 10));
-    start_date.setDate(start_date.getDate() + 1);
-    const msPerDay = 24 * 60 * 60 * 1000; 
-    let daysLeft = Math.ceil((due_date.getTime() - start_date.getTime()) / msPerDay);
-    // Priority Levels follows the guidelines we decided
-    if(estimate_completion_time/daysLeft < 30 && daysLeft>=7){
-        //BLUE
-        return (1)
-    }
-    else if(estimate_completion_time/daysLeft < 60 && daysLeft>=5){
-        //GREEN
-        return (2)
-    }
-    else if(estimate_completion_time/daysLeft < 120 && daysLeft>=3){
-        //ORANGE
-        return (3)
-    }
-    else if(estimate_completion_time/daysLeft > 120 || daysLeft<=2){
-        //RED
-        return (4)
-    }
-    return 0;
-}
-
 //add tasks for now
 router.post("/add-tasks", async (req, res) => {
     const user_id = req.query.user_id;
@@ -129,24 +101,7 @@ router.put("/update-task", async (req, res) => {
     }
 });
 
-const insertEvents = (data) =>{
-    // task_name, best_time_start, best_time_end, user_id, task_id, curr_day, priority_level
-    // const query = {
-    //   text: "INSERT INTO Events (event_name, event_start_time, event_end_time, user_id, task_id, work_done_pct, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
-    //   values: [
-    //     task_name,
-    //     best_time_start,
-    //     best_time_end,
-    //     user_id,
-    //     task_id,
-    //     0,
-    //     curr_day,
-    //     priority_level,
-    //     0,
-    //     0,
-    //   ],
-    // };
-    
+const insertEvents = (data) =>{    
     const query = {
         text: "INSERT INTO Events (event_name, event_start_time, event_end_time, user_id, task_id, work_done_pct, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
         values: [
@@ -166,17 +121,8 @@ const insertEvents = (data) =>{
     return query;
     
   }
-  router.post("/get-recommendations", async (req, res) => {
-    const user_id = req.query.user_id;
-    const selected_date = req.query.selected_date;
-    let selected_tasks = req.query.selected_tasks;
-    // let selected_tasks = "[0,1,2,3,4]";
-    // selected_tasks = JSON.parse(selected_tasks);
 
-    // const user_id = 1;
-    // const selected_date = "2023-10-31 00:00:00"
-    // // const selected_date2 = '2023-10-31'
-    // const selected_tasks = '(8,9)';
+  const runAlgo = async(user_id, selected_date, selected_tasks) => {
     try {
         // get all the tasks from DB
         const query = {
@@ -200,14 +146,12 @@ const insertEvents = (data) =>{
         
         const eventQuerys = algorithm(events, tasks, circadian_rhythm, 0, selected_date);
         // console.log(eventQuerys)
-        // for( const query of eventQuerys){
-        //     const insertQuery = insertEvents(query)
-        //     console.log(query)
-        //     console.log(insertQuery)
-        //     let results = await client.query(insertQuery);
-        // }
-        //get empty intervals
-        // res.send(get_available_intervals(events));
+        for( const query of eventQuerys){
+            const insertQuery = insertEvents(query)
+            console.log(query)
+            console.log(insertQuery)
+            let results = await client.query(insertQuery);
+        }
         res.json({success: true, message: events});
         res.send("success");
         //success
@@ -215,6 +159,14 @@ const insertEvents = (data) =>{
         console.log(err.message);
         // res.send(err.message);
     }
+  }
+
+  router.post("/get-recommendations", async (req, res) => {
+    const user_id = req.query.user_id;
+    const selected_date = req.query.selected_date;
+    const selected_tasks = req.query.selected_tasks;
+
+    runAlgo(user_id, selected_date, selected_tasks)
 })
 // getrec()
-module.exports = router
+module.exports = [router, runAlgo]

@@ -23,7 +23,9 @@ const TaskScreen = ({ setSelected }) => {
   const { userID } = useSelector((state) => state.user);
 
   const getTasks = async () => {
-    const response = await vercel.get(`/get-uncompleted-tasks?user_id=${userID}`);
+    const response = await vercel.get(
+      `/get-uncompleted-tasks?user_id=${userID}`
+    );
 
     if (response.data) {
       setTasks(response.data);
@@ -68,9 +70,7 @@ const TaskScreen = ({ setSelected }) => {
   const generateSchedule = async () => {
     const today = new Date();
     const response = await vercel.post(
-      `/get-recommendations?user_id=1&selected_date=${today
-        .toISOString()
-        .substring(0, 10)} 01:00:00&selected_tasks=(${generateTasks})`
+      `/get-recommendations?user_id=${userID}&selected_date=${today.getFullYear()}-${today.getMonth()}-${today.getDate()} 01:00:00&selected_tasks=(${generateTasks})`
     );
     if (response.data.success) {
       setSelected("Calendar");
