@@ -2,7 +2,7 @@ function decreaseTimeByOneHour(time) {
   // Split the time string into hours and minutes
   const [hours, minutes, seconds] = time.split(":").map(Number);
 
-  // Calculate the new time
+  // Calculate the new times
   let newHours = hours - 1;
 
   // Check for underflow
