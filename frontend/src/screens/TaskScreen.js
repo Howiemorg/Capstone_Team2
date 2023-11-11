@@ -69,11 +69,11 @@ const TaskScreen = ({ setSelected }) => {
 
   const generateSchedule = async () => {
     const today = new Date();
-    const response = await vercel.post(
-      `/get-recommendations?user_id=${userID}&selected_date=${today.getFullYear()}-${today.getMonth()}-${today.getDate()} 01:00:00&selected_tasks=(${generateTasks})`
-    );
+    const response = await vercel.post(`/get-recommendations?user_id=1&selected_date=${today.toISOString().substring(0,10)}&selected_tasks=(${generateTasks})`)
+
+    console.log(response)
     if (response.data.success) {
-      setSelected("Calendar");
+    setSelected("Calendar");
     } else {
       setError(response.data.message);
     }
@@ -82,6 +82,8 @@ const TaskScreen = ({ setSelected }) => {
   useEffect(() => {
     getTasks();
   }, []);
+
+  console.log(generateTasks);
 
   return (
     <View style={styles.container}>
