@@ -144,7 +144,7 @@ router.put("/event-survey-results", async (req, res) => {
     if (parseInt(productivity_score) === 1) {
       for (
         ;
-        circadian_start_indx <= circadian_end_indx;
+        circadian_start_indx < circadian_end_indx;
         circadian_start_indx++
       ) {
         const curr_score = await client.query(
@@ -165,7 +165,7 @@ router.put("/event-survey-results", async (req, res) => {
     } else if (parseInt(productivity_score) === 3) {
       for (
         ;
-        circadian_start_indx <= circadian_end_indx;
+        circadian_start_indx < circadian_end_indx;
         circadian_start_indx++
       ) {
         const curr_score = await client.query(
