@@ -61,6 +61,35 @@ router.post("/register-user", async (req, res) => {
     const lastname = req.query.user_last_name;
     const email = req.query.user_email;
     const password = req.query.user_password;
+    const wake_time = req.query.wake_time;
+    const sleep_time = req.query.sleep_time;
+    let circadian_rhythm =  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,8,10,11,10,9,7,6,5,4.5,4.5,4.5,5,5.5,7,8.5,10,11,12,13,13.5,14,14,14,13,11,9,7,5,3,1]
+    
+    const hourPart = wake_time.replace(/'/g, '').split(':')[0];
+    const minutesPart = wake_time.replace(/'/g, '').split(':')[1];
+
+    // Convert to a number if needed
+    const hour = parseInt(hourPart, 10);
+    const minutes = parseInt(minutesPart, 10);
+
+    // find the slice to put the beginning of the interval
+    let beginningInterval = hour*2;
+    if (minutes>=30){
+        beginningInterval = beginningInterval+1
+    }
+
+    function shift_array(arr, shiftAmount) {
+        const length = arr.length;
+        const shift = shiftAmount % length;
+        const shiftedArray = [...arr.slice(-shift), ...arr.slice(0, -shift)];
+    
+        return shiftedArray;
+    }
+    
+    // Find the interval position from 9:00 am which is our base circadian_rhythm then shift array depending on value
+    beginningInterval = beginningInterval - 18;
+    let shifted_circadian_rhythm = []
+    shifted_circadian_rhythm = shift_array(circadian_rhythm, beginningInterval);
     
     if (!email || !password || !firstname || !lastname) {
         res.json({ success: false, message: "All fields are required." });
@@ -69,16 +98,15 @@ router.post("/register-user", async (req, res) => {
 
     try {
         const query = {
-            text: "INSERT INTO \"users\" (user_first_name, user_last_name, user_email, user_password, circadian_rhythm) VALUES ($1, $2, $3, $4, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,8,10,11,10,9,7,6,5,4.5,4.5,4.5,5,5.5,7,8.5,10,11,12,13,13.5,14,14,14,13,11,9,7,5,3,1})",
-            values: [firstname, lastname, email, password],
-        };
-
+            text: 'INSERT INTO users (user_first_name, user_last_name, user_email, user_password, circadian_rhythm, wake_time, sleep_time) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING user_id',
+            values: [firstname, lastname, email, password, shifted_circadian_rhythm, wake_time, sleep_time],
+          };
         const result = await client.query(query);
 
         res.json({ success: true, message: "User registered successfully.", userID: result.rows[0].user_id });
     } catch (err) {
         console.log(err.message);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 
