@@ -55,6 +55,20 @@ router.get("/get-uncompleted-tasks", async (req, res) => {
   }
 });
 
+// get event associated with a single event_block_id
+router.get("/get-single-task", async (req, res) => {
+    const task_id = req.query.task_id;
+    try {
+      const result = await client.query(
+        `SELECT * FROM tasks WHERE task_id = ${task_id};`
+      );
+      res.send(result.rows);
+    } catch (err) {
+      console.log(err.message);
+      res.send(err.message);
+    }
+  });
+
 router.delete("/delete-task", async (req, res) => {
   const task_id = req.query.task_id;
 
