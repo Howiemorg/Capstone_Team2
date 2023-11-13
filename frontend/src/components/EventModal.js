@@ -152,11 +152,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.3)", // Semi-transparent background
+        backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
     },
     modalView: {
         margin: 20,
-        backgroundColor: "black",
+        backgroundColor: "white",
         borderRadius: 20,
         padding: 35,
         alignItems: "center",
@@ -170,8 +170,8 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     closeButton: {
-        backgroundColor: "white",
-        borderColor: "white",
+        backgroundColor: "black",
+        borderColor: "black",
         borderWidth: 4,
         borderRadius: 20,
         padding: 10,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
         marginTop: 15,
     },
     textStyle: {
-        color: "black",
+        color: "white",
         fontWeight: "bold",
         textAlign: "center",
     },
@@ -191,12 +191,12 @@ const styles = StyleSheet.create({
         paddingTop: 15,
         paddingBottom: 15,
         paddingHorizontal: 15,
-        backgroundColor: "black",
+        backgroundColor: "white",
         width: 250,
     },
     label: {
         fontSize: 16,
-        color: "white",
+        color: "black",
         paddingBottom: 5,
     },
     input: {
