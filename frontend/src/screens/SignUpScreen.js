@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { signup } from "../store/Users/user-actions";
 import { userActions } from "../store/Users/user-slice";
+import TimePickerInput from "../components/TimePickerInput";
 import {
     View,
     Text,
@@ -9,9 +10,10 @@ import {
     TextInput,
     ScrollView,
     KeyboardAvoidingView,
+    Keyboard,
 } from "react-native";
 import styles from "./styles";
-import axios from 'axios'
+import axios from "axios";
 
 const SignUpScreen = ({ navigation }) => {
     const [error, setError] = useState("");
@@ -20,11 +22,27 @@ const SignUpScreen = ({ navigation }) => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [password2, setPassword2] = useState("");
+    const [wakeTime, setWakeTime] = useState(new Date());
+    const [wakeTimeShow, setWakeTimeShow] = useState(false);
+    const [sleepTime, setSleepTime] = useState(new Date());
+    const [sleepTimeShow, setSleepTimeShow] = useState(false);
 
     const dispatch = useDispatch();
 
-    const { error : userError, loading, userID } = useSelector((state) => state.user);
+    const {
+        error: userError,
+        loading,
+        userID,
+    } = useSelector((state) => state.user);
+    const formatTime = (date) => {
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? "PM" : "AM";
+        const formattedHours = hours;
+        const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
 
+        return `${formattedHours}:${formattedMinutes}`;
+    };
     const SignUp = async () => {
         // check if all the fields are filled & if passwords match
         if (!firstname || !lastname || !username || !password || !password2) {
@@ -34,18 +52,50 @@ const SignUpScreen = ({ navigation }) => {
             setError("*Passwords do not match");
             return;
         }
-        
-        dispatch(signup({firstname, lastname, username, password}))
-        
+        const newWakeTime = formatTime(wakeTime);
+        const newSleepTime = formatTime(sleepTime);
+        console.log({
+            firstname,
+            lastname,
+            username,
+            password,
+            newWakeTime,
+            newSleepTime,
+        });
+        dispatch(
+            signup({
+                firstname,
+                lastname,
+                username,
+                password,
+                newWakeTime,
+                newSleepTime,
+            })
+        );
+        if (!userError) {
+            navigation.navigate("Login");
+        }
     };
 
     useEffect(() => {
         if (userID) {
-          navigation.navigate("Home");
-          dispatch(userActions.userReset());
-        } 
+            navigation.navigate("Home");
+            dispatch(userActions.userReset());
+        }
         setError("");
-      }, [userID, username, password, dispatch]);
+    }, [userID, username, password, dispatch]);
+
+    const wakeClick = () => {
+        setWakeTimeShow(!wakeTimeShow);
+        setSleepTimeShow(false);
+        Keyboard.dismiss();
+    };
+
+    const sleepClick = () => {
+        setSleepTimeShow(!sleepTimeShow);
+        setWakeTimeShow(false);
+        Keyboard.dismiss();
+    };
 
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior='padding' enabled>
@@ -98,11 +148,32 @@ const SignUpScreen = ({ navigation }) => {
                         value={password2}
                         onChangeText={(newValue) => setPassword2(newValue)}
                     />
+
+                    <Text style={styles.label}>Wake Time</Text>
+                    <View style={styles.centeredViewPadding}>
+                        <TimePickerInput
+                            setEventTime={setWakeTime}
+                            show={wakeTimeShow}
+                            setShow={setWakeTimeShow}
+                            onClick={wakeClick}
+                        />
+                    </View>
+
+                    <Text style={styles.label}>Sleep Time</Text>
+                    <View style={styles.centeredViewPadding}>
+                        <TimePickerInput
+                            setEventTime={setSleepTime}
+                            show={sleepTimeShow}
+                            setShow={setSleepTimeShow}
+                            onClick={sleepClick}
+                        />
+                    </View>
+
                     <Text
                         style={{
                             marginLeft: "17.5%",
                             fontSize: 12,
-                            marginTop: "2%",
+                            marginTop: "4%",
                         }}
                     >
                         <Text>Already have an account? </Text>

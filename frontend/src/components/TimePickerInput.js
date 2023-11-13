@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { View, TouchableOpacity, Text, StyleSheet, TouchableWithoutFeedback, Modal, Keyboard } from "react-native";
+import {
+    View,
+    TouchableOpacity,
+    Text,
+    StyleSheet,
+    TouchableWithoutFeedback,
+    Modal,
+    Keyboard,
+} from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 const TimePickerInput = ({ setEventTime, onClick, show, setShow }) => {
@@ -32,13 +40,9 @@ const TimePickerInput = ({ setEventTime, onClick, show, setShow }) => {
         return `${formattedHours}:${formattedMinutes} ${ampm}`;
     };
 
-
     return (
         <View style={styles.container}>
-            <TouchableOpacity
-                style={styles.timeDisplay}
-                onPress={onClick}
-            >
+            <TouchableOpacity style={styles.timeDisplay} onPress={onClick}>
                 <Text style={styles.timeText}>{formatTime(time)}</Text>
             </TouchableOpacity>
 
@@ -58,9 +62,6 @@ const TimePickerInput = ({ setEventTime, onClick, show, setShow }) => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        // Style as needed for the component's container
-    },
     timeDisplay: {
         // Style the time display box
         paddingHorizontal: 10,
@@ -77,9 +78,6 @@ const styles = StyleSheet.create({
         // Style the time text
         color: "white",
         fontSize: 16,
-    },
-    timePicker: {
-        // If you need to style the picker itself, this would apply only to iOS
     },
 });
 

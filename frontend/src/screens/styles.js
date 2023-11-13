@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         backgroundColor: "black",
         color: "white",
+        marginBottom: "20%",
     },
     input: {
         padding: 2.5,
@@ -36,6 +37,14 @@ const styles = StyleSheet.create({
         width: "65%",
         marginTop: "2%",
         alignSelf: "center",
+    },
+    centeredViewPadding: {
+        flex: 1,
+        justifyContent: "center",
+        alignSelf: "center",
+        paddingTop: 10,
+        paddingHorizontal: 15,
+        width: 250,
     },
 });
 
