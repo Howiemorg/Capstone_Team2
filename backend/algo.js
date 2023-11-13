@@ -41,10 +41,10 @@ function get_available_intervals(events) {
       begin = parseInt(event.event_end_time.split(":")[0]);
     }
   });
-  if (begin != 23) {
+  if (begin != 47) {
     available_intervals.push({
       start: begin,
-      end: 23,
+      end: 47,
     });
   }
   return available_intervals;
@@ -55,7 +55,9 @@ function get_best_time_intervals(
   curr_task,
   circadian_rhythm
 ) {
-  let task_time = curr_task.estimate_completion_time / 30 + curr_task.estimate_completion_time % 30 > 0;
+  let task_time =
+    Math.floor(curr_task.estimate_completion_time / 30) +
+    (curr_task.estimate_completion_time % 30 > 0);
   let best_intervals = [];
 
   available_intervals.forEach((interval) => {
@@ -97,8 +99,11 @@ const generateWeeklyArray = (tasks, startDate) => {
     console.log(taskStartDate, taskDueDate);
     const avg_time =
       task.estimate_completion_time /
-      ((taskDueDate.getTime() - taskStartDate.getTime()) /
-        (24 * 60 * 60 * 1000) + 1).toFixed(0);
+      (
+        (taskDueDate.getTime() - taskStartDate.getTime()) /
+          (24 * 60 * 60 * 1000) +
+        1
+      ).toFixed(0);
 
     for (let i = 0; i < 7; ++i) {
       const currDay = new Date();
@@ -202,22 +207,32 @@ const algorithm = (
           });
         }
       }
+
       const best_time =
         best_available_times[reschedule_value % best_available_times.length];
       console.log(best_available_times.length);
       if (best_available_times.length == 0) {
         break;
       }
+
       new_events.push({
         name: task.task_name,
         score: best_time.score,
-        time: `${best_time.start}:00 - ${best_time.end + 1}:00`,
+        time: `${Math.floor(best_time.start / 2)}:${
+          best_time.start % 2 ? "30" : "00"
+        } - ${Math.floor((best_time.end + 1) / 2)}:${
+          (best_time.end + 1) % 2 ? "30" : "00"
+        }`,
       });
 
       returnEvents.push([
         task.task_name,
-        `${best_time.start}:00:00`,
-        `${best_time.end + 1}:00:00`,
+        `${Math.floor(best_time.start / 2)}:${
+          best_time.start % 2 ? "30" : "00"
+        }:00`,
+        `${Math.floor((best_time.end + 1) / 2)}:${
+          (best_time.end + 1) % 2 ? "30" : "00"
+        }:00`,
         task.user_id,
         task.task_id,
         curr_day,

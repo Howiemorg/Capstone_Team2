@@ -1,89 +1,90 @@
-const algorithm = require('../algo');
-const dotenv = require('dotenv').config();
-const express = require('express')
-const pg = require('pg');
-const router = express.Router()
+const algorithm = require("../algo");
+const dotenv = require("dotenv").config();
+const express = require("express");
+const pg = require("pg");
+const router = express.Router();
 
 const conString = {
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-    ssl: process.env.DB_SSL === 'true',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  ssl: process.env.DB_SSL === "true",
 };
 var client = new pg.Client(conString);
 client.connect();
 
 //add tasks for now
 router.post("/add-tasks", async (req, res) => {
-    const user_id = req.query.user_id;
-    const task_name = req.query.task_name;
-    const task_start_date = req.query.task_start_date;
-    const task_due_date = req.query.task_due_date;
-    const priority_level = req.query.priority_level;
-    const estimate_completion_time =
-        req.query.estimate_completion_time;
-    // const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
-    
-    try {
-        const result = await client.query(
-            `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
+  const user_id = req.query.user_id;
+  const task_name = req.query.task_name;
+  const task_start_date = req.query.task_start_date;
+  const task_due_date = req.query.task_due_date;
+  const priority_level = req.query.priority_level;
+  const estimate_completion_time = req.query.estimate_completion_time;
+  // const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
+
+  try {
+    const result = await client.query(
+      `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
             VALUES (${user_id}, ${task_name}, ${task_start_date}, ${task_due_date}, 0, ${priority_level}, ${estimate_completion_time});`
-        );
-        res.json({success: true, message: "registered task succesfully"});
-    } catch (err) {
-        console.log(err.message);
-        res.send(err.message);
-    }
+    );
+    res.json({ success: true, message: "registered task succesfully" });
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
 });
 
 // get all uncompleted events for a user
 router.get("/get-uncompleted-tasks", async (req, res) => {
-    const user_id = req.query.user_id;
+  const user_id = req.query.user_id;
 
-    try {
-        const query = {
-            text: "SELECT * FROM tasks WHERE user_id = $1 AND completion_date IS NULL ORDER BY task_due_date",
-            values: [user_id],
-        };
+  try {
+    const query = {
+      text: "SELECT * FROM tasks WHERE user_id = $1 AND completion_date IS NULL ORDER BY task_due_date",
+      values: [user_id],
+    };
 
-        const result = await client.query(query);
-        res.send(result.rows);
-    } catch (err) {
-        console.log(err.message);
-        res.send(err.message);
-    }
+    const result = await client.query(query);
+    res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
 });
 
 router.delete("/delete-task", async (req, res) => {
-    const task_id = req.query.task_id;
-    
-    try {
-        const result = await client.query(
-            `DELETE FROM events WHERE task_id = ${task_id};
-            DELETE FROM tasks WHERE task_id = ${task_id};`,
-        );
-        res.json({success: true, message: "Deleted task and events associated successfully"});
-    } catch (err) {
-        console.error(err.message);
-        res.send(err.message);
-    }
+  const task_id = req.query.task_id;
+
+  try {
+    const result = await client.query(
+      `DELETE FROM events WHERE task_id = ${task_id};
+            DELETE FROM tasks WHERE task_id = ${task_id};`
+    );
+    res.json({
+      success: true,
+      message: "Deleted task and events associated successfully",
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.send(err.message);
+  }
 });
 
 router.put("/update-task", async (req, res) => {
-    const task_id = req.query.task_id;
-    const task_name = req.query.task_name;
-    const task_start_date = req.query.task_start_date;
-    const task_due_date = req.query.task_due_date;
-    const estimate_completion_time =
-        req.query.estimate_completion_time;
-    const priority_level = req.query.priority_level;
-    const progress_percent = req.query.progress_percent;
-    
-    try {
-        const result = await client.query(
-            `UPDATE Tasks
+  const task_id = req.query.task_id;
+  const task_name = req.query.task_name;
+  const task_start_date = req.query.task_start_date;
+  const task_due_date = req.query.task_due_date;
+  const estimate_completion_time = req.query.estimate_completion_time;
+  const priority_level = req.query.priority_level;
+  const progress_percent = req.query.progress_percent;
+
+  try {
+    const result = await client.query(
+      `UPDATE Tasks
             SET
               task_name = ${task_name},
               task_start_date = ${task_start_date},
@@ -93,80 +94,86 @@ router.put("/update-task", async (req, res) => {
               estimate_completion_time = ${estimate_completion_time}
             WHERE
               task_id = ${task_id};`
-        );
-        res.json({success: true, message: "updated task succesfully"});
-    } catch (err) {
-        console.log(err.message);
-        res.send(err.message);
-    }
+    );
+    res.json({ success: true, message: "updated task succesfully" });
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
 });
 
-const insertEvents = (data) =>{    
+const insertEvents = (data) => {
+  const query = {
+    text: "INSERT INTO Events (event_name, event_start_time, event_end_time, user_id, task_id, work_done_pct, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+    values: [
+      data[0],
+      data[1],
+      data[2],
+      data[3],
+      data[4],
+      0,
+      data[5],
+      data[6],
+      0,
+      0,
+    ],
+  };
+
+  return query;
+};
+
+const runAlgo = async (user_id, selected_date, selected_tasks) => {
+  // get all the tasks from DB
+  try {
     const query = {
-        text: "INSERT INTO Events (event_name, event_start_time, event_end_time, user_id, task_id, work_done_pct, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
-        values: [
-            data[0],
-            data[1],
-            data[2],
-            data[3],
-            data[4],
-          0,
-          data[5],
-          data[6],
-          0,
-          0,
-        ],
-      };
+      text: `SELECT * FROM tasks WHERE user_id = ${user_id} AND completion_date IS NULL AND task_id IN ${selected_tasks};`,
+    };
+    let tasks = await client.query(query);
+    tasks = tasks.rows;
+    console.log(tasks);
+    // get all the events from the DB
+    let events = await client.query(
+      `SELECT * FROM events WHERE user_id = ${user_id} AND event_date >= '${selected_date}' ORDER BY event_start_time;`
+    );
+    events = events.rows;
+    console.log(events);
+    //get the circadian rhythm array
+    let circadian_rhythm = await client.query(
+      `SELECT circadian_rhythm from users WHERE user_id = ${user_id};`
+    );
+    circadian_rhythm = circadian_rhythm.rows[0]["circadian_rhythm"];
 
-    return query;
-    
+    const eventQuerys = algorithm(
+      events,
+      tasks,
+      circadian_rhythm,
+      0,
+      selected_date
+    );
+    // console.log(eventQuerys)
+    // for (const query of eventQuerys) {
+    //   const insertQuery = insertEvents(query);
+    //   console.log(query);
+    //   console.log(insertQuery);
+    //   let results = await client.query(insertQuery);
+    // }
+    return eventQuerys;
+  } catch (err) {
+    return err;
   }
+};
 
-  const runAlgo = async(user_id, selected_date, selected_tasks) => {
-    try {
-        // get all the tasks from DB
-        const query = {
-            text: `SELECT * FROM tasks WHERE user_id = $1 AND completion_date IS NULL AND task_id IN ${selected_tasks};`,
-            values: [user_id],
-        };
-        let tasks = await client.query(query);
-        tasks = tasks.rows;
-        console.log(tasks)
-        // get all the events from the DB
-        let events = await client.query(
-            `SELECT * FROM events WHERE user_id = ${user_id} AND event_date >= '${selected_date}' ORDER BY event_start_time;`
-        );
-        events = events.rows;
-        console.log(events)
-        //get the circadian rhythm array
-        let circadian_rhythm = await client.query(
-            `SELECT circadian_rhythm from users WHERE user_id = ${user_id};`
-        );
-        circadian_rhythm = circadian_rhythm.rows[0]["circadian_rhythm"];
-        
-        const eventQuerys = algorithm(events, tasks, circadian_rhythm, 0, selected_date);
-        // console.log(eventQuerys)
-        for( const query of eventQuerys){
-            const insertQuery = insertEvents(query)
-            console.log(query)
-            console.log(insertQuery)
-            let results = await client.query(insertQuery);
-        }
-        res.json({success: true, message: events});
-        res.send("success");
-        //success
-    } catch (err) {
-        console.log(err.message);
-        // res.send(err.message);
-    }
+router.post("/get-recommendations", async (req, res) => {
+  const user_id = req.query.user_id;
+  const selected_date = req.query.selected_date;
+  const selected_tasks = req.query.selected_tasks;
+  try {
+    const message = await runAlgo(user_id, selected_date, selected_tasks);
+
+    res.json({ success: true, message: message });
+  } catch (err) {
+    res.json({ success: false, message: err });
   }
-
-  router.post("/get-recommendations", async (req, res) => {
-    const user_id = req.query.user_id;
-    const selected_date = req.query.selected_date;
-    const selected_tasks = req.query.selected_tasks;
-
-    runAlgo(user_id, selected_date, selected_tasks)
-})
+});
 // getrec()
-module.exports = [router, runAlgo]
+module.exports = [router, runAlgo];
