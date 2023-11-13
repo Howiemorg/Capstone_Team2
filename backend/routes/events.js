@@ -32,17 +32,17 @@ router.get("/get-events", async (req, res) => {
 
 // get event associated with a single event_block_id
 router.get("/get-single-event", async (req, res) => {
-    const event_block_id = req.query.event_block_id;
-    try {
-      const result = await client.query(
-        `SELECT * FROM events WHERE event_block_id = ${event_block_id};`
-      );
-      res.send(result.rows);
-    } catch (err) {
-      console.log(err.message);
-      res.send(err.message);
-    }
-  });
+  const event_block_id = req.query.event_block_id;
+  try {
+    const result = await client.query(
+      `SELECT * FROM events WHERE event_block_id = ${event_block_id};`
+    );
+    res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+});
 
 // get all the non-reccomended events associated with userID and event date
 router.get("/get-set-events", async (req, res) => {
@@ -132,6 +132,46 @@ router.put("/update-set-event", async (req, res) => {
   }
 });
 
+router.delete("/cancel-recommended-event", async (req, res) => {
+  const event_block_id = req.query.event_block_id;
+  const task_id = req.query.task_id;
+  const selected_date = req.query.selected_date;
+  const user_id = req.query.user_id;
+
+  const today = new Date(selected_date);
+
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+
+  try {
+    const deleteResult = await client.query(
+      `DELETE FROM Events
+          WHERE
+          (task_id = ${task_id} AND event_date >= '${today
+        .toISOString()
+        .substring(0, 10)}'::date) OR event_block_id=${event_block_id};`
+    );
+
+    const taskUpdateResult = await client.query(`
+        UPDATE tasks 
+        SET task_start_date='${tomorrow
+          .toISOString()
+          .substring(0, 10)} 00:00:00'
+        WHERE task_id=${task_id}`);
+
+    const message = await runAlgo(
+      user_id,
+      `${tomorrow.toISOString().substring(0, 10)} 00:00:00`,
+      `(${task_id})`
+    );
+
+    res.json({ success: true, message: message });
+  } catch (err) {
+    console.error(err.message);
+    res.json({ error: err.message });
+  }
+});
+
 router.put("/event-survey-results", async (req, res) => {
   const time_remaining = req.query.time_remaining;
   const event_block_id = req.query.event_block_id;
@@ -175,11 +215,10 @@ router.put("/event-survey-results", async (req, res) => {
         } else {
           const taskUpdateResult = await client.query(`
           UPDATE users 
-          SET circadian_rhythm[${circadian_start_indx + 1}]=${(curr_score - 1.6).toFixed(1)}
+          SET circadian_rhythm[${circadian_start_indx + 1}]=${(
+            curr_score - 1.6
+          ).toFixed(1)}
           WHERE user_id=${user_id};`);
-
-          // res.json({ message: taskUpdateResult });
-          // return;
         }
       }
     } else if (parseInt(productivity_score) === 3) {
@@ -202,7 +241,9 @@ router.put("/event-survey-results", async (req, res) => {
         } else {
           const taskUpdateResult = await client.query(`
           UPDATE users 
-          SET circadian_rhythm[${circadian_start_indx + 1}]=${(curr_score + 1.6).toFixed(1)}
+          SET circadian_rhythm[${circadian_start_indx + 1}]=${(
+            curr_score + 1.6
+          ).toFixed(1)}
           WHERE user_id=${user_id};`);
         }
       }
@@ -253,8 +294,8 @@ router.put("/event-survey-results", async (req, res) => {
 
     let task_ids = "(" + tasks.rows[0].task_id;
 
-    for(let i = 1; i < tasks.rowCount; ++i){
-      task_ids += "," + tasks.rows[i].task_id
+    for (let i = 1; i < tasks.rowCount; ++i) {
+      task_ids += "," + tasks.rows[i].task_id;
     }
 
     task_ids += ")";
