@@ -30,6 +30,20 @@ router.get("/get-events", async (req, res) => {
   }
 });
 
+// get event associated with a single event_block_id
+router.get("/get-single-event", async (req, res) => {
+    const event_block_id = req.query.event_block_id;
+    try {
+      const result = await client.query(
+        `SELECT * FROM events WHERE event_block_id = ${event_block_id};`
+      );
+      res.send(result.rows);
+    } catch (err) {
+      console.log(err.message);
+      res.send(err.message);
+    }
+  });
+
 // get all the non-reccomended events associated with userID and event date
 router.get("/get-set-events", async (req, res) => {
   const user_id = req.query.user_id;
