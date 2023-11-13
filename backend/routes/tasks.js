@@ -130,7 +130,6 @@ const runAlgo = async (user_id, selected_date, selected_tasks) => {
     };
     let tasks = await client.query(query);
     tasks = tasks.rows;
-    console.log(tasks);
     // get all the events from the DB
     let events = await client.query(
       `SELECT * FROM events WHERE user_id = ${user_id} AND event_date >= '${selected_date}' ORDER BY event_start_time;`
@@ -151,12 +150,12 @@ const runAlgo = async (user_id, selected_date, selected_tasks) => {
       selected_date
     );
     // console.log(eventQuerys)
-    for (const query of eventQuerys) {
-      const insertQuery = insertEvents(query);
-      console.log(query);
-      console.log(insertQuery);
-      let results = await client.query(insertQuery);
-    }
+    // for (const query of eventQuerys) {
+    //   const insertQuery = insertEvents(query);
+    //   console.log(query);
+    //   console.log(insertQuery);
+    //   let results = await client.query(insertQuery);
+    // }
     return eventQuerys;
   } catch (err) {
     return err;

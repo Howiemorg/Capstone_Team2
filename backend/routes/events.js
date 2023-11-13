@@ -1,8 +1,8 @@
+const runAlgo = require("./tasks")[1];
 const dotenv = require("dotenv").config();
 const express = require("express");
 const pg = require("pg");
 const router = express.Router();
-const runAlgo = require("./tasks")
 
 const conString = {
   host: process.env.DB_HOST,
@@ -126,19 +126,19 @@ router.put("/event-survey-results", async (req, res) => {
   const event_start_time = req.query.event_start_time;
   const event_end_time = req.query.event_end_time;
   const user_id = req.query.user_id;
+  const selected_date = req.query.selected_date;
 
-  const today = new Date();
+  const today = new Date(selected_date);
+
   const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setDate(today.getDate() + 1);
 
-  const circadian_start_indx =
+  let circadian_start_indx =
     parseInt(event_start_time.substring(0, 2)) * 2 +
-      event_start_time.substring(3, 5) !=
-    "00";
+    (event_start_time.substring(3, 5) != "00");
   const circadian_end_indx =
     parseInt(event_end_time.substring(0, 2)) * 2 +
-      event_end_time.substring(3, 5) !=
-    "00";
+    (event_end_time.substring(3, 5) != "00");
 
   try {
     if (parseInt(productivity_score) === 1) {
@@ -147,19 +147,25 @@ router.put("/event-survey-results", async (req, res) => {
         circadian_start_indx < circadian_end_indx;
         circadian_start_indx++
       ) {
-        const curr_score = await client.query(
-          `(SELECT circadian_rhythm[${circadian_start_indx}] FROM users)`
+        let curr_score = await client.query(
+          `SELECT circadian_rhythm[${
+            circadian_start_indx + 1
+          }] FROM users WHERE user_id=${user_id};`
         );
+        curr_score = curr_score.rows[0].circadian_rhythm;
         if (curr_score - 1.6 < 0.1) {
           const taskUpdateResult = await client.query(`
           UPDATE users 
-          SET circadian_rhythm[${circadian_start_indx}]=0.1'
-          WHERE user_id=${user_id}`);
+          SET circadian_rhythm[${circadian_start_indx + 1}]=0.1
+          WHERE user_id=${user_id};`);
         } else {
           const taskUpdateResult = await client.query(`
           UPDATE users 
-          SET circadian_rhythm[${circadian_start_indx}]=${curr_score - 1.6}'
-          WHERE user_id=${user_id}`);
+          SET circadian_rhythm[${circadian_start_indx + 1}]=${(curr_score - 1.6).toFixed(1)}
+          WHERE user_id=${user_id};`);
+
+          // res.json({ message: taskUpdateResult });
+          // return;
         }
       }
     } else if (parseInt(productivity_score) === 3) {
@@ -168,19 +174,22 @@ router.put("/event-survey-results", async (req, res) => {
         circadian_start_indx < circadian_end_indx;
         circadian_start_indx++
       ) {
-        const curr_score = await client.query(
-          `(SELECT circadian_rhythm[${circadian_start_indx}] FROM users)`
+        let curr_score = await client.query(
+          `SELECT circadian_rhythm[${
+            circadian_start_indx + 1
+          }] FROM users WHERE user_id=${user_id};`
         );
+        curr_score = curr_score.rows[0].circadian_rhythm;
         if (curr_score + 1.6 > 16) {
           const taskUpdateResult = await client.query(`
           UPDATE users 
-          SET circadian_rhythm[${circadian_start_indx}]=16'
-          WHERE user_id=${user_id}`);
+          SET circadian_rhythm[${circadian_start_indx + 1}]=16
+          WHERE user_id=${user_id};`);
         } else {
           const taskUpdateResult = await client.query(`
           UPDATE users 
-          SET circadian_rhythm[${circadian_start_indx}]=${curr_score + 1.6}'
-          WHERE user_id=${user_id}`);
+          SET circadian_rhythm[${circadian_start_indx + 1}]=${(curr_score + 1.6).toFixed(1)}
+          WHERE user_id=${user_id};`);
         }
       }
     }
@@ -188,36 +197,61 @@ router.put("/event-survey-results", async (req, res) => {
     if (parseInt(time_remaining) == 0) {
       const taskUpdateResult = await client.query(`
         UPDATE tasks 
-        SET etimate_completion_time=${time_remaining}, completion_date='${today.getFullYear()}-${today.getMonth()}-${today.getDate()} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}'
+        SET estimate_completion_time=${time_remaining}, completion_date='${tomorrow
+        .toISOString()
+        .substring(
+          0,
+          10
+        )} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}'
         WHERE task_id=${task_id}`);
 
-        if(parseInt(productivity_score) === 2){
-          const deleteResult = await client.query(
-            `DELETE FROM Events
+      if (parseInt(productivity_score) === 2) {
+        const deleteResult = await client.query(
+          `DELETE FROM Events
                   WHERE
                   event_block_id = ${event_block_id};`
-          );
+        );
 
-          res.json({ success: true, message: "Survey update successful" });
-        }
+        res.json({ success: true, message: "Survey update successful" });
+      }
     }
 
-    const deleteResult = await client.query(
-      `DELETE FROM Events
-            WHERE
-            event_block_id = ${event_block_id} OR event_date >= '${tomorrow.getFullYear()}-${tomorrow.getMonth()}-${tomorrow.getDate()}'::date;`
+    // const taskUpdateResult = await client.query(`
+    //     UPDATE tasks 
+    //     SET estimate_completion_time=${time_remaining}, task_start_date='${tomorrow
+    //   .toISOString()
+    //   .substring(0, 10)} 00:00:00'
+    //     WHERE task_id=${task_id}`);
+
+    const tasks = await client.query(
+      `SELECT * FROM tasks WHERE task_id IN (SELECT task_id FROM events WHERE event_date >= '${tomorrow
+        .toISOString()
+        .substring(0, 10)}'::date);`
     );
 
-    const taskUpdateResult = await client.query(`
-        UPDATE tasks 
-        SET etimate_completion_time=${time_remaining}, task_start_date='${tomorrow.getFullYear()}-${tomorrow.getMonth()}-${tomorrow.getDate()} 00:00:00'
-        WHERE task_id=${task_id}`);
+    // const deleteResult = await client.query(
+    //   `DELETE FROM Events
+    //         WHERE
+    //         event_block_id = ${event_block_id} OR event_date >= '${tomorrow
+    //     .toISOString()
+    //     .substring(0, 10)}'::date;`
+    // );
 
-    const tasks = await client.query(`SELECT * FROM tasks WHERE task_id IN (SELECT task_id FROM events WHERE event_date >= '${tomorrow.getFullYear()}-${tomorrow.getMonth()}-${tomorrow.getDate()}'::date);`)
+    let task_ids = "(" + tasks.rows[0].task_id;
 
-    runAlgo(user_id, `${tomorrow.getFullYear()}-${tomorrow.getMonth()}-${tomorrow.getDate()} 00:00:00`, tasks.rows)
+    for(let i = 1; i < tasks.rowCount; ++i){
+      task_ids += "," + tasks.rows[i].task_id
+    }
 
-    res.json({ success: true, message: "Updated event successfully" });
+    task_ids += ")";
+
+    const message = await runAlgo(
+      user_id,
+      `${tomorrow.toISOString().substring(0, 10)} 00:00:00`,
+      task_ids
+    );
+
+    res.json({ success: true, message: message });
   } catch (err) {
     console.error(err.message);
     res.send(err.message);
