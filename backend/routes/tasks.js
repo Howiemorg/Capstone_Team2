@@ -151,12 +151,12 @@ const runAlgo = async (user_id, selected_date, selected_tasks) => {
       selected_date
     );
     // console.log(eventQuerys)
-    // for (const query of eventQuerys) {
-    //   const insertQuery = insertEvents(query);
-    //   console.log(query);
-    //   console.log(insertQuery);
-    //   let results = await client.query(insertQuery);
-    // }
+    for (const query of eventQuerys) {
+      const insertQuery = insertEvents(query);
+      console.log(query);
+      console.log(insertQuery);
+      let results = await client.query(insertQuery);
+    }
     return eventQuerys;
   } catch (err) {
     return err;
