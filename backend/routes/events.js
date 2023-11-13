@@ -216,12 +216,12 @@ router.put("/event-survey-results", async (req, res) => {
       }
     }
 
-    // const taskUpdateResult = await client.query(`
-    //     UPDATE tasks 
-    //     SET estimate_completion_time=${time_remaining}, task_start_date='${tomorrow
-    //   .toISOString()
-    //   .substring(0, 10)} 00:00:00'
-    //     WHERE task_id=${task_id}`);
+    const taskUpdateResult = await client.query(`
+        UPDATE tasks 
+        SET estimate_completion_time=${time_remaining}, task_start_date='${tomorrow
+      .toISOString()
+      .substring(0, 10)} 00:00:00'
+        WHERE task_id=${task_id}`);
 
     const tasks = await client.query(
       `SELECT * FROM tasks WHERE task_id IN (SELECT task_id FROM events WHERE event_date >= '${tomorrow
@@ -229,13 +229,13 @@ router.put("/event-survey-results", async (req, res) => {
         .substring(0, 10)}'::date);`
     );
 
-    // const deleteResult = await client.query(
-    //   `DELETE FROM Events
-    //         WHERE
-    //         event_block_id = ${event_block_id} OR event_date >= '${tomorrow
-    //     .toISOString()
-    //     .substring(0, 10)}'::date;`
-    // );
+    const deleteResult = await client.query(
+      `DELETE FROM Events
+            WHERE
+            event_block_id = ${event_block_id} OR event_date >= '${tomorrow
+        .toISOString()
+        .substring(0, 10)}'::date;`
+    );
 
     let task_ids = "(" + tasks.rows[0].task_id;
 
