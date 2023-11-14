@@ -25,38 +25,35 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
     const [eventDetails, setEventDetails] = useState(null);
 
     useEffect(() => {
-    // Fetch event details based on eventID
-    const fetchEventDetails = async () => {
-        try {
-        const response = await axios.get(
-            // Define your API endpoint to fetch event details by eventID
-            `https://capstone-backend-charles-tran.vercel.app/get-single-event?event_block_id=${eventID}`
-        );
-        if (response.data.success) {
-            setEventDetails(response.data.eventDetails);
-        } else {
-            // Handle errors or show a message
-            console.error("Error in fetching event details: ", response.data.message);
-        }
-        } catch (error) {
-            // Handle network errors or show an error message
-            console.error("Network Error in fetching event details:", error.message);
-        }
-    };
+        // Fetch event details based on eventID
+        const fetchEventDetails = async () => {
+            try {
+                const response = await axios.get(
+                    `https://capstone-backend-charles-tran.vercel.app/get-single-event?event_block_id=${eventID}`
+                );
+                if (response.data.length) {
+                    setEventDetails(response.data.eventDetails);
+                } else {
+                    console.error("Error in fetching event details: ", response.data.message);
+                }
+            } catch (error) {
+                console.error("Network Error in fetching event details:", error.message);
+            }
+        };
 
-     // Fetch event details when the modal opens
-     if (eventID) {
-        fetchEventDetails();
-    }
+        // Fetch event details when the modal opens
+        if (eventID) {
+            fetchEventDetails();
+        }
     }, [eventID]);
 
     useEffect(() => {
         // Populate input fields with existing event data
         if (eventDetails) {
-          setEventName(eventDetails.eventName);
-          setEventDate(new Date(eventDetails.date));
-          setEventStartTime(new Date(eventDetails.startTime));
-          setEventEndTime(new Date(eventDetails.endTime));
+          setEventName(eventDetails.eventName || "");
+          setEventDate(new Date(eventDetails.date) || new Date());
+          setEventStartTime(new Date(eventDetails.startTime) || new Date());
+          setEventEndTime(new Date(eventDetails.endTime) || new Date());
         }
       }, [eventDetails]);
 
@@ -104,6 +101,11 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
         const date = formatDate(eventDate);
         const startTime = formatTime(eventStartTime);
         const endTime = formatTime(eventEndTime);
+        console.log("eventID: ", eventID)
+        console.log("eventName: ", eventName)
+        console.log("start: ", startTime)
+        console.log("end: ", endTime)
+        console.log("date: ", date)
       
         try {
           const response = await axios.put(
@@ -117,6 +119,7 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
             onHideModal();
           } else {
             // Handle errors or show a message
+            console.log(response)
             console.error("Error in updating event details: ", response.data);
           }
         } catch (error) {
@@ -143,7 +146,7 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
                                 onChangeText={setEventName}
                                 value={eventName}
                                 onPressIn={keyboardPress}
-                                placeholder='Enter event name'
+                                placeholder="Enter event name"
                             />
                         </View>
                         <View style={styles.inputContainer}>
@@ -153,6 +156,7 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
                                 onClick={dateClick}
                                 show={dateShow}
                                 setShow = {setDateShow}
+                                value={eventDetails ? eventDetails.date : eventDate}
                             />
                         </View>
                         <View style={styles.inputContainer}>
@@ -162,6 +166,7 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
                                 onClick={startTimeClick}
                                 show={startTimeShow}
                                 setShow= {setStartTimeShow}
+                                value={eventDetails ? eventDetails.date : eventStartTime}
                             />
                         </View>
                         <View style={styles.inputContainer}>
@@ -171,6 +176,7 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
                                 onClick={endTimeClick}
                                 show={endTimeShow}
                                 setShow={setEndTimeShow}
+                                value={eventDetails ? eventDetails.date : eventEndTime}
                             />
                         </View>
                         <TouchableOpacity style={styles.closeButton} onPress={updateEvent}>

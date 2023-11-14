@@ -84,6 +84,7 @@ const CalendarScreen = () => {
     };
 
     const handleUserDefinedEventPress = (item) => {
+        console.log(item)
         setEventID(item.event_block_id);
         setEditEventModalVisable(true);
         console.log("pressed now");
@@ -150,7 +151,7 @@ const CalendarScreen = () => {
                             ) : (
                                 // User defined events start here
                                 // TODO: I can obtain the eventID through item.eventID
-                                <TouchableOpacity onPress= {handleUserDefinedEventPress}>
+                                <TouchableOpacity onPress= {handleUserDefinedEventPress.bind(null, item)}>
                                     <View style={[styles.block, styles.event]} >
                                         <Text
                                             style={[
