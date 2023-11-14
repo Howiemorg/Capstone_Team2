@@ -30,7 +30,7 @@ const CalendarScreen = () => {
 
     const getEventBlocks = async () => {
         const response = await vercel.get(
-            `/get-events?user_id=${userID}&event_date=${date.getFullYear()}-${
+            `/get-events?user_id=${1}&event_date=${date.getFullYear()}-${
                 date.getMonth() + 1
             }-${date.getDate()}`
         );
@@ -116,6 +116,7 @@ const CalendarScreen = () => {
                     onAddEvent={() => getEventBlocks()}
                     onHideModal={() => setEditEventModalVisable(false)}
                     userID = {userID}
+                    //Need to add the eventID
                     eventID = {eventID}
                 />
             </Modal>
@@ -148,6 +149,7 @@ const CalendarScreen = () => {
                                 </View>
                             ) : (
                                 // User defined events start here
+                                // TODO: I can obtain the eventID through item.eventID
                                 <TouchableOpacity onPress= {handleUserDefinedEventPress}>
                                     <View style={[styles.block, styles.event]} >
                                         <Text
