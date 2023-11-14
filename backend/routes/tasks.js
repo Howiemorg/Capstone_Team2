@@ -136,7 +136,7 @@ const insertEvents = (data) => {
   return query;
 };
 
-const runAlgo = async (user_id, selected_date, selected_tasks) => {
+const runAlgo = async (user_id, selected_date, selected_tasks, regen_count=0, event_block_id=0) => {
   // get all the tasks from DB
   try {
     const query = {
@@ -160,15 +160,27 @@ const runAlgo = async (user_id, selected_date, selected_tasks) => {
       events,
       tasks,
       circadian_rhythm,
-      0,
+      regen_count,
       selected_date
     );
     // console.log(eventQuerys)
+    if(regen_count){
+        const query = {
+            text: "UPDATE events SET event_start_time = $1, event_end_time = $2 WHERE event_block_id = $3",
+            values: [
+                eventQuerys[0][1],
+                eventQuerys[0][2],
+                event_block_id
+            ],
+          };
+        const results = await client.query(query);
+    } else {
     for (const query of eventQuerys) {
       const insertQuery = insertEvents(query);
       console.log(query);
       console.log(insertQuery);
       let results = await client.query(insertQuery);
+    }
     }
     return eventQuerys;
   } catch (err) {

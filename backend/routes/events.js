@@ -313,4 +313,26 @@ router.put("/event-survey-results", async (req, res) => {
   }
 });
 
+  router.put("/reschedule-event", async (req, res) => {
+    const event_block_id = req.query.event_block_id;
+    const user_id = req.query.user_id;
+    const selected_date = req.query.selected_date;
+    const task_id = req.query.task_id;
+  try {
+    let regen_count = await client.query(
+        `UPDATE events
+        SET regen_count = regen_count + 1
+        WHERE event_block_id = ${event_block_id}
+        RETURNING regen_count;`
+    );
+    regen_count = regen_count.rows[0]["regen_count"];
+    
+    const message = await runAlgo(user_id, selected_date, `(${task_id})`, regen_count, event_block_id);
+
+    res.json({ success: true, message: message });
+  } catch (err) {
+    res.json({ success: false, message: err });
+  }
+  });
+
 module.exports = router;
