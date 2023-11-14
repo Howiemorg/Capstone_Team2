@@ -24,7 +24,10 @@ router.post("/add-tasks", async (req, res) => {
   const priority_level = req.query.priority_level;
   const estimate_completion_time = req.query.estimate_completion_time;
   // const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
-
+  const currentDate = new Date().toISOString().slice(0,10);
+  if (task_due_date == currentDate){
+    priority_level=4;
+  }
   try {
     const result = await client.query(
       `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
@@ -136,7 +139,7 @@ const insertEvents = (data) => {
   return query;
 };
 
-const runAlgo = async (user_id, selected_date, selected_tasks) => {
+const runAlgo = async (user_id, selected_date, selected_tasks, regen_count=0, event_block_id=0) => {
   // get all the tasks from DB
   try {
     const query = {
@@ -160,15 +163,27 @@ const runAlgo = async (user_id, selected_date, selected_tasks) => {
       events,
       tasks,
       circadian_rhythm,
-      0,
+      regen_count,
       selected_date
     );
     // console.log(eventQuerys)
+    if(regen_count){
+        const query = {
+            text: "UPDATE events SET event_start_time = $1, event_end_time = $2 WHERE event_block_id = $3",
+            values: [
+                eventQuerys[0][1],
+                eventQuerys[0][2],
+                event_block_id
+            ],
+          };
+        const results = await client.query(query);
+    } else {
     for (const query of eventQuerys) {
       const insertQuery = insertEvents(query);
       console.log(query);
       console.log(insertQuery);
       let results = await client.query(insertQuery);
+    }
     }
     return eventQuerys;
   } catch (err) {

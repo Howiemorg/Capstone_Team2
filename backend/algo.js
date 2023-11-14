@@ -274,7 +274,7 @@ const algorithm = (
     console.log(new_events);
     // return new_events;
 
-    if (curr_day.getDay() == 6) {
+    if (curr_day.getDay() == 6 || reschedule_value) {
       break;
     }
   }
