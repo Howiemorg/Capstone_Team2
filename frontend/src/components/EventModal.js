@@ -98,10 +98,11 @@ const EventModal = ({ onAddEvent, onHideModal, userID }) => {
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Date</Text>
                             <EventDateInput
-                                onDateChange={setEventDate}
+                                setDate={setEventDate}
                                 onClick={dateClick}
                                 show={dateShow}
                                 setShow = {setDateShow}
+                                date = {eventDate}
                             />
                         </View>
                         <View style={styles.inputContainer}>
@@ -111,6 +112,7 @@ const EventModal = ({ onAddEvent, onHideModal, userID }) => {
                                 onClick={startTimeClick}
                                 show={startTimeShow}
                                 setShow= {setStartTimeShow}
+                                eventTime={eventStartTime}
                             />
                         </View>
                         <View style={styles.inputContainer}>
@@ -120,6 +122,7 @@ const EventModal = ({ onAddEvent, onHideModal, userID }) => {
                                 onClick={endTimeClick}
                                 show={endTimeShow}
                                 setShow={setEndTimeShow}
+                                eventTime = {eventEndTime}
                             />
                         </View>
                         <TouchableOpacity

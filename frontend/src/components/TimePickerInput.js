@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     TouchableOpacity,
@@ -10,20 +10,18 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
-const TimePickerInput = ({ setEventTime, onClick, show, setShow }) => {
-    const [time, setTime] = useState(new Date());
+const TimePickerInput = ({ setEventTime, onClick, show, setShow, value, eventTime }) => {
+
+    // useEffect(() => {
+    //     if(value){
+    //         setTime(value);
+    //     }
+    // }, [value]);
 
     const onChange = (event, selectedTime) => {
         setEventTime(new Date(selectedTime)); // Ensure the new time is a Date object
 
         setShow(Platform.OS === "ios"); // iOS requires manual handling to hide the picker
-        if (selectedTime) {
-            setTime(new Date(selectedTime)); // Ensure the new time is a Date object
-
-            if (Platform.OS === "android") {
-                setShow(false); // Hide the picker on Android after selection
-            }
-        }
         setTimeout(() => {
             setShow(false);
         }, 1500);
@@ -31,6 +29,10 @@ const TimePickerInput = ({ setEventTime, onClick, show, setShow }) => {
 
     // Helper function to format the time as a string
     const formatTime = (date) => {
+        console.log("date", date)
+        if(date == undefined){
+            return "nullf"
+        }
         const hours = date.getHours();
         const minutes = date.getMinutes();
         const ampm = hours >= 12 ? "PM" : "AM";
@@ -43,13 +45,13 @@ const TimePickerInput = ({ setEventTime, onClick, show, setShow }) => {
     return (
         <View style={styles.container}>
             <TouchableOpacity style={styles.timeDisplay} onPress={onClick}>
-                <Text style={styles.timeText}>{formatTime(time)}</Text>
+                <Text style={styles.timeText}>{formatTime(eventTime)}</Text>
             </TouchableOpacity>
 
             {show && (
                 <DateTimePicker
                     testID='dateTimePicker'
-                    value={time}
+                    value={eventTime}
                     mode='time'
                     is24Hour={true} // Use 24-hour format, set to false for AM/PM
                     display={Platform.OS === "ios" ? "spinner" : "default"}

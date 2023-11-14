@@ -32,7 +32,27 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
                     `https://capstone-backend-charles-tran.vercel.app/get-single-event?event_block_id=${eventID}`
                 );
                 if (response.data.length) {
-                    setEventDetails(response.data.eventDetails);
+                    setEventDetails(response.data[0]);
+                    setEventName(response.data[0].event_name);
+
+                    const event_date = new Date(response.data[0].event_date);
+                    event_date.setFullYear(response.data[0].event_date.substring(0,4));
+                    event_date.setMonth(parseInt(response.data[0].event_date.substring(5,7))-1);
+                    event_date.setDate(response.data[0].event_date.substring(8,10));
+
+                    setEventDate(event_date);
+
+                    const start_time = new Date(event_date);
+                    start_time.setHours(response.data[0].event_start_time.substring(0,2));
+                    start_time.setMinutes(response.data[0].event_start_time.substring(3,5));
+
+                    setEventStartTime(start_time);
+                    
+                    const end_time = new Date(event_date);
+                    end_time.setHours(response.data[0].event_end_time.substring(0,2));
+                    end_time.setMinutes(response.data[0].event_end_time.substring(3,5));
+
+                    setEventEndTime(end_time);
                 } else {
                     console.error("Error in fetching event details: ", response.data.message);
                 }
@@ -47,15 +67,15 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
         }
     }, [eventID]);
 
-    useEffect(() => {
-        // Populate input fields with existing event data
-        if (eventDetails) {
-          setEventName(eventDetails.eventName || "");
-          setEventDate(new Date(eventDetails.date) || new Date());
-          setEventStartTime(new Date(eventDetails.startTime) || new Date());
-          setEventEndTime(new Date(eventDetails.endTime) || new Date());
-        }
-      }, [eventDetails]);
+    // useEffect(() => {
+    //     // Populate input fields with existing event data
+    //     if (eventDetails) {
+    //       setEventName(eventDetails.event_name || "");
+    //       setEventDate(new Date(eventDetails.event_date) || new Date());
+    //       setEventStartTime(new Date(eventDetails.start_time) || new Date());
+    //       setEventEndTime(new Date(eventDetails.end_time) || new Date());
+    //     }
+    //   }, [eventDetails]);
 
 
     const formatTime = (date) => {
@@ -152,31 +172,32 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Date</Text>
                             <EventDateInput
-                                onDateChange={setEventDate}
+                                setDate={setEventDate}
                                 onClick={dateClick}
                                 show={dateShow}
                                 setShow = {setDateShow}
-                                value={eventDetails ? eventDetails.date : eventDate}
+                                date = {eventDate}
                             />
                         </View>
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Start Time</Text>
                             <TimePickerInput
                                 setEventTime={setEventStartTime}
+                                eventTime = {eventStartTime}
                                 onClick={startTimeClick}
                                 show={startTimeShow}
                                 setShow= {setStartTimeShow}
-                                value={eventDetails ? eventDetails.date : eventStartTime}
+                                value={eventStartTime}
                             />
                         </View>
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>End Time</Text>
                             <TimePickerInput
                                 setEventTime={setEventEndTime}
+                                eventTime = {eventEndTime}
                                 onClick={endTimeClick}
                                 show={endTimeShow}
                                 setShow={setEndTimeShow}
-                                value={eventDetails ? eventDetails.date : eventEndTime}
                             />
                         </View>
                         <TouchableOpacity style={styles.closeButton} onPress={updateEvent}>
