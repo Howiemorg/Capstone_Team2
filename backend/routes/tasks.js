@@ -24,7 +24,10 @@ router.post("/add-tasks", async (req, res) => {
   const priority_level = req.query.priority_level;
   const estimate_completion_time = req.query.estimate_completion_time;
   // const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
-
+  const currentDate = new Date().toISOString().slice(0,10);
+  if (task_due_date == currentDate){
+    priority_level=4;
+  }
   try {
     const result = await client.query(
       `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
