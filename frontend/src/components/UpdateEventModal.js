@@ -121,12 +121,11 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
         const date = formatDate(eventDate);
         const startTime = formatTime(eventStartTime);
         const endTime = formatTime(eventEndTime);
-        console.log("eventID: ", eventID)
-        console.log("eventName: ", eventName)
-        console.log("start: ", startTime)
-        console.log("end: ", endTime)
-        console.log("date: ", date)
-      
+
+        if(eventStartTime >= eventEndTime) {
+            console.error("Start time must be before end time for the event.");
+            return;
+        }
         try {
           const response = await axios.put(
             // Define your API endpoint to update the event by eventID

@@ -65,6 +65,11 @@ const EventModal = ({ onAddEvent, onHideModal, userID }) => {
         const date = formatDate(eventDate);
         const startTime = formatTime(eventStartTime);
         const endTime = formatTime(eventEndTime);
+
+        if(eventStartTime >= eventEndTime) {
+            console.error("Start time must be before end time for the event.");
+            return;
+        }
         console.log(
             `https://capstone-backend-charles-tran.vercel.app/add-set-event?user_id=${userID}&event_name='${eventName}'&event_start_time='${startTime}'&event_end_time='${endTime}'&event_date='${date}'`
         );
@@ -93,6 +98,7 @@ const EventModal = ({ onAddEvent, onHideModal, userID }) => {
                                 value={eventName}
                                 onPressIn={keyboardPress}
                                 placeholder='Enter event name'
+                                placeholderTextColor='white'
                             />
                         </View>
                         <View style={styles.inputContainer}>
