@@ -117,7 +117,6 @@ const CalendarScreen = () => {
                     onAddEvent={() => getEventBlocks()}
                     onHideModal={() => setEditEventModalVisable(false)}
                     userID = {userID}
-                    //Need to add the eventID
                     eventID = {eventID}
                 />
             </Modal>

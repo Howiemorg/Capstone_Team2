@@ -40,6 +40,7 @@ const EventDateInput = ({ setDate, onClick, show, setShow, value, date}) => {
                     onChange={onChange}
                     style={styles.datePickerContainer}
                     pickerContainerStyleIOS={{ backgroundColor: "black" }}
+                    textColor="white"
                 />
             )}
         </View>
