@@ -112,7 +112,7 @@ const generateWeeklyArray = (tasks, startDate) => {
       start.setHours(23);
       start.setMinutes(59);
       start.setSeconds(59);
-      currDay.setHours(1);
+      currDay.setHours(0);
       currDay.setMinutes(0);
       currDay.setSeconds(0);
       if (taskStartDate <= start && taskDueDate >= currDay) {
@@ -151,6 +151,8 @@ const algorithm = (
     });
 
     tasks.sort((a, b) => {
+      a.priority_level = (curr_day.toDateString() == a.task_due_date.toDateString() ? 4 : a.priority_level);
+      b.priority_level = (curr_day.toDateString() == b.task_due_date.toDateString() ? 4 : b.priority_level);
       if (a.priority_level == b.priority_level) {
         const a_due_date = a.task_due_date;
         const b_due_date = b.task_due_date;
