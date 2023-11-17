@@ -23,8 +23,15 @@ function getScore(a) {
   }
   return s;
 }
-function isConflicting(number, lowerBound, upperBound) {
-  return number >= lowerBound && number <= upperBound;
+function isConflicting(
+  recommendedLowerBound,
+  recommendedUpperBound,
+  lowerBound,
+  upperBound
+) {
+  return !(
+    recommendedUpperBound < lowerBound || recommendedLowerBound > upperBound
+  );
 }
 
 function get_available_intervals(events) {
@@ -151,8 +158,14 @@ const algorithm = (
     });
 
     tasks.sort((a, b) => {
-      a.priority_level = (curr_day.toDateString() == a.task_due_date.toDateString() ? 4 : a.priority_level);
-      b.priority_level = (curr_day.toDateString() == b.task_due_date.toDateString() ? 4 : b.priority_level);
+      a.priority_level =
+        curr_day.toDateString() == a.task_due_date.toDateString()
+          ? 4
+          : a.priority_level;
+      b.priority_level =
+        curr_day.toDateString() == b.task_due_date.toDateString()
+          ? 4
+          : b.priority_level;
       if (a.priority_level == b.priority_level) {
         const a_due_date = a.task_due_date;
         const b_due_date = b.task_due_date;
@@ -161,7 +174,7 @@ const algorithm = (
             task_time_per_day[b.task_id][i] - task_time_per_day[a.task_id][i]
           );
         }
-        return b_due_date.getTime() - a_due_date.getTime();
+        return a_due_date.getTime() - b_due_date.getTime();
       }
       return b.priority_level - a.priority_level;
     });
@@ -188,10 +201,6 @@ const algorithm = (
           if (
             isConflicting(
               rec[1],
-              already_recommended_t.start,
-              already_recommended_t.end
-            ) ||
-            isConflicting(
               rec[2],
               already_recommended_t.start,
               already_recommended_t.end
