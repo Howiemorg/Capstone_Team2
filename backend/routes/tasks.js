@@ -205,4 +205,24 @@ router.post("/get-recommendations", async (req, res) => {
   }
 });
 // getrec()
+
+// get all uncompleted events for a user
+router.get("/get-due-tasks", async (req, res) => {
+  const user_id = req.query.user_id;
+  const currentDate = new Date().toISOString().slice(0,10);
+
+  try {
+    const query = {
+      text: "SELECT * FROM tasks WHERE user_id = $1 AND completion_date IS NULL AND $2 < task_due_date ORDER BY task_due_date;",
+      values: [user_id,currentDate],
+    };
+
+    const result = await client.query(query);
+    res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+});
+
 module.exports = [router, runAlgo];
