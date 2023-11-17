@@ -1,16 +1,9 @@
-function decreaseTimeByOneHour(time) {
+function timeIndex(time) {
   // Split the time string into hours and minutes
   const [hours, minutes, seconds] = time.split(":").map(Number);
 
-  // Calculate the new times
-  let newHours = hours - 1;
-
-  // Check for underflow
-  if (newHours < 0) {
-    newHours = 23; // Wrap around to 23 (11 PM)
-  }
   // Return the new time in the 24-hour format
-  return newHours;
+  return hours * 2 + (minutes === 30);
 }
 
 function getScore(a) {
@@ -38,14 +31,14 @@ function get_available_intervals(events) {
   const available_intervals = [];
   let begin = 0;
   events.forEach((event) => {
-    if (decreaseTimeByOneHour(event.event_start_time) >= begin) {
+    if (timeIndex(event.event_start_time ) - 1 >= begin) {
       available_intervals.push({
         start: begin,
-        end: decreaseTimeByOneHour(event.event_start_time),
+        end: begin === 0 ? timeIndex(event.event_start_time) : timeIndex(event.event_start_time) - 1,
       });
-      begin = parseInt(event.event_end_time.split(":")[0]);
+      begin = timeIndex(event.event_end_time);
     } else {
-      begin = parseInt(event.event_end_time.split(":")[0]);
+      begin = timeIndex(event.event_end_time);
     }
   });
   if (begin != 47) {
@@ -68,9 +61,9 @@ function get_best_time_intervals(
   let best_intervals = [];
 
   available_intervals.forEach((interval) => {
-    let r = interval.start + task_time - 1;
+    let r = interval.start + task_time;
     for (let l = interval.start; r <= interval.end; l++) {
-      const score = getScore(circadian_rhythm.slice(l, r + 1));
+      const score = getScore(circadian_rhythm.slice(l, r));
       if (!score) {
         r++;
         continue;
@@ -154,7 +147,7 @@ const algorithm = (
 
     const daily_events = events.filter((event) => {
       // console.log(event_date)
-      event.event_date.getDate() == curr_day.getDate();
+      return event.event_date.getDate() == curr_day.getDate();
     });
 
     tasks.sort((a, b) => {
@@ -231,8 +224,8 @@ const algorithm = (
         score: best_time.score,
         time: `${Math.floor(best_time.start / 2)}:${
           best_time.start % 2 ? "30" : "00"
-        } - ${Math.floor((best_time.end + 1) / 2)}:${
-          (best_time.end + 1) % 2 ? "30" : "00"
+        } - ${Math.floor((best_time.end ) / 2)}:${
+          (best_time.end ) % 2 ? "30" : "00"
         }`,
       });
 
@@ -241,8 +234,8 @@ const algorithm = (
         `${Math.floor(best_time.start / 2)}:${
           best_time.start % 2 ? "30" : "00"
         }:00`,
-        `${Math.floor((best_time.end + 1) / 2)}:${
-          (best_time.end + 1) % 2 ? "30" : "00"
+        `${Math.floor((best_time.end ) / 2)}:${
+          (best_time.end) % 2 ? "30" : "00"
         }:00`,
         task.user_id,
         task.task_id,

@@ -148,6 +148,7 @@ const runAlgo = async (user_id, selected_date, selected_tasks, regen_count=0, ev
       `SELECT * FROM events WHERE user_id = ${user_id} AND event_date >= '${selected_date}' ORDER BY event_start_time;`
     );
     events = events.rows;
+
     console.log(events);
     //get the circadian rhythm array
     let circadian_rhythm = await client.query(
@@ -174,12 +175,12 @@ const runAlgo = async (user_id, selected_date, selected_tasks, regen_count=0, ev
           };
         const results = await client.query(query);
     } else {
-    for (const query of eventQuerys) {
-      const insertQuery = insertEvents(query);
-      console.log(query);
-      console.log(insertQuery);
-      let results = await client.query(insertQuery);
-    }
+    // for (const query of eventQuerys) {
+    //   const insertQuery = insertEvents(query);
+    //   console.log(query);
+    //   console.log(insertQuery);
+    //   let results = await client.query(insertQuery);
+    // }
     }
     return eventQuerys;
   } catch (err) {
