@@ -3,23 +3,25 @@ import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useSelector } from 'react-redux'; 
 import vercel from "../api/vercel";
 
+console.log("Hello")
+
 const UserProfileScreen = ({ navigation }) => {
     const [user, setUser] = useState(null);
   
-    const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
-    const userId = useSelector(state => state.auth.userId);
-  
+    const { userID } = useSelector(state => state.user);
+
     useEffect(() => {
-      if (!isAuthenticated) {
+      if (!userID) {
         navigation.navigate('LoginScreen');
       } else {
         fetchUserData();
       }
-    }, [isAuthenticated, userId]);
+    }, [userID]);
   
     const fetchUserData = async () => {
       try {
-        const response = await vercel.get(`/api/user/${userId}`);
+        const response = await vercel.get(`/get-user-info?user_id=${userID}`);
+        console.log(response.data)
         setUser(response.data);
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -33,7 +35,7 @@ const UserProfileScreen = ({ navigation }) => {
   
     return (
       <View style={styles.container}>
-        <Text style={styles.name}>{user.firstName} {user.lastName}</Text>
+        <Text style={styles.name}>{user.user_first_name} {user.user_last_name}</Text>
       </View>
     );
   };
