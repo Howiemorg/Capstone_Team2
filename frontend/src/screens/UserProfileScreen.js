@@ -35,7 +35,10 @@ const UserProfileScreen = ({ navigation }) => {
   
     return (
       <View style={styles.container}>
-        <Text style={styles.name}>{user[0].user_first_name} {user[0].user_last_name}</Text>
+        <Text style={styles.name}>First Name:{user[0].user_first_name}</Text>
+        <Text style={styles.name}>Last Name: {user[0].user_last_name}</Text>
+        <Text style={styles.time}>Wake Time: {user[0].wake_time}</Text>
+        <Text style={styles.time}>Sleep Time: {user[0].sleep_time}</Text>
       </View>
     );
   };
@@ -49,6 +52,10 @@ const UserProfileScreen = ({ navigation }) => {
     name: {
       fontSize: 20,
       fontWeight: 'bold',
+    },
+    time: {
+      fontSize: 16,
+      marginVertical: 5,
     },
   });
   
