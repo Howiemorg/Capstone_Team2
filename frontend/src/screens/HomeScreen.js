@@ -13,7 +13,7 @@ const HomeScreen = () => {
       <Header selected={selected} setSelected={setSelected} />
       {selected === "Calendar" && <CalendarScreen />}
       {selected === "Task List" && <TaskScreen setSelected={setSelected}/>}
-      {selected === "Profile" && <UserProfileScreen />}
+      {selected === "User Profile" && <UserProfileScreen />}
     </View>
   );
 };
