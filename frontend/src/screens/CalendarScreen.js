@@ -15,6 +15,7 @@ import vercel from "../api/vercel";
 import DateSelection from "../components/DateSelection";
 import { Swipeable } from "react-native-gesture-handler";
 import EventModal from "../components/EventModal";
+import UpdateEventModal from "../components/UpdateEventModal";
 import AddTaskModal from "../components/AddTaskModal";
 
 const CalendarScreen = () => {
@@ -22,12 +23,14 @@ const CalendarScreen = () => {
     const [error, setError] = useState("");
     const [date, setDate] = useState(new Date());
     const [modalVisable, setModalVisable] = useState(false);
+    const [editEventModalVisable, setEditEventModalVisable] = useState(false);
+    const [eventID, setEventID] = useState(null);
 
     const { userID } = useSelector((state) => state.user);
 
     const getEventBlocks = async () => {
         const response = await vercel.get(
-            `/get-events?user_id=${userID}&event_date=${date.getFullYear()}-${
+            `/get-events?user_id=${1}&event_date=${date.getFullYear()}-${
                 date.getMonth() + 1
             }-${date.getDate()}`
         );
@@ -80,6 +83,13 @@ const CalendarScreen = () => {
         setModalVisable(true);
     };
 
+    const handleUserDefinedEventPress = (item) => {
+        console.log(item)
+        setEventID(item.event_block_id);
+        setEditEventModalVisable(true);
+        console.log("pressed now");
+    }
+
     return (
         <View style={styles.container}>
             <Modal
@@ -93,6 +103,21 @@ const CalendarScreen = () => {
                     onAddEvent={() => getEventBlocks()}
                     onHideModal={() => setModalVisable(false)}
                     userID = {userID}
+                />
+            </Modal>
+
+            <Modal
+                visible={editEventModalVisable}
+                animationIn='fadeIn'
+                animationOut='fadeOut'
+                style={{}}
+                onBackdropPress={() => setEditEventModalVisable(false)}
+            >
+                <UpdateEventModal
+                    onAddEvent={() => getEventBlocks()}
+                    onHideModal={() => setEditEventModalVisable(false)}
+                    userID = {userID}
+                    eventID = {eventID}
                 />
             </Modal>
             <DateSelection date={date} onSetDate={setDate} />
@@ -123,20 +148,24 @@ const CalendarScreen = () => {
                                     </Text>
                                 </View>
                             ) : (
-                                <View style={[styles.block, styles.event]}>
-                                    <Text
-                                        style={[
-                                            styles.title,
-                                            { color: "white" },
-                                        ]}
-                                    >
-                                        {item.event_name}
-                                    </Text>
-                                    <Text style={styles.event_time}>
-                                        {item.event_start_time} -{" "}
-                                        {item.event_end_time}
-                                    </Text>
-                                </View>
+                                // User defined events start here
+                                // TODO: I can obtain the eventID through item.eventID
+                                <TouchableOpacity onPress= {handleUserDefinedEventPress.bind(null, item)}>
+                                    <View style={[styles.block, styles.event]} >
+                                        <Text
+                                            style={[
+                                                styles.title,
+                                                { color: "white" },
+                                            ]}
+                                        >
+                                            {item.event_name}
+                                        </Text>
+                                        <Text style={styles.event_time}>
+                                            {item.event_start_time} -{" "}
+                                            {item.event_end_time}
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
                             )}
                         </Swipeable>
                     );

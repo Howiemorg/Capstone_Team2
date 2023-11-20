@@ -22,11 +22,11 @@ const Header = ({selected, setSelected}) => {
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
-          setSelected("Tree");
+          setSelected("User Profile");
         }}
-        style={[styles.tree, selected == "Tree" ? styles.selected : styles.not_selected]}
+        style={[styles.tree, selected == "User Profile" ? styles.selected : styles.not_selected]}
       >
-        <Text style={selected == "Tree" ? {color: "white"} : {color: "black"}}>Tree</Text>
+        <Text style={selected == "User Profile" ? {color: "white"} : {color: "black"}}>User Profile</Text>
       </TouchableOpacity>
     </View>
   );

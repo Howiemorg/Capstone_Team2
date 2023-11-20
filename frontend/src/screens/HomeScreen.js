@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import TaskScreen from "./TaskScreen";
 import { useState } from "react";
 import CalendarScreen from "./CalendarScreen";
+import UserProfileScreen from "./UserProfileScreen";
 
 const HomeScreen = () => {
   const [selected, setSelected] = useState("Calendar");
@@ -12,6 +13,7 @@ const HomeScreen = () => {
       <Header selected={selected} setSelected={setSelected} />
       {selected === "Calendar" && <CalendarScreen />}
       {selected === "Task List" && <TaskScreen setSelected={setSelected}/>}
+      {selected === "User Profile" && <UserProfileScreen />}
     </View>
   );
 };

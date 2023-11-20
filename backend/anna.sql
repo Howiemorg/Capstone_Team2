@@ -24,3 +24,6 @@ VALUES (1, 'Finish Human Figure assignment', '2023-10-30', '2023-11-01', 0, 4, 1
 -- Insert task 3
 INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
 VALUES (1, 'Study Color Theory', '2023-10-30', '2023-11-3', 0, 2, 30.0);
+
+INSERT INTO templates (template_name, steps, estimated_completion_time, user_id)
+VALUES ('Programming', '{{"Psuedocode",60},{"Coding",240},{"Test and Submit",120}}', 420, NULL);
