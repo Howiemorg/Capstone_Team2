@@ -76,8 +76,6 @@ const LoginScreen = ({ navigation }) => {
               Sign up
             </Text>
           </Text>
-          {error && <Text style={styles.error}>{error}</Text>}
-          {userError && <Text style={styles.error}>{userError}</Text>}
           <TouchableOpacity onPress={loginSubmit} style={styles.button}>
             <Text style={{ color: "white", alignSelf: "center" }}>Sign In</Text>
           </TouchableOpacity>

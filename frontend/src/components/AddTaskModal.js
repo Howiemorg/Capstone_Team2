@@ -47,13 +47,28 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
         }
 
         try {
-            const taskStartDate = new Date()
+            const taskStartDate = new Date();
+            var priority_level = 0;
+            if (selectedPriority == "Critical") {
+                priority_level = 4;
+            } else if (selectedPriority == "High") {
+                priority_level = 3;
+            } else if (selectedPriority == "Medium") {
+                priority_level = 2;
+            } else {
+                priority_level = 1;
+            }
+            console.log(`/add-tasks?user_id=${userID}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${
+                taskStartDate.getMonth() + 1
+            }-${taskStartDate.getDate()} ${taskStartDate.getHours()}:${taskStartDate.getMinutes()}:00'&task_due_date='${taskDueDate.getFullYear()}-${
+                taskDueDate.getMonth() + 1
+            }-${taskDueDate.getDate()} ${taskDueDate.getHours()}:${taskDueDate.getMinutes()}:00'&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'&priority_level=${priority_level}`)
             const response = await vercel.post(
                 `/add-tasks?user_id=${userID}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${
                     taskStartDate.getMonth() + 1
                 }-${taskStartDate.getDate()} ${taskStartDate.getHours()}:${taskStartDate.getMinutes()}:00'&task_due_date='${taskDueDate.getFullYear()}-${
                     taskDueDate.getMonth() + 1
-                }-${taskDueDate.getDate()} ${taskDueDate.getHours()}:${taskDueDate.getMinutes()}:00'&progress_percent=0&priority_level=NULL&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'`
+                }-${taskDueDate.getDate()} ${taskDueDate.getHours()}:${taskDueDate.getMinutes()}:00'&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'&priority_level=${priority_level}`
             );
 
             if (!response.data.success) {
