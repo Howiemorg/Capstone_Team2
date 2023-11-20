@@ -59,8 +59,7 @@ function get_best_time_intervals(
   circadian_rhythm
 ) {
   let task_time =
-    Math.floor(curr_task.estimate_completion_time / 30) +
-    (curr_task.estimate_completion_time % 30 > 0);
+    Math.floor(curr_task.estimate_completion_time / 30);
   let best_intervals = [];
 
   available_intervals.forEach((interval) => {
@@ -100,14 +99,16 @@ const generateWeeklyArray = (tasks, startDate) => {
     const taskStartDate = task.task_start_date;
     const taskDueDate = task.task_due_date;
     console.log(taskStartDate, taskDueDate);
-    const avg_time =
+    let avg_time =
       task.estimate_completion_time /
       (
         (taskDueDate.getTime() - taskStartDate.getTime()) /
           (24 * 60 * 60 * 1000) +
         1
       ).toFixed(0);
-
+    
+    avg_time = Math.floor(avg_time / 30) + (avg_time % 30 > 0)
+    let total_time = 0;
     for (let i = 0; i < 7; ++i) {
       const currDay = new Date();
       currDay.setDate(startDate.getDate() + i);
@@ -118,8 +119,9 @@ const generateWeeklyArray = (tasks, startDate) => {
       currDay.setHours(0);
       currDay.setMinutes(0);
       currDay.setSeconds(0);
-      if (taskStartDate <= start && taskDueDate >= currDay) {
+      if (taskStartDate <= start && taskDueDate >= currDay && total_time < task.estimate_completion_time) {
         tasks_per_day[task.task_id].push(avg_time);
+        total_time += avg_time;
       } else {
         tasks_per_day[task.task_id].push(0);
       }
@@ -285,7 +287,6 @@ const algorithm = (
           free_time[ith_available_interval].start;
         let time_left =
           task_time_per_day[tasks_not_scheduled[ith_task].task_id][i];
-        time_left = time_left / 30 + (time_left % 30 > 0)
         if (time_left < free_time_for_interval) {
           task_time_per_day[tasks_not_scheduled[ith_task].task_id][i] = 0;
           returnEvents.push([
@@ -322,7 +323,7 @@ const algorithm = (
             task.priority_level,
           ]);
           task_time_per_day[tasks_not_scheduled[ith_task].task_id][i] =
-            (time_left - free_time_for_interval - 1) * 30;
+            (time_left - free_time_for_interval);
           if (time_left === free_time_for_interval) {
             ith_available_interval++;
             break;
