@@ -28,14 +28,14 @@ const UserProfileScreen = ({ navigation }) => {
         Alert.alert('Error', 'Could not fetch user data.');
       }
     };
-  
+    console.log(user)
     if (!user) {
       return <View style={styles.container}><Text>Loading...</Text></View>;
     }
   
     return (
       <View style={styles.container}>
-        <Text style={styles.name}>{user.user_first_name} {user.user_last_name}</Text>
+        <Text style={styles.name}>{user[0].user_first_name} {user[0].user_last_name}</Text>
       </View>
     );
   };
