@@ -36,6 +36,42 @@ router.post("/add-tasks", async (req, res) => {
   }
 });
 
+
+
+
+
+// get an entire template row from the template table based on template-id
+router.get("/get-template", async (req, res) => {
+  const template_id = req.query.template_id;
+  // console.log("Received template_id:", template_id);
+  try {
+    const result = await client.query(
+      `SELECT * FROM templates WHERE template_id = ${template_id};`
+    );
+    res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+});
+
+// get steps array of a template row based on template-id
+router.get("/get-template-steps", async (req, res) => {
+  const template_id = req.query.template_id;
+  // console.log("Received template_id:", template_id);
+  try {
+    const result = await client.query(
+      `SELECT steps FROM templates WHERE template_id = ${template_id};`
+    );
+    res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+});
+
+
+
 // get all uncompleted events for a user
 router.get("/get-uncompleted-tasks", async (req, res) => {
   const user_id = req.query.user_id;
