@@ -70,6 +70,85 @@ router.get("/get-template-steps", async (req, res) => {
   }
 });
 
+// get steps array of a template row based on template-id
+router.post("/post-template-steps", async (req, res) => {
+  // const template_id = req.query.template_id;
+  const user_id = req.query.user_id;
+  let task_name = req.query.task_name;
+  const task_start_date = req.query.task_start_date;
+  const task_due_date = req.query.task_due_date;
+  // const priority_level = req.query.priority_level;
+  let priority_level = req.query.priority_level;
+
+  // Convert 'NULL' string to actual null
+  if (priority_level === 'NULL') {
+    priority_level = null;
+  }
+
+  let estimate_completion_time = req.query.estimate_completion_time;
+  // console.log("Received template_id:", template_id);
+  try {
+    const result = await client.query(
+      `SELECT steps FROM templates WHERE template_id = ${1};`
+    );
+    // res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    // res.send(err.message);
+  }
+
+  const result = await client.query(
+    `SELECT steps FROM templates WHERE template_id = ${1};`
+  );
+  bean = result.rows[0]["steps"];
+  
+  console.log("Yo what the:", bean[0]);
+  
+  console.log("anotha one:", bean[0][0]);
+  console.log("anotha one:", bean[0][1]);
+
+  console.log("next task:", bean[1][0]);
+  console.log("next task:", bean[1][1]);
+
+  task_name = bean[0][0];
+  estimate_completion_time = bean[0][1];
+
+
+  try {
+    const insertQuery = `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
+        VALUES ($1, $2, $3, $4, 0, $5, $6)`;
+  
+    await client.query(insertQuery, [user_id, task_name, task_start_date, task_due_date, priority_level, estimate_completion_time]);
+    res.json({ success: true, message: "registered task succesfully" });
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+  
+});
+
+// TEMAPLET TYPE BEAT
+// router.post("/add-tasks", async (req, res) => {
+//   const user_id = req.query.user_id;
+//   const task_name = req.query.task_name;
+//   const task_start_date = req.query.task_start_date;
+//   const task_due_date = req.query.task_due_date;
+//   const priority_level = req.query.priority_level;
+//   const estimate_completion_time = req.query.estimate_completion_time;
+//   // const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
+//   try {
+//     const result = await client.query(
+//       `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
+//             VALUES (${user_id}, ${task_name}, ${task_start_date}, ${task_due_date}, 0, ${priority_level}, ${estimate_completion_time});`
+//     );
+//     res.json({ success: true, message: "registered task succesfully" });
+//   } catch (err) {
+//     console.log(err.message);
+//     res.send(err.message);
+//   }
+// });
+
+// *******************************************FRICK
 
 
 // get all uncompleted events for a user
