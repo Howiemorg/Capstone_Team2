@@ -30,7 +30,7 @@ const CalendarScreen = () => {
 
     const getEventBlocks = async () => {
         const response = await vercel.get(
-            `/get-events?user_id=${1}&event_date=${date.getFullYear()}-${
+            `/get-events?user_id=${userID}&event_date=${date.getFullYear()}-${
                 date.getMonth() + 1
             }-${date.getDate()}`
         );
