@@ -18,7 +18,7 @@ const EventDateInput = ({ onDateChange, onClick, show, setShow}) => {
         onDateChange(currentDate);
         setTimeout(() => {
             setShow(false);
-        }, 1500);
+        }, 2500);
     };
 
     const formatDate = (date) => {

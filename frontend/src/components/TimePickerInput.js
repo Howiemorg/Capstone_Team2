@@ -26,7 +26,7 @@ const TimePickerInput = ({ setEventTime, onClick, show, setShow }) => {
         }
         setTimeout(() => {
             setShow(false);
-        }, 1500);
+        }, 2500);
     };
 
     // Helper function to format the time as a string
