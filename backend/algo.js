@@ -58,8 +58,7 @@ function get_best_time_intervals(
   curr_task,
   circadian_rhythm
 ) {
-  let task_time =
-    Math.floor(curr_task.estimate_completion_time / 30);
+  let task_time = curr_task.estimate_completion_time;
   let best_intervals = [];
 
   available_intervals.forEach((interval) => {
