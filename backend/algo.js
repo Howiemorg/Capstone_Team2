@@ -101,8 +101,8 @@ const generateWeeklyArray = (tasks, startDate) => {
     let avg_time =
       task.estimate_completion_time /
       (
-        (taskDueDate.getTime() - taskStartDate.getTime()) /
-          (24 * 60 * 60 * 1000) +
+        Math.floor((taskDueDate.getTime() - taskStartDate.getTime()) /
+          (24 * 60 * 60 * 1000)) +
         1
       ).toFixed(0);
     
@@ -144,6 +144,8 @@ const algorithm = (
   // console.log(typeof(start_date))
   const startDate = stringToDate(start_date);
   const task_time_per_day = generateWeeklyArray(tasks, startDate);
+
+  return task_time_per_day;
 
   for (let i = 0; i < 7; ++i) {
     const curr_day = new Date();
