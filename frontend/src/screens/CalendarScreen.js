@@ -38,18 +38,44 @@ const CalendarScreen = () => {
         setEventBlocks(response.data);
     };
 
-    const cancelEvent = async (eventBlockRemove) => {
-        // const response = await vercel.post(`/cancel-event?user_id=${userID}&event_id=${eventBlock.event_block_id}`)
-        // if (response.data.success) {
-        setEventBlocks((prevEventBlocks) =>
-            prevEventBlocks.filter(
-                (eventBlock) =>
-                    eventBlock.event_block_id != eventBlockRemove.event_block_id
-            )
-        );
-        // } else {
-        //   setError(response.data.message);
-        // }
+    const deleteSetEvent = async (eventBlockRemove) => {
+        try{
+            const response = await vercel.delete(`/delete-set-event?event_block_id=${eventBlockRemove.event_block_id}`);
+
+            if (response.data.success) {
+                setEventBlocks((prevEventBlocks) =>
+                    prevEventBlocks.filter(
+                        (eventBlock) =>
+                            eventBlock.event_block_id != eventBlockRemove.event_block_id
+                    )
+                );
+            } else {
+              setError("There was an error in the route for deleting a user defined event", response.data.message);
+            }
+        } catch(error) {
+            setError("An error occurred while deleting the user defined event.");
+        }
+    };
+
+    const cancelRecommendedEvent = async (eventBlockRemove) => {
+        // console.log("Here is the info: ", eventBlockRemove)
+        try{
+            const response = await vercel.delete(`/cancel-recommended-event?user_id=${eventBlockRemove.user_id}&event_block_id=${eventBlockRemove.event_block_id}&task_id=${eventBlockRemove.task_id}&selected_date=${eventBlockRemove.event_date}`);
+
+            if (response.data.success) {
+                setEventBlocks((prevEventBlocks) =>
+                    prevEventBlocks.filter(
+                        (eventBlock) =>
+                            eventBlock.event_block_id != eventBlockRemove.event_block_id
+                    )
+                );
+            // console.log("Cancelling event successfully:", response.data)
+            } else {
+              setError("There was an error in the route for deleting a user defined event", response.data.message);
+            }
+        } catch(error) {
+            setError("An error occurred while deleting the user defined event.");
+        }
     };
 
     const reschedule = async (task) => {
@@ -127,48 +153,91 @@ const CalendarScreen = () => {
                 style={styles.tasklist}
                 scrollEnabled={true}
                 showsVerticalScrollIndicator={false}
+                // renderItem={({ item }) => {
+                //     return (
+                //         <Swipeable
+                //             onSwipeableOpen={
+                //                 item.task_id
+                //                     ? reschedule.bind(null, item)
+                //                     : cancelEvent.bind(null, item)
+                //             }
+                //             renderRightActions={renderLeftActions}
+                //         >
+                //             {item.task_id ? (
+                //                 <View style={[styles.block]}>
+                //                     <Text style={styles.title}>
+                //                         {item.event_name}
+                //                     </Text>
+                //                     <Text style={[styles.task_time]}>
+                //                         {item.event_start_time} -{" "}
+                //                         {item.event_end_time}
+                //                     </Text>
+                //                 </View>
+                //             ) : (
+                //                 // User defined events start here
+                //                 <TouchableOpacity onPress= {handleUserDefinedEventPress.bind(null, item)}>
+                //                     <View style={[styles.block, styles.event]} >
+                //                         <Text
+                //                             style={[
+                //                                 styles.title,
+                //                                 { color: "white" },
+                //                             ]}
+                //                         >
+                //                             {item.event_name}
+                //                         </Text>
+                //                         <Text style={styles.event_time}>
+                //                             {item.event_start_time} -{" "}
+                //                             {item.event_end_time}
+                //                         </Text>
+                //                     </View>
+                //                 </TouchableOpacity>
+                //             )}
+                //         </Swipeable>
+                //     );
+                // }}
                 renderItem={({ item }) => {
-                    return (
-                        <Swipeable
-                            onSwipeableOpen={
-                                item.task_id
-                                    ? reschedule.bind(null, item)
-                                    : cancelEvent.bind(null, item)
-                            }
-                            renderRightActions={renderLeftActions}
-                        >
-                            {item.task_id ? (
+                    // User task events
+                    if (item.task_id) {
+                        return (
+                            <Swipeable
+                                leftThreshold={0.75}
+                                onSwipeableOpen={() => cancelRecommendedEvent(item)}
+                                renderRightActions={renderLeftActions}
+                            >
+                                <TouchableOpacity onPress={handleUserDefinedEventPress.bind(null, item)}>
                                 <View style={[styles.block]}>
-                                    <Text style={styles.title}>
-                                        {item.event_name}
+                                     <Text style={styles.title}>
+                                         {item.event_name}
+                                     </Text>
+                                     <Text style={[styles.task_time]}>
+                                         {item.event_start_time} -{" "}
+                                         {item.event_end_time}
                                     </Text>
-                                    <Text style={[styles.task_time]}>
-                                        {item.event_start_time} -{" "}
-                                        {item.event_end_time}
-                                    </Text>
-                                </View>
-                            ) : (
-                                // User defined events start here
-                                // TODO: I can obtain the eventID through item.eventID
-                                <TouchableOpacity onPress= {handleUserDefinedEventPress.bind(null, item)}>
-                                    <View style={[styles.block, styles.event]} >
-                                        <Text
-                                            style={[
-                                                styles.title,
-                                                { color: "white" },
-                                            ]}
-                                        >
+                                  </View>
+                                </TouchableOpacity>
+                            </Swipeable>
+                        );
+                    } else {
+                        // Set events
+                        return (
+                            <Swipeable
+                                leftThreshold={0.75}
+                                onSwipeableOpen={() => deleteSetEvent(item)}
+                                renderRightActions={renderLeftActions}
+                            >
+                                <TouchableOpacity onPress={handleUserDefinedEventPress.bind(null, item)}>
+                                    <View style={[styles.block, styles.event]}>
+                                        <Text style={[styles.title, { color: "white" }]}>
                                             {item.event_name}
                                         </Text>
                                         <Text style={styles.event_time}>
-                                            {item.event_start_time} -{" "}
-                                            {item.event_end_time}
+                                            {item.event_start_time} - {item.event_end_time}
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
-                            )}
-                        </Swipeable>
-                    );
+                            </Swipeable>
+                        );
+                    }
                 }}
             />
             <View style={styles.buttoncontainer}>
