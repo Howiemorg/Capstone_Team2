@@ -118,9 +118,9 @@ const generateWeeklyArray = (tasks, startDate) => {
       currDay.setHours(0);
       currDay.setMinutes(0);
       currDay.setSeconds(0);
-      if (taskStartDate <= start && taskDueDate >= currDay && total_time < task.estimate_completion_time) {
+      if (taskStartDate <= start && taskDueDate >= currDay) {
         tasks_per_day[task.task_id].push(avg_time);
-        total_time += avg_time;
+        total_time += (avg_time * 30);
       } else {
         tasks_per_day[task.task_id].push(0);
       }
