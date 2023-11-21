@@ -24,11 +24,6 @@ router.post("/add-tasks", async (req, res) => {
   const priority_level = req.query.priority_level;
   const estimate_completion_time = req.query.estimate_completion_time;
   // const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
-  const currentDate = new Date().toISOString().slice(0,10);
-  const formattedTaskDueDate = task_due_date.slice(0, 10);
-  if (formattedTaskDueDate == currentDate){
-    priority_level=4;
-  }
   try {
     const result = await client.query(
       `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
@@ -40,6 +35,123 @@ router.post("/add-tasks", async (req, res) => {
     res.send(err.message);
   }
 });
+
+
+
+
+
+// get an entire template row from the template table based on template-id
+router.get("/get-template", async (req, res) => {
+  const template_id = req.query.template_id;
+  // console.log("Received template_id:", template_id);
+  try {
+    const result = await client.query(
+      `SELECT * FROM templates WHERE template_id = ${template_id};`
+    );
+    res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+});
+
+// get steps array of a template row based on template-id
+router.get("/get-template-steps", async (req, res) => {
+  const template_id = req.query.template_id;
+  // console.log("Received template_id:", template_id);
+  try {
+    const result = await client.query(
+      `SELECT steps FROM templates WHERE template_id = ${template_id};`
+    );
+    res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+});
+
+// get steps array of a template row based on template-id
+router.post("/post-template-steps", async (req, res) => {
+  // const template_id = req.query.template_id;
+  const user_id = req.query.user_id;
+  let task_name = req.query.task_name;
+  const task_start_date = req.query.task_start_date;
+  const task_due_date = req.query.task_due_date;
+  // const priority_level = req.query.priority_level;
+  let priority_level = req.query.priority_level;
+
+  // Convert 'NULL' string to actual null
+  if (priority_level === 'NULL') {
+    priority_level = null;
+  }
+
+  let estimate_completion_time = req.query.estimate_completion_time;
+  // console.log("Received template_id:", template_id);
+  try {
+    const result = await client.query(
+      `SELECT steps FROM templates WHERE template_id = ${1};`
+    );
+    // res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    // res.send(err.message);
+  }
+
+  const result = await client.query(
+    `SELECT steps FROM templates WHERE template_id = ${1};`
+  );
+  // fuchi = result;
+
+  // let tasksArray = fuchi.map(taskData => {
+  //   return {
+  //     task_name: taskData[0],  // Assuming the first element is the task name
+  //     estimate_completion_time: taskData[1]  // Assuming the second element is the estimated completion time
+  //     // Add other task properties here if they exist
+  //   };
+  // });
+
+  let tasksArray = [];
+
+if (result.rows && result.rows.length > 0) {
+  // Assuming each row's 'steps' column is an array of task data
+  const stepsArray = result.rows[0].steps; // Get the steps array from the first row
+
+  tasksArray = stepsArray.map(taskData => {
+    return {
+      task_name: taskData[0],  // Assuming the first element is the task name
+      estimate_completion_time: taskData[1]  // Assuming the second element is the estimated completion time
+      // Add other task properties here if they exist
+    };
+  });
+}
+
+// Now 'tasksArray' is an array of task objects
+console.log(tasksArray);
+  
+  // // Now 'tasksArray' is an array of task objects
+  // console.log(tasksArray);
+
+
+  // Loop through tasksArray and insert each task into the database
+for (const task of tasksArray) {
+  try {
+    const insertQuery = `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
+        VALUES ($1, $2, $3, $4, 0, $5, $6)`;
+    // Replace these values with actual values you want to insert, e.g., task.task_name
+    await client.query(insertQuery, [user_id, task.task_name, task.task_start_date, task.task_due_date, task.priority_level, task.estimate_completion_time]);
+  } catch (err) {
+    console.log(err.message);
+    // Handle the error, e.g., log it, send a response back, etc.
+  }
+}
+
+// Send a response back indicating success
+res.json({ success: true, message: "Tasks registered successfully" });
+  
+});
+
+
+
 
 // get all uncompleted events for a user
 router.get("/get-uncompleted-tasks", async (req, res) => {
@@ -153,6 +265,7 @@ const runAlgo = async (user_id, selected_date, selected_tasks, regen_count=0, ev
       `SELECT * FROM events WHERE user_id = ${user_id} AND event_date >= '${selected_date}' ORDER BY event_start_time;`
     );
     events = events.rows;
+
     console.log(events);
     //get the circadian rhythm array
     let circadian_rhythm = await client.query(
@@ -205,4 +318,24 @@ router.post("/get-recommendations", async (req, res) => {
   }
 });
 // getrec()
+
+// get all uncompleted events for a user
+router.get("/get-due-tasks", async (req, res) => {
+  const user_id = req.query.user_id;
+  const currentDate = new Date().toISOString().slice(0,10);
+
+  try {
+    const query = {
+      text: "SELECT * FROM tasks WHERE user_id = $1 AND completion_date IS NULL AND $2 < task_due_date ORDER BY task_due_date;",
+      values: [user_id,currentDate],
+    };
+
+    const result = await client.query(query);
+    res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+});
+
 module.exports = [router, runAlgo];

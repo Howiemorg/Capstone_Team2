@@ -26,17 +26,17 @@ router.get("/test-db", async (req, res) => {
     }
 });
 
-// // gets user information based on user_id
-// router.get("/get-user-info", async (req, res) => {
-//     const user_id = req.params.user_id;
-//     try {
-//         const result = await client.query("SELECT * FROM users WHERE user_id = $1", [user_id]);
-//         res.send(result.rows);
-//     } catch (err) {
-//         console.log(err.message);
-//         res.send(err.message);
-//     }
-// });
+// gets user information based on user_id
+router.get("/get-user-info", async (req, res) => {
+    const user_id = req.query.user_id;
+    try {
+        const result = await client.query("SELECT * FROM users WHERE user_id = $1", [user_id]);
+        res.send(result.rows);
+    } catch (err) {
+        console.log(err.message);
+        res.send(err.message);
+    }
+});
 
 //validates the login information
 router.get("/login-validation", async (req, res) => {
