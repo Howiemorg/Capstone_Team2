@@ -124,7 +124,7 @@ const generateWeeklyArray = (tasks, startDate) => {
       } else {
         tasks_per_day[task.task_id].push(0);
       }
-      if (currDay.getDay() == 6) {
+      if (currDay.getDay() == 6 || total_time >= task.estimate_completion_time) {
         break;
       }
     }
