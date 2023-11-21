@@ -145,8 +145,6 @@ const algorithm = (
   const startDate = stringToDate(start_date);
   const task_time_per_day = generateWeeklyArray(tasks, startDate);
 
-  return task_time_per_day;
-
   for (let i = 0; i < 7; ++i) {
     const curr_day = new Date();
     curr_day.setDate(startDate.getDate() + i);
