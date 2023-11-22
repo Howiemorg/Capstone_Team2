@@ -40,6 +40,9 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
         // unmounts or selectedPriority changes again
         return () => clearTimeout(timeoutId);
     }, [taskDueDate]);
+
+    const padWithZero = (number) => String(number).padStart(2, "0");
+
     const TaskSubmit = async () => {
         if (!taskDueDate || !taskName || !estimateCompletionTime) {
             setError("*All fields must be filled");
@@ -58,18 +61,21 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
             } else {
                 priority_level = 1;
             }
-            console.log(`/add-tasks?user_id=${userID}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${
+            const url = `/add-tasks?user_id=${userID}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${padWithZero(
                 taskStartDate.getMonth() + 1
-            }-${taskStartDate.getDate()} ${taskStartDate.getHours()}:${taskStartDate.getMinutes()}:00'&task_due_date='${taskDueDate.getFullYear()}-${
+            )}-${padWithZero(taskStartDate.getDate())} ${padWithZero(
+                taskStartDate.getHours()
+            )}:${padWithZero(
+                taskStartDate.getMinutes()
+            )}:00'&task_due_date='${taskDueDate.getFullYear()}-${padWithZero(
                 taskDueDate.getMonth() + 1
-            }-${taskDueDate.getDate()} ${taskDueDate.getHours()}:${taskDueDate.getMinutes()}:00'&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'&priority_level=${priority_level}`)
-            const response = await vercel.post(
-                `/add-tasks?user_id=${userID}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${
-                    taskStartDate.getMonth() + 1
-                }-${taskStartDate.getDate()} ${taskStartDate.getHours()}:${taskStartDate.getMinutes()}:00'&task_due_date='${taskDueDate.getFullYear()}-${
-                    taskDueDate.getMonth() + 1
-                }-${taskDueDate.getDate()} ${taskDueDate.getHours()}:${taskDueDate.getMinutes()}:00'&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'&priority_level=${priority_level}`
-            );
+            )}-${padWithZero(taskDueDate.getDate())} ${padWithZero(
+                taskDueDate.getHours()
+            )}:${padWithZero(
+                taskDueDate.getMinutes()
+            )}:00'&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'&priority_level=${priority_level}`;
+
+            const response = await vercel.post(url);
 
             if (!response.data.success) {
                 setError(response.data.message);

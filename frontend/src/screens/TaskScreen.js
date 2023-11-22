@@ -13,28 +13,29 @@ import vercel from "../api/vercel";
 import AddTaskModal from "../components/AddTaskModal";
 // import CheckBox from "@react-native-community/checkbox";
 import CheckBox from "expo-checkbox";
+import EditTaskModal from "../components/EditTaskModal";
 
 const TaskScreen = ({ setSelected }) => {
     const [tasks, setTasks] = useState([]);
     const [error, setError] = useState("");
     const [addTask, setAddTask] = useState(false);
     const [generateTasks, setGeneratetasks] = useState([]);
+    const [editTask, setEditTask] = useState(false);
 
     const { userID } = useSelector((state) => state.user);
 
+    const [editTaskObject, setEditTaskObject] = useState({})
+
     const formatTime = (date) => {
-        console.log("date", date);
         if (date == undefined) {
             return "null";
         }
-  
+
         return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
     };
 
     const getTasks = async () => {
-        const response = await vercel.get(
-            `/get-due-tasks?user_id=${userID}`
-        );
+        const response = await vercel.get(`/get-due-tasks?user_id=${userID}`);
 
         if (response.data) {
             setTasks(response.data);
@@ -100,8 +101,10 @@ const TaskScreen = ({ setSelected }) => {
         getTasks();
     }, []);
 
-    console.log(generateTasks);
-
+    const editTaskModal = (item) => {
+        setEditTask(true);
+        setEditTaskObject(item)
+    };
     return (
         <View style={styles.container}>
             <TouchableOpacity
@@ -112,6 +115,20 @@ const TaskScreen = ({ setSelected }) => {
                     Add a Task
                 </Text>
             </TouchableOpacity>
+            <Modal
+                isVisible={editTask}
+                animationIn='fadeIn'
+                animationOut='fadeOut'
+                style={{}}
+                onBackdropPress={() => setEditTask(false)}
+            >
+                <EditTaskModal
+                    onHideModal={() => setEditTask(false)}
+                    onEditTask={() => getTasks()}
+                    setTaskObject = {setEditTaskObject}
+                    taskObject = {editTaskObject}
+                />
+            </Modal>
             <Modal
                 isVisible={addTask}
                 animationIn='fadeIn'
@@ -139,29 +156,32 @@ const TaskScreen = ({ setSelected }) => {
 
                     if (dueThisWeek(date)) {
                         return (
-                            <View
-                                style={[
-                                    styles.task,
-                                    { width: "100%" }, // This line sets the width to 80%
-                                    item.priority_level === 1
-                                        ? { backgroundColor: "skyblue" }
-                                        : item.priority_level === 2
-                                        ? { backgroundColor: "lightgreen" }
-                                        : item.priority_level === 3
-                                        ? { backgroundColor: "orange" }
-                                        : item.priority_level === 4
-                                        ? { backgroundColor: "red" }
-                                        : null, // You should handle the case when none of the conditions are met
-                                ]}
-                            >
-                                <Text style={styles.taskName}>
-                                    {item.task_name}
-                                </Text>
-                                <Text>
-                                    {item.estimate_completion_time / 60} hours
-                                </Text>
-                                <Text>Due: {formatTime(date)}</Text>
-                            </View>
+                            <TouchableOpacity onPress={() => editTaskModal(item)}>
+                                <View
+                                    style={[
+                                        styles.task,
+                                        { width: "100%" }, // This line sets the width to 80%
+                                        item.priority_level === 1
+                                            ? { backgroundColor: "skyblue" }
+                                            : item.priority_level === 2
+                                            ? { backgroundColor: "lightgreen" }
+                                            : item.priority_level === 3
+                                            ? { backgroundColor: "orange" }
+                                            : item.priority_level === 4
+                                            ? { backgroundColor: "red" }
+                                            : null, // You should handle the case when none of the conditions are met
+                                    ]}
+                                >
+                                    <Text style={styles.taskName}>
+                                        {item.task_name}
+                                    </Text>
+                                    <Text>
+                                        {item.estimate_completion_time / 60}{" "}
+                                        hours
+                                    </Text>
+                                    <Text>Due: {formatTime(date)}</Text>
+                                </View>
+                            </TouchableOpacity>
                         );
                     }
                     return (
