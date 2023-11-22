@@ -106,12 +106,26 @@ const TaskScreen = ({ setSelected }) => {
         setEditTask(true);
         setEditTaskObject(item);
     };
+    const getTaskPriority = (priority_level, taskDate) => {
+        if (formatTime(taskDate) === formatTime(new Date())) {
+            return { backgroundColor: "red" };
+        }
+        if (priority_level === 1) {
+            return { backgroundColor: "skyblue" };
+        } else if (priority_level === 2) {
+            return { backgroundColor: "lightgreen" };
+        } else if (priority_level === 3) {
+            return { backgroundColor: "orange" };
+        } else if (priority_level === 4) {
+            return { backgroundColor: "red" };
+        }
+    };
     const deleteTask = async (taskId) => {
         try {
             const response = await axios.delete(
                 `http://capstone-backend-charles-tran.vercel.app/delete-task?task_id=${taskId}`
             );
-            console.log(response.data)
+            console.log(response.data);
             if (response.data.success) {
                 getTasks();
             } else {
@@ -178,16 +192,11 @@ const TaskScreen = ({ setSelected }) => {
                             >
                                 <View
                                     style={[
-                                        styles.row, // Use a row style
-                                        item.priority_level === 1
-                                            ? { backgroundColor: "skyblue" }
-                                            : item.priority_level === 2
-                                            ? { backgroundColor: "lightgreen" }
-                                            : item.priority_level === 3
-                                            ? { backgroundColor: "orange" }
-                                            : item.priority_level === 4
-                                            ? { backgroundColor: "red" }
-                                            : null,
+                                        styles.row,
+                                        getTaskPriority(
+                                            item.priority_level,
+                                            date
+                                        ),
                                     ]}
                                 >
                                     <View style={styles.column}>
@@ -217,15 +226,7 @@ const TaskScreen = ({ setSelected }) => {
                             <View
                                 style={[
                                     styles.row,
-                                    item.priority_level === 1
-                                        ? { backgroundColor: "skyblue" }
-                                        : item.priority_level === 2
-                                        ? { backgroundColor: "lightgreen" }
-                                        : item.priority_level === 3
-                                        ? { backgroundColor: "orange" }
-                                        : item.priority_level === 4 && {
-                                              backgroundColor: "red",
-                                          },
+                                    getTaskPriority(item.priority_level, date),
                                 ]}
                             >
                                 <CheckBox
