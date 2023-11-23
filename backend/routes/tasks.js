@@ -23,12 +23,21 @@ router.post("/add-tasks", async (req, res) => {
   const task_due_date = req.query.task_due_date;
   const priority_level = req.query.priority_level;
   const estimate_completion_time = req.query.estimate_completion_time;
+  const subtasks = req.query.subtasks
   // const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
   try {
     const result = await client.query(
-      `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
-            VALUES (${user_id}, ${task_name}, ${task_start_date}, ${task_due_date}, 0, ${priority_level}, ${estimate_completion_time});`
+      `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time, subtask_id)
+            VALUES (${user_id}, ${task_name}, ${task_start_date}, ${task_due_date}, 0, ${priority_level}, ${estimate_completion_time}, NULL);`
     );
+
+      for(const subtask of subtasks){
+        const subtask_result = await client.query(
+          `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time, subtask_id)
+                VALUES (${user_id}, ${subtask.task_name}, ${subtask.task_start_date}, ${task_due_date}, 0, ${subtask.priority_level}, ${subtask.estimate_completion_time}, NULL);`
+        );
+      }
+
     res.json({ success: true, message: "registered task succesfully" });
   } catch (err) {
     console.log(err.message);
@@ -47,6 +56,18 @@ router.get("/get-template", async (req, res) => {
   try {
     const result = await client.query(
       `SELECT * FROM templates WHERE template_id = ${template_id};`
+    );
+    res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+});
+
+router.get("/get-templates", async (req, res) => {
+  try {
+    const result = await client.query(
+      `SELECT * FROM templates;`
     );
     res.send(result.rows);
   } catch (err) {
@@ -309,7 +330,10 @@ router.post("/get-recommendations", async (req, res) => {
   const user_id = req.query.user_id;
   const selected_date = req.query.selected_date;
   const selected_tasks = req.query.selected_tasks;
+
   try {
+    const deleteQuery = await client.query(`DELETE FROM events WHERE user_id = ${user_id} AND event_date >= '${selected_date}' AND task_id IN ${selected_tasks};`)
+
     const message = await runAlgo(user_id, selected_date, selected_tasks);
 
     res.json({ success: true, message: message });
