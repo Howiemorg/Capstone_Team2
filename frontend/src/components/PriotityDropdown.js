@@ -14,7 +14,6 @@ const PriorityDropdown = ({
         const timeoutId = setTimeout(() => {
             // Your timeout logic here
             setShow(false);
-            console.log("Priority changed to:", selectedPriority);
         }, 1500); // Wait for 2 seconds before executing
 
         // Cleanup function to clear the timeout when the component

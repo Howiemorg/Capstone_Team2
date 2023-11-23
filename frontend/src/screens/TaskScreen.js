@@ -13,28 +13,30 @@ import vercel from "../api/vercel";
 import AddTaskModal from "../components/AddTaskModal";
 // import CheckBox from "@react-native-community/checkbox";
 import CheckBox from "expo-checkbox";
+import EditTaskModal from "../components/EditTaskModal";
+import axios from "axios";
 
 const TaskScreen = ({ setSelected }) => {
     const [tasks, setTasks] = useState([]);
     const [error, setError] = useState("");
     const [addTask, setAddTask] = useState(false);
     const [generateTasks, setGeneratetasks] = useState([]);
+    const [editTask, setEditTask] = useState(false);
 
     const { userID } = useSelector((state) => state.user);
 
+    const [editTaskObject, setEditTaskObject] = useState({});
+
     const formatTime = (date) => {
-        console.log("date", date);
         if (date == undefined) {
             return "null";
         }
-  
+
         return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
     };
 
     const getTasks = async () => {
-        const response = await vercel.get(
-            `/get-due-tasks?user_id=${userID}`
-        );
+        const response = await vercel.get(`/get-due-tasks?user_id=${userID}`);
 
         if (response.data) {
             setTasks(response.data);
@@ -100,8 +102,40 @@ const TaskScreen = ({ setSelected }) => {
         getTasks();
     }, []);
 
-    console.log(generateTasks);
-
+    const editTaskModal = (item) => {
+        setEditTask(true);
+        setEditTaskObject(item);
+    };
+    const getTaskPriority = (priority_level, taskDate) => {
+        if (formatTime(taskDate) === formatTime(new Date())) {
+            return { backgroundColor: "red" };
+        }
+        if (priority_level === 1) {
+            return { backgroundColor: "skyblue" };
+        } else if (priority_level === 2) {
+            return { backgroundColor: "lightgreen" };
+        } else if (priority_level === 3) {
+            return { backgroundColor: "orange" };
+        } else if (priority_level === 4) {
+            return { backgroundColor: "red" };
+        }
+    };
+    const deleteTask = async (taskId) => {
+        try {
+            const response = await axios.delete(
+                `http://capstone-backend-charles-tran.vercel.app/delete-task?task_id=${taskId}`
+            );
+            console.log(response.data);
+            if (response.data.success) {
+                getTasks();
+            } else {
+                setError(response.data.message);
+                return;
+            }
+        } catch (err) {
+            setError(err);
+        }
+    };
     return (
         <View style={styles.container}>
             <TouchableOpacity
@@ -112,6 +146,20 @@ const TaskScreen = ({ setSelected }) => {
                     Add a Task
                 </Text>
             </TouchableOpacity>
+            <Modal
+                isVisible={editTask}
+                animationIn='fadeIn'
+                animationOut='fadeOut'
+                style={{}}
+                onBackdropPress={() => setEditTask(false)}
+            >
+                <EditTaskModal
+                    onHideModal={() => setEditTask(false)}
+                    onEditTask={() => getTasks()}
+                    setTaskObject={setEditTaskObject}
+                    taskObject={editTaskObject}
+                />
+            </Modal>
             <Modal
                 isVisible={addTask}
                 animationIn='fadeIn'
@@ -139,68 +187,75 @@ const TaskScreen = ({ setSelected }) => {
 
                     if (dueThisWeek(date)) {
                         return (
-                            <View
-                                style={[
-                                    styles.task,
-                                    { width: "100%" }, // This line sets the width to 80%
-                                    item.priority_level === 1
-                                        ? { backgroundColor: "skyblue" }
-                                        : item.priority_level === 2
-                                        ? { backgroundColor: "lightgreen" }
-                                        : item.priority_level === 3
-                                        ? { backgroundColor: "orange" }
-                                        : item.priority_level === 4
-                                        ? { backgroundColor: "red" }
-                                        : null, // You should handle the case when none of the conditions are met
-                                ]}
+                            <TouchableOpacity
+                                onPress={() => editTaskModal(item)}
                             >
-                                <Text style={styles.taskName}>
-                                    {item.task_name}
-                                </Text>
-                                <Text>
-                                    {item.estimate_completion_time / 60} hours
-                                </Text>
-                                <Text>Due: {formatTime(date)}</Text>
-                            </View>
+                                <View
+                                    style={[
+                                        styles.row,
+                                        getTaskPriority(
+                                            item.priority_level,
+                                            date
+                                        ),
+                                    ]}
+                                >
+                                    <View style={styles.column}>
+                                        <Text style={styles.taskName}>
+                                            {item.task_name}
+                                        </Text>
+                                        <Text>
+                                            {item.estimate_completion_time / 60}{" "}
+                                            hours
+                                        </Text>
+                                        <Text>Due: {formatTime(date)}</Text>
+                                    </View>
+                                    <TouchableOpacity
+                                        onPress={() => deleteTask(item.task_id)}
+                                        style={styles.closeButton}
+                                    >
+                                        <Text style={styles.closeButtonText}>
+                                            X
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </TouchableOpacity>
                         );
                     }
                     return (
-                        <View
-                            style={[
-                                styles.task,
-                                {
-                                    flex: 2,
-                                    flexDirection: "row",
-                                    backgroundColor: "lightgreen",
-                                },
-                                item.priority_level === 1
-                                    ? { backgroundColor: "skyblue" }
-                                    : item.priority_level === 2
-                                    ? { backgroundColor: "lightgreen" }
-                                    : item.priority_level === 3
-                                    ? { backgroundColor: "orange" }
-                                    : item.priority_level === 4 && {
-                                          backgroundColor: "red",
-                                      },
-                            ]}
-                        >
-                            <CheckBox
-                                value={isChecked(item.task_id)}
-                                onValueChange={() => {
-                                    toggleChecked(item.task_id);
-                                }}
-                                style={{ alignSelf: "center" }}
-                            />
-                            <View>
-                                <Text style={styles.taskName}>
-                                    {item.task_name}
-                                </Text>
-                                <Text>
-                                    {item.estimate_completion_time} hours
-                                </Text>
-                                <Text>Due: {formatTime(date)}</Text>
+                        <TouchableOpacity onPress={() => editTaskModal(item)}>
+                            <View
+                                style={[
+                                    styles.row,
+                                    getTaskPriority(item.priority_level, date),
+                                ]}
+                            >
+                                <CheckBox
+                                    value={isChecked(item.task_id)}
+                                    onValueChange={() => {
+                                        toggleChecked(item.task_id);
+                                    }}
+                                    style={{ alignSelf: "center" }}
+                                />
+                                <View style={styles.column}>
+                                    <Text style={styles.taskName}>
+                                        {item.task_name}
+                                    </Text>
+                                    <Text>
+                                        {item.estimate_completion_time / 60}{" "}
+                                        hours
+                                    </Text>
+                                    <Text>Due: {formatTime(date)}</Text>
+                                </View>
+                                <TouchableOpacity
+                                    onPress={() => deleteTask(item.task_id)}
+                                    style={styles.closeButton}
+                                >
+                                    <Text style={styles.closeButtonText}>
+                                        X
+                                    </Text>
+                                </TouchableOpacity>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                     );
                 }}
             />
@@ -225,6 +280,8 @@ const styles = StyleSheet.create({
         marginTop: "20%",
     },
     container: {
+        display: "flex",
+        flexDirection: "column",
         alignItems: "center",
     },
     error: {
@@ -238,13 +295,42 @@ const styles = StyleSheet.create({
         width: "45%",
         borderRadius: 24,
         backgroundColor: "black",
-        marginTop: "10%",
+        margin: 20,
         alignSelf: "center",
         padding: 8,
     },
-    tasklist: { height: "65%", flexGrow: 0, marginTop: "5%", width: "70%" },
-    task: { marginTop: 2, padding: 3, borderWidth: 1 },
-    taskName: { fontSize: 16, fontWeight: "500" },
+    tasklist: {
+        width: "70%",
+        height: "63%",
+    },
+    row: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center", // Vertically center items within the row
+        padding: 5,
+        borderWidth: 1,
+        marginBottom: 10, // Add margin between rows
+    },
+    column: {
+        flex: 1, // Each column takes up equal space within a row
+        paddingHorizontal: 5, // Add padding for spacing within columns
+    },
+    taskName: {
+        fontSize: 16,
+        fontWeight: "500",
+    },
+    closeButton: {
+        width: 40,
+        height: 40,
+        backgroundColor: "black",
+        borderRadius: 20,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    closeButtonText: {
+        color: "white",
+        fontSize: 18,
+    },
 });
 
 export default TaskScreen;

@@ -29,9 +29,8 @@ const TimePickerInput = ({ setEventTime, onClick, show, setShow, value, eventTim
 
     // Helper function to format the time as a string
     const formatTime = (date) => {
-        console.log("date", date)
         if(date == undefined){
-            return "nullf"
+            return "null"
         }
         const hours = date.getHours();
         const minutes = date.getMinutes();
