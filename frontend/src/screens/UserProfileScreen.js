@@ -36,42 +36,67 @@ const UserProfileScreen = ({ navigation }) => {
 
     const screenWidth = Dimensions.get('window').width;
 
+    const numericCircadianData = user[0].circadian_rhythm.map(value => parseFloat(value));
+
+    const labels = Array.from({ length: 48 }, (_, index) => {
+      if (index % 6 === 0) { 
+          const hour = Math.floor(index / 2);
+          const minute = index % 2 === 0 ? '00' : '30';
+          return `${hour}:${minute}`;
+      }
+      return ''; 
+  });
+
     return (
         <View style={styles.container}>
-            
             <Text style={styles.name}>First Name: {user[0].user_first_name}</Text>
             <Text style={styles.name}>Last Name: {user[0].user_last_name}</Text>
             <Text style={styles.time}>Wake Time: {user[0].wake_time}</Text>
             <Text style={styles.time}>Sleep Time: {user[0].sleep_time}</Text>
 
-            {/* Circadian Rhythm Graph */}
+            <Text style={styles.chartTitle}>{`${user[0].user_first_name}'s Circadian Rhythm Graph`}</Text>
             <LineChart
                 data={{
-                    labels: [], 
+                    labels: labels,
                     datasets: [{
-                        data: user[0].circadian_rhythm
+                        data: numericCircadianData
                     }]
                 }}
                 width={screenWidth}
                 height={220}
+                // yAxisLabel="Val: "
                 chartConfig={{
                     backgroundColor: '#e26a00',
                     backgroundGradientFrom: '#fb8c00',
                     backgroundGradientTo: '#ffa726',
                     decimalPlaces: 2,
                     color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                     style: {
                         borderRadius: 16,
                     },
+                    propsForDots: {
+                        r: '6',
+                        strokeWidth: '2',
+                        stroke: '#ffa726'
+                    },
+                    padding: 16,
+                    marginLeft: 16,
                 }}
                 bezier
                 style={{
                     marginVertical: 8,
                     borderRadius: 16
                 }}
+                formatYLabel={(y) => {
+                    return (typeof y === 'number') ? y.toFixed(2) : y;
+                }}
+                withDots
+                withHorizontalLabels
+                withVerticalLabels
+                withInteractiveXLabels
             />
 
-            {/* Logout Button */}
             <Button
                 title="Logout"
                 onPress={handleLogout}
@@ -95,6 +120,11 @@ const styles = StyleSheet.create({
     time: {
         fontSize: 16,
         marginVertical: 5,
+    },
+    chartTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
     },
 });
 
