@@ -27,3 +27,9 @@ VALUES (1, 'Study Color Theory', '2023-10-30', '2023-11-3', 0, 2, 30.0);
 
 INSERT INTO templates (template_name, steps, estimated_completion_time, user_id)
 VALUES ('Programming', '{{"Psuedocode",60},{"Coding",240},{"Test and Submit",120}}', 420, NULL);
+
+INSERT INTO templates (template_name, steps, estimated_completion_time, user_id)
+VALUES ('Writing', '{{"Research",120},{"Writing",240},{"Proof-reading",60}}', 420, NULL);
+
+INSERT INTO templates (template_name, steps, estimated_completion_time, user_id)
+VALUES ('Painting', '{{"Sketching",120},{"Outlining",60},{"Coloring",120},{"Final_Touches",60}}', 360, NULL);
