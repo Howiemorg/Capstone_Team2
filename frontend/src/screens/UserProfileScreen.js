@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, Button } from 'react-native';
 import { useSelector } from 'react-redux'; 
 import vercel from "../api/vercel";
 
@@ -28,17 +28,28 @@ const UserProfileScreen = ({ navigation }) => {
         Alert.alert('Error', 'Could not fetch user data.');
       }
     };
-    console.log(user)
+    const handleLogout = () => {
+      // You can add any logout logic here (like clearing user data)
+      navigation.navigate('LoginScreen'); 
+    };
+    // console.log(user)
     if (!user) {
       return <View style={styles.container}><Text>Loading...</Text></View>;
     }
   
     return (
       <View style={styles.container}>
-        <Text style={styles.name}>First Name:{user[0].user_first_name}</Text>
+        <Text style={styles.name}>First Name: {user[0].user_first_name}</Text>
         <Text style={styles.name}>Last Name: {user[0].user_last_name}</Text>
         <Text style={styles.time}>Wake Time: {user[0].wake_time}</Text>
         <Text style={styles.time}>Sleep Time: {user[0].sleep_time}</Text>
+
+        {/* Logout Button */}
+        <Button
+          title="Logout"
+          onPress={handleLogout}
+          color="#841584" // Optional: customize button color
+        />
       </View>
     );
   };
