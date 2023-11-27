@@ -13,7 +13,7 @@ const Stack = createStackNavigator(
     SignUp: SignUpScreen,
     Login: LoginScreen,
     Task: TaskScreen,
-    UserProfile : UserProfileScreen
+    UserProfile : UserProfileScreen,
   },
   {
     initialRouteName: "Login",
