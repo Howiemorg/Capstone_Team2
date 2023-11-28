@@ -182,15 +182,6 @@ router.post("/post-template-steps", async (req, res) => {
   const result = await client.query(
     `SELECT steps FROM templates WHERE template_id = ${1};`
   );
-  // fuchi = result;
-
-  // let tasksArray = fuchi.map(taskData => {
-  //   return {
-  //     task_name: taskData[0],  // Assuming the first element is the task name
-  //     estimate_completion_time: taskData[1]  // Assuming the second element is the estimated completion time
-  //     // Add other task properties here if they exist
-  //   };
-  // });
 
   let tasksArray = [];
 
@@ -316,8 +307,8 @@ router.put("/update-task", async (req, res) => {
   }
 });
 
-const insertEvents = (data) => {
-  const query = {
+const insertEvents = async(data, subtasks) => {
+  let query = {
     text: "INSERT INTO Events (event_name, event_start_time, event_end_time, user_id, task_id, work_done_pct, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
     values: [
       data[0],
@@ -333,6 +324,12 @@ const insertEvents = (data) => {
     ],
   };
 
+  const task_subtasks = subtasks.map((currentValue, index) => {return {indx: index, subtask: currentValue}}).filter((value) => value.task_id == data[4]);
+
+  if(task_subtasks.length){
+
+  }
+
   return query;
 };
 
@@ -346,11 +343,13 @@ const runAlgo = async (
   // get all the tasks from DB
   try {
     const query = {
-      text: `SELECT * FROM (SELECT * FROM tasks WHERE user_id = ${user_id} AND completion_date IS NULL AND task_id IN ${selected_tasks}) AS t LEFT JOIN subtasks AS s ON t.task_id = s.task_id;`,
+      text: `SELECT * FROM tasks WHERE user_id = ${user_id} AND completion_date IS NULL AND task_id IN ${selected_tasks};`,
     };
     let tasks = await client.query(query);
     tasks = tasks.rows;
 
+    let subtasks = await client.query(`SELECT * FROM tasks WHERE task_id IN (${selected_tasks});`)
+    subtasks = subtasks.rows;
     // get all the events from the DB
     let events = await client.query(
       `SELECT * FROM events WHERE user_id = ${user_id} AND event_date >= '${selected_date}' ORDER BY event_start_time;`
@@ -380,7 +379,7 @@ const runAlgo = async (
       const results = await client.query(query);
     } else {
       for (const query of eventQuerys) {
-        const insertQuery = insertEvents(query);
+        const insertQuery = insertEvents(query, subtasks);
         console.log(query);
         console.log(insertQuery);
         let results = await client.query(insertQuery);
