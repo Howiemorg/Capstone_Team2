@@ -112,13 +112,15 @@ const UserProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: 'flex-start', // Change this from 'center' to 'flex-start'
         alignItems: 'center',
         padding: 20,
+        paddingHorizontal: 20,
+
     },
     name: {
         fontSize: 20,
-        fontWeight: 'bold',
+        fontWeight: 'bold'
     },
     time: {
         fontSize: 16,
@@ -128,6 +130,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
+        marginTop: 40,
     },
 });
 
