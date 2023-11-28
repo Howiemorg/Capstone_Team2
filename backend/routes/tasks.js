@@ -3,7 +3,7 @@ const dotenv = require("dotenv").config();
 const express = require("express");
 const pg = require("pg");
 const router = express.Router();
-const bodyParser = require('body-parser').json();
+const bodyParser = require("body-parser").json();
 
 const conString = {
   host: process.env.DB_HOST,
@@ -23,9 +23,11 @@ router.post("/add-tasks", bodyParser, async (req, res) => {
   let task_start_date = req.query.task_start_date;
   let task_due_date = req.query.task_due_date;
   const priority_level = req.query.priority_level;
-  const estimate_completion_time = req.query.estimate_completion_time;
   const template_name = req.query.template_name;
   const subtasks = req.body.subtasks;
+  const estimate_completion_time = subtasks.length
+    ? 0
+    : req.query.estimate_completion_time;
 
   // const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
   try {
@@ -36,8 +38,12 @@ router.post("/add-tasks", bodyParser, async (req, res) => {
 
     const IDresult = await client.query(`SELECT LASTVAL()`);
 
-    task_due_date = new Date(task_due_date.substring(1,task_due_date.length - 1));
-    task_start_date = new Date(task_start_date.substring(1,task_start_date.length - 1));
+    task_due_date = new Date(
+      task_due_date.substring(1, task_due_date.length - 1)
+    );
+    task_start_date = new Date(
+      task_start_date.substring(1, task_start_date.length - 1)
+    );
 
     const days =
       Math.floor(
@@ -47,30 +53,56 @@ router.post("/add-tasks", bodyParser, async (req, res) => {
 
     let past_due_date = new Date();
     past_due_date.setDate(task_start_date.getDate() - 1);
+    let total_estimate_completion_time = 0;
 
     for (let i = 0; i < subtasks.length; ++i) {
-      const {task_name: subtask_name, estimate_completion_time: subtask_time} = subtasks[i];
+      const {
+        task_name: subtask_name,
+        estimate_completion_time: subtask_time,
+      } = subtasks[i];
       const pct_days =
-        Math.floor(
-          (subtask_time / estimate_completion_time) * 100
-        ) / 100;
+        Math.floor((subtask_time / estimate_completion_time) * 100) / 100;
 
       const start_date = new Date();
       const due_date = new Date();
       if (past_due_date < task_due_date) {
         start_date.setDate(past_due_date.getDate() + 1);
-        due_date.setDate(Math.min(start_date.getDate() + Math.floor(pct_days * days), task_due_date.getDate()));
+        due_date.setDate(
+          Math.min(
+            start_date.getDate() + Math.floor(pct_days * days),
+            task_due_date.getDate()
+          )
+        );
       } else {
         start_date.setDate(task_due_date.getDate());
         due_date.setDate(task_due_date.getDate());
-      }    
+      }
 
       const subtask_result = await client.query(
-        'INSERT INTO subtasks (user_id, subtask_name, subtask_start_date, subtask_due_date, priority_level, estimate_completion_time, task_id) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-              [user_id, subtask_name, `'${start_date.getFullYear()}-${start_date.getMonth()}-${start_date.getDate()}'`, 
-              `'${due_date.getFullYear()}-${due_date.getMonth()}-${due_date.getDate()}'`, priority_level, subtask_time, IDresult.rows[0].lastval]);
+        "INSERT INTO subtasks (user_id, subtask_name, subtask_start_date, subtask_due_date, priority_level, estimate_completion_time, task_id) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+        [
+          user_id,
+          subtask_name,
+          `'${start_date.getFullYear()}-${start_date.getMonth()}-${start_date.getDate()}'`,
+          `'${due_date.getFullYear()}-${due_date.getMonth()}-${due_date.getDate()}'`,
+          priority_level,
+          subtask_time,
+          IDresult.rows[0].lastval,
+        ]
+      );
 
+      total_estimate_completion_time += parseInt(subtask_time);
       past_due_date = due_date;
+    }
+
+    if(total_estimate_completion_time){
+      const task_time_update_result = await client.query(
+        "UPDATE tasks SET estimate_completion_time = $1 WHERE task_id = $2",
+        [
+          total_estimate_completion_time,
+          IDresult.rows[0].lastval,
+        ]
+      );
     }
 
     res.json({ success: true, message: "registered task succesfully" });
@@ -314,10 +346,11 @@ const runAlgo = async (
   // get all the tasks from DB
   try {
     const query = {
-      text: `SELECT * FROM tasks WHERE user_id = ${user_id} AND completion_date IS NULL AND task_id IN ${selected_tasks};`,
+      text: `SELECT * FROM (SELECT * FROM tasks WHERE user_id = ${user_id} AND completion_date IS NULL AND task_id IN ${selected_tasks}) AS t LEFT JOIN subtasks AS s ON t.task_id = s.task_id;`,
     };
     let tasks = await client.query(query);
     tasks = tasks.rows;
+
     // get all the events from the DB
     let events = await client.query(
       `SELECT * FROM events WHERE user_id = ${user_id} AND event_date >= '${selected_date}' ORDER BY event_start_time;`
