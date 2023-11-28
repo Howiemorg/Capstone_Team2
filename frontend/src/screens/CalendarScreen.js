@@ -146,8 +146,10 @@ const CalendarScreen = () => {
     };
 
     const handleUserDefinedEventPress = (item) => {
-        setEventID(item.event_block_id);
-        setEditEventModalVisable(true);
+        if(!item.task_id) {
+            setEventID(item.event_block_id);
+            setEditEventModalVisable(true);
+        }
     }
 
     return (
