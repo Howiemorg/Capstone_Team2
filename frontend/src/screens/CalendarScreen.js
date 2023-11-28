@@ -1,4 +1,6 @@
 import React from "react";
+import Icon from "react-native-vector-icons/Ionicons";
+import Animated from 'react-native-reanimated';
 import {
     Text,
     StyleSheet,
@@ -79,6 +81,7 @@ const CalendarScreen = () => {
     };
 
     const reschedule = async (task) => {
+        console.log('Right swipe action on: ', task);
         // const response = await vercel.post(`/reschedule?user_id=${userID}&task_id=${task.task_id}`)
 
         // if (response.data.success) {
@@ -97,9 +100,47 @@ const CalendarScreen = () => {
             inputRange: [0, 50, 100, 101],
             outputRange: [-20, 0, 0, 1],
         });
+
+        
         return (
-            <TouchableOpacity style={styles.leftAction} onPress={this.close}>
-                <Text> </Text>
+            // //Original
+            // <TouchableOpacity style={styles.leftAction} onPress={this.close}>
+            //     <Text> </Text>
+            // </TouchableOpacity>
+
+            // //Modal 2.0
+            // <TouchableOpacity style={styles.leftAction} onPress={() => deleteAction(item)}>
+            //     <View style={styles.leftActionContent}>
+            //         <Icon name="trash-bin" size={30} color="red" />
+            //     </View>
+            // </TouchableOpacity>
+
+            // //Modal 3.0
+            <TouchableOpacity style={styles.leftAction} onPress={() => deleteAction(item)}>
+                <View style={[styles.leftActionContent, { transform: [{ translateY: 50 }] }]}>
+                    <View style={styles.background}>
+                        <Icon name="trash-bin" size={30} color="red" />
+                       {/* <Text></Text> */}
+                    </View>
+                </View>
+            </TouchableOpacity>
+        );
+    };
+
+    const renderRightActions = (progress, dragX) => {
+        const trans = dragX.interpolate({
+            inputRange: [0, 50, 100, 101],
+            outputRange: [-20, 0, 0, 1],
+        });
+
+        
+        return (
+            <TouchableOpacity 
+            style={styles.rightAction} 
+            onPress={() => handleRightSwipeAction(item)}
+            >
+                <Icon name="refresh" size={30} color="blue" />
+                <Text style={styles.actionText}>Refresh</Text>
             </TouchableOpacity>
         );
     };
@@ -153,54 +194,13 @@ const CalendarScreen = () => {
                 style={styles.tasklist}
                 scrollEnabled={true}
                 showsVerticalScrollIndicator={false}
-                // renderItem={({ item }) => {
-                //     return (
-                //         <Swipeable
-                //             onSwipeableOpen={
-                //                 item.task_id
-                //                     ? reschedule.bind(null, item)
-                //                     : cancelEvent.bind(null, item)
-                //             }
-                //             renderRightActions={renderLeftActions}
-                //         >
-                //             {item.task_id ? (
-                //                 <View style={[styles.block]}>
-                //                     <Text style={styles.title}>
-                //                         {item.event_name}
-                //                     </Text>
-                //                     <Text style={[styles.task_time]}>
-                //                         {item.event_start_time} -{" "}
-                //                         {item.event_end_time}
-                //                     </Text>
-                //                 </View>
-                //             ) : (
-                //                 // User defined events start here
-                //                 <TouchableOpacity onPress= {handleUserDefinedEventPress.bind(null, item)}>
-                //                     <View style={[styles.block, styles.event]} >
-                //                         <Text
-                //                             style={[
-                //                                 styles.title,
-                //                                 { color: "white" },
-                //                             ]}
-                //                         >
-                //                             {item.event_name}
-                //                         </Text>
-                //                         <Text style={styles.event_time}>
-                //                             {item.event_start_time} -{" "}
-                //                             {item.event_end_time}
-                //                         </Text>
-                //                     </View>
-                //                 </TouchableOpacity>
-                //             )}
-                //         </Swipeable>
-                //     );
-                // }}
                 renderItem={({ item }) => {
                     // User task events
                     if (item.task_id) {
                         return (
                             <Swipeable
                                 leftThreshold={0.75}
+                                rightThreshold={0.75}
                                 onSwipeableOpen={() => cancelRecommendedEvent(item)}
                                 renderRightActions={renderLeftActions}
                             >
