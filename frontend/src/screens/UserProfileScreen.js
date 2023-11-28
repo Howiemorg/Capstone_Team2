@@ -42,12 +42,14 @@ const UserProfileScreen = ({ navigation }) => {
         }
     };
 
-    const onChangeSleepTime = async (event, selectedDate) => {
+    const onChangeSleepTime = (event, selectedDate) => {
         const currentDate = selectedDate || sleepTime;
-        currentDate.setHours(currentDate.getHours() - 6); 
-        setShowSleepPicker(false);
         setSleepTime(currentDate); 
-        const formattedSleepTime = currentDate.toISOString().split('T')[1].substr(0, 8);
+    };
+
+    const onConfirmSleepTime = async () => {
+        setShowSleepPicker(false); 
+        const formattedSleepTime = sleepTime.toISOString().split('T')[1].substr(0, 8);
         try {
             await vercel.post(`/update-user-sleep-time`, {
                 user_id: userID,
@@ -122,14 +124,17 @@ const UserProfileScreen = ({ navigation }) => {
 
             <Button onPress={() => setShowSleepPicker(true)} title="Change Sleep Time" />
             {showSleepPicker && (
-                <DateTimePicker
-                    value={sleepTime}
-                    mode="time"
-                    is24Hour={true}
-                    display="default"
-                    onChange={onChangeSleepTime}
-                    minuteInterval={30}
-                />
+                <>
+                    <DateTimePicker
+                        value={sleepTime}
+                        mode="time"
+                        is24Hour={false}
+                        display="default"
+                        onChange={onChangeSleepTime}
+                        minuteInterval={30}
+                    />
+                    <Button title="Done" onPress={onConfirmSleepTime} />
+                </>
             )}
 
             <Text style={styles.chartTitle}>{`Your Circadian Rhythm Graph`}</Text>
