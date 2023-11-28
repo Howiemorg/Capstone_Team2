@@ -25,7 +25,7 @@ router.post("/add-tasks", bodyParser, async (req, res) => {
   const priority_level = req.query.priority_level;
   const template_name = req.query.template_name;
   const subtasks = req.body.subtasks;
-  const estimate_completion_time = subtasks.length
+  const estimate_completion_time = subtasks && subtasks.length
     ? 0
     : req.query.estimate_completion_time;
 
@@ -95,13 +95,10 @@ router.post("/add-tasks", bodyParser, async (req, res) => {
       past_due_date = due_date;
     }
 
-    if(total_estimate_completion_time){
+    if (total_estimate_completion_time) {
       const task_time_update_result = await client.query(
         "UPDATE tasks SET estimate_completion_time = $1 WHERE task_id = $2",
-        [
-          total_estimate_completion_time,
-          IDresult.rows[0].lastval,
-        ]
+        [total_estimate_completion_time, IDresult.rows[0].lastval]
       );
     }
 
@@ -292,8 +289,8 @@ router.put("/update-task", async (req, res) => {
       `SELECT DISTINCT task_id FROM events where event_date >= '${task_start_date}' AND event_date <= '${task_due_date}' AND task_id is NOT NULL;`
     );
 
-    let current_tasks = pastDate.rows.map(row => row.task_id);
-    current_tasks = '(' + current_tasks.join(', ') + ')';
+    let current_tasks = pastDate.rows.map((row) => row.task_id);
+    current_tasks = "(" + current_tasks.join(", ") + ")";
 
     const result = await client.query(
       `UPDATE Tasks
@@ -310,7 +307,7 @@ router.put("/update-task", async (req, res) => {
               user_id;`
     );
     selected_user = result.rows[0]["user_id"];
-    
+
     const dropEvents = await client.query(
       `DELETE FROM events WHERE (event_date >= '${task_start_date}' AND event_date <= '${task_due_date}' AND task_id is NOT NULL) OR task_id = ${task_id};`
     );
@@ -320,34 +317,81 @@ router.put("/update-task", async (req, res) => {
       task_start_date,
       current_tasks
     );
-    res.json({ success: true, message: "updated task succesfully and regenerated schedule", output: message });
+    res.json({
+      success: true,
+      message: "updated task succesfully and regenerated schedule",
+      output: message,
+    });
   } catch (err) {
     console.log(err.message);
     res.send(err.message);
   }
 });
 
-const insertEvents = async(data, subtasks) => {
+const convertTimeStringtoIndex = (time) => {
+  return (
+    parseInt(time.substring(0, 2)) * 2 + (parseInt(time.substring(3, 5)) > 0)
+  );
+};
+
+const convertValuetoTimeString = (value) => {
+  return Math.floor(value / 2) + ":" + (value % 2 ? "30" : "00") + ":00";
+};
+
+const insertEvents = async (data, subtasks) => {
+  const event_start_time = data[1];
+  const event_end_time = data[2];
+  const task_id = data[4];
+  const user_id = data[3];
+  const event_date = data[5];
+  const priority_level = data[6];
+
   let query = {
     text: "INSERT INTO Events (event_name, event_start_time, event_end_time, user_id, task_id, work_done_pct, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
     values: [
       data[0],
-      data[1],
-      data[2],
-      data[3],
-      data[4],
+      event_start_time,
+      event_end_time,
+      user_id,
+      task_id,
       0,
-      data[5],
-      data[6],
+      event_date,
+      priority_level,
       0,
       0,
     ],
   };
 
-  const task_subtasks = subtasks.map((currentValue, index) => {return {indx: index, subtask: currentValue}}).filter((value) => value.task_id == data[4]);
+  const task_subtasks = subtasks
+    .map((currentValue, index) => {
+      return { indx: index, subtask: currentValue };
+    })
+    .filter(
+      (value) => value.task_id == data[4] && value.estimate_completion_time != 0
+    );
 
-  if(task_subtasks.length){
+  if (task_subtasks.length) {
+    query = `INSERT INTO Events (event_name, event_start_time, event_end_time, user_id, task_id, work_done_pct, event_date, priority_level, regen_count, max_reschedule) VALUES`;
+    let past_end_time = convertTimeStringtoIndex(event_start_time.substring(1, event_start_time.length - 1));
+    const total_time =
+      (parseInt(event_end_time.substring(0, 2)) -
+        parseInt(event_start_time.substring(0, 2))) *
+        60 +
+      Math.abs(
+        parseInt(event_end_time.substring(3, 5)) +
+          parseInt(event_start_time.substring(3, 5))
+      );
+    for (const task_subtask of task_subtasks) {
+      const {indx, subtask} = task_subtask;
+      if (subtask.estimate_completion_time >= total_time) {
+        query += ` (${subtask.subtask_name}, ${convertValuetoTimeString(past_end_time)}, ${convertValuetoTimeString(past_end_time + total_time)}, 
+        ${user_id}, ${task_id}, 0, ${event_date}, ${priority_level}, 0, 0)`;
+        subtasks[indx].estimate_completion_time -= total_time;
+        break;
+      }else{
 
+      }
+    }
   }
 
   return query;
@@ -368,7 +412,9 @@ const runAlgo = async (
     let tasks = await client.query(query);
     tasks = tasks.rows;
 
-    let subtasks = await client.query(`SELECT * FROM tasks WHERE task_id IN (${selected_tasks});`)
+    let subtasks = await client.query(
+      `SELECT * FROM tasks WHERE task_id IN (${selected_tasks});`
+    );
     subtasks = subtasks.rows;
     // get all the events from the DB
     let events = await client.query(
