@@ -34,7 +34,7 @@ router.post("/add-tasks", async (req, res) => {
       for(const subtask of subtasks){
         const subtask_result = await client.query(
           `INSERT INTO Subtasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time, task_id)
-                VALUES (${user_id}, ${subtask.task_name}, ${subtask.task_start_date}, ${task_due_date}, 0, ${subtask.priority_level}, ${subtask.estimate_completion_time}, ${result.rows[0].task_id});`
+                VALUES (${user_id}, ${subtask[0]}, ${task_start_date}, ${task_due_date}, 0, ${priority_level}, ${subtask[1]}, ${result.rows[0].task_id});`
         );
       }
 
