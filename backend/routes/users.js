@@ -123,4 +123,32 @@ router.post("/register-user", async (req, res) => {
 });
 
 
+// Endpoint to update user wake time
+router.post("/update-user-wake-time", async (req, res) => {
+    const { user_id, wake_time } = req.body;
+    try {
+        const query = 'UPDATE users SET wake_time = $1 WHERE user_id = $2';
+        await client.query(query, [wake_time, user_id]);
+        res.status(200).send('Wake time updated successfully');
+    } catch (error) {
+        console.error('Error updating wake time', error);
+        res.status(500).send('Error updating wake time');
+    }
+});
+
+
+// Endpoint to update user sleep time
+router.post("/update-user-sleep-time", async (req, res) => {
+    const { user_id, sleep_time } = req.body;
+    try {
+        const query = 'UPDATE users SET sleep_time = $1 WHERE user_id = $2';
+        await client.query(query, [sleep_time, user_id]);
+        res.status(200).send('Sleep time updated successfully');
+    } catch (error) {
+        console.error('Error updating sleep time', error);
+        res.status(500).send('Error updating sleep time');
+    }
+});
+
+
 module.exports = router

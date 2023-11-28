@@ -117,12 +117,12 @@ router.put("/update-set-event", async (req, res) => {
   try {
 
     const pastDate = await client.query(
-      `SELECT task_id FROM events where event_date = '${event_date}' AND task_id is NOT NULL;`
+      `SELECT DISTINCT task_id FROM events where event_date = '${event_date}' AND task_id is NOT NULL;`
     );
 
     let current_tasks = pastDate.rows.map(row => row.task_id);
     current_tasks = '(' + current_tasks.join(', ') + ')';
-    
+
     const result = await client.query(
       `UPDATE Events
             SET

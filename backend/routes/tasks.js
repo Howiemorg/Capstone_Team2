@@ -288,19 +288,39 @@ router.put("/update-task", async (req, res) => {
   const progress_percent = req.query.progress_percent;
 
   try {
+    const pastDate = await client.query(
+      `SELECT DISTINCT task_id FROM events where event_date >= '${task_start_date}' AND event_date <= '${task_due_date}' AND task_id is NOT NULL;`
+    );
+
+    let current_tasks = pastDate.rows.map(row => row.task_id);
+    current_tasks = '(' + current_tasks.join(', ') + ')';
+
     const result = await client.query(
       `UPDATE Tasks
             SET
               task_name = ${task_name},
-              task_start_date = ${task_start_date},
-              task_due_date = ${task_due_date},
+              task_start_date = '${task_start_date}',
+              task_due_date = '${task_due_date}',
               progress_percent = ${progress_percent},
               priority_level = ${priority_level},
               estimate_completion_time = ${estimate_completion_time}
             WHERE
-              task_id = ${task_id};`
+              task_id = ${task_id}
+            RETURNING
+              user_id;`
     );
-    res.json({ success: true, message: "updated task succesfully" });
+    selected_user = result.rows[0]["user_id"];
+    
+    const dropEvents = await client.query(
+      `DELETE FROM events WHERE (event_date >= '${task_start_date}' AND event_date <= '${task_due_date}' AND task_id is NOT NULL) OR task_id = ${task_id};`
+    );
+
+    const message = await runAlgo(
+      selected_user,
+      task_start_date,
+      current_tasks
+    );
+    res.json({ success: true, message: "updated task succesfully and regenerated schedule", output: message });
   } catch (err) {
     console.log(err.message);
     res.send(err.message);
