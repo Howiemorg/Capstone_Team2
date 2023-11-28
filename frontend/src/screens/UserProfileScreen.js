@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Alert, Button, Dimensions } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import vercel from "../api/vercel";
 import { LineChart } from 'react-native-chart-kit';
+import { logout } from '../store/Users/user-actions';
 
 const UserProfileScreen = ({ navigation }) => {
     const [user, setUser] = useState(null);
@@ -11,7 +12,7 @@ const UserProfileScreen = ({ navigation }) => {
 
     useEffect(() => {
         if (!userID) {
-            navigation.navigate('LoginScreen');
+            navigation.navigate('Login');
         } else {
             fetchUserData();
         }
@@ -26,8 +27,10 @@ const UserProfileScreen = ({ navigation }) => {
         }
     };
 
+    const dispatch = useDispatch();
+
     const handleLogout = () => {
-        navigation.navigate('LoginScreen'); 
+        dispatch(logout());
     };
 
     if (!user) {
@@ -54,7 +57,7 @@ const UserProfileScreen = ({ navigation }) => {
             <Text style={styles.time}>Wake Time: {user[0].wake_time}</Text>
             <Text style={styles.time}>Sleep Time: {user[0].sleep_time}</Text>
 
-            <Text style={styles.chartTitle}>{`${user[0].user_first_name}'s Circadian Rhythm Graph`}</Text>
+            <Text style={styles.chartTitle}>{`Your Circadian Rhythm Graph`}</Text>
             <LineChart
                 data={{
                     labels: labels,
