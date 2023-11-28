@@ -27,7 +27,7 @@ const UserProfileScreen = ({ navigation }) => {
         try {
             const response = await vercel.get(`/get-user-info?user_id=${userID}`);
             setUser(response.data);
-            // Initialize sleepTime and wakeTime from user data
+            
             const sleepDate = new Date();
             sleepDate.setHours(response.data[0].sleep_time.split(':')[0]);
             sleepDate.setMinutes(response.data[0].sleep_time.split(':')[1]);
@@ -44,10 +44,9 @@ const UserProfileScreen = ({ navigation }) => {
 
     const onChangeSleepTime = async (event, selectedDate) => {
         const currentDate = selectedDate || sleepTime;
-        currentDate.setHours(currentDate.getHours() - 6);
+        currentDate.setHours(currentDate.getHours() - 6); 
         setShowSleepPicker(false);
-        setSleepTime(currentDate);
-        // Send this to the backend
+        setSleepTime(currentDate); 
         const formattedSleepTime = currentDate.toISOString().split('T')[1].substr(0, 8);
         try {
             await vercel.post(`/update-user-sleep-time`, {
@@ -55,17 +54,17 @@ const UserProfileScreen = ({ navigation }) => {
                 sleep_time: formattedSleepTime
             });
             Alert.alert('Success', 'Sleep time updated successfully.');
+            fetchUserData(); 
         } catch (error) {
             Alert.alert('Error', 'Could not update sleep time.');
         }
     };
-
+    
     const onChangeWakeTime = async (event, selectedDate) => {
         const currentDate = selectedDate || wakeTime;
-        currentDate.setHours(currentDate.getHours() - 6);
+        currentDate.setHours(currentDate.getHours() - 6); 
         setShowWakePicker(false);
-        setWakeTime(currentDate);
-        // Send this to the backend
+        setWakeTime(currentDate); 
         const formattedWakeTime = currentDate.toISOString().split('T')[1].substr(0, 8);
         try {
             await vercel.post(`/update-user-wake-time`, {
@@ -73,6 +72,7 @@ const UserProfileScreen = ({ navigation }) => {
                 wake_time: formattedWakeTime
             });
             Alert.alert('Success', 'Wake time updated successfully.');
+            fetchUserData(); 
         } catch (error) {
             Alert.alert('Error', 'Could not update wake time.');
         }
@@ -116,6 +116,7 @@ const UserProfileScreen = ({ navigation }) => {
                     is24Hour={true}
                     display="default"
                     onChange={onChangeWakeTime}
+                    minuteInterval={30}
                 />
             )}
 
@@ -127,6 +128,7 @@ const UserProfileScreen = ({ navigation }) => {
                     is24Hour={true}
                     display="default"
                     onChange={onChangeSleepTime}
+                    minuteInterval={30}
                 />
             )}
 
