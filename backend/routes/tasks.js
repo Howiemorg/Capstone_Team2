@@ -30,8 +30,8 @@ router.post("/add-tasks", bodyParser, async (req, res) => {
   // const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
   try {
     const result = await client.query(
-      `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time)
-      VALUES (${user_id}, ${task_name}, ${task_start_date}, ${task_due_date}, 0, ${priority_level}, ${estimate_completion_time});`
+      `INSERT INTO Tasks (user_id, task_name, task_start_date, task_due_date, progress_percent, priority_level, estimate_completion_time, template_name)
+      VALUES (${user_id}, ${task_name}, ${task_start_date}, ${task_due_date}, 0, ${priority_level}, ${estimate_completion_time}, ${template_name});`
     );
 
     const IDresult = await client.query(`SELECT LASTVAL()`);
