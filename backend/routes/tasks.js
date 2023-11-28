@@ -25,9 +25,8 @@ router.post("/add-tasks", bodyParser, async (req, res) => {
   const priority_level = req.query.priority_level;
   const template_name = req.query.template_name;
   const subtasks = req.body.subtasks;
-  const estimate_completion_time = subtasks && subtasks.length
-    ? 0
-    : req.query.estimate_completion_time;
+  const estimate_completion_time =
+    subtasks && subtasks.length ? 0 : req.query.estimate_completion_time;
 
   // const priority_level = calculatePriorityLevel(estimate_completion_time, task_due_date, task_start_date);
   try {
@@ -55,44 +54,46 @@ router.post("/add-tasks", bodyParser, async (req, res) => {
     past_due_date.setDate(task_start_date.getDate() - 1);
     let total_estimate_completion_time = 0;
 
-    for (let i = 0; i < subtasks.length; ++i) {
-      const {
-        task_name: subtask_name,
-        estimate_completion_time: subtask_time,
-      } = subtasks[i];
-      const pct_days =
-        Math.floor((subtask_time / estimate_completion_time) * 100) / 100;
+    if (subtasks) {
+      for (let i = 0; i < subtasks.length; ++i) {
+        const {
+          task_name: subtask_name,
+          estimate_completion_time: subtask_time,
+        } = subtasks[i];
+        const pct_days =
+          Math.floor((subtask_time / estimate_completion_time) * 100) / 100;
 
-      const start_date = new Date();
-      const due_date = new Date();
-      if (past_due_date < task_due_date) {
-        start_date.setDate(past_due_date.getDate() + 1);
-        due_date.setDate(
-          Math.min(
-            start_date.getDate() + Math.floor(pct_days * days),
-            task_due_date.getDate()
-          )
+        const start_date = new Date();
+        const due_date = new Date();
+        if (past_due_date < task_due_date) {
+          start_date.setDate(past_due_date.getDate() + 1);
+          due_date.setDate(
+            Math.min(
+              start_date.getDate() + Math.floor(pct_days * days),
+              task_due_date.getDate()
+            )
+          );
+        } else {
+          start_date.setDate(task_due_date.getDate());
+          due_date.setDate(task_due_date.getDate());
+        }
+
+        const subtask_result = await client.query(
+          "INSERT INTO subtasks (user_id, subtask_name, subtask_start_date, subtask_due_date, priority_level, estimate_completion_time, task_id) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+          [
+            user_id,
+            subtask_name,
+            `'${start_date.getFullYear()}-${start_date.getMonth()}-${start_date.getDate()}'`,
+            `'${due_date.getFullYear()}-${due_date.getMonth()}-${due_date.getDate()}'`,
+            priority_level,
+            subtask_time,
+            IDresult.rows[0].lastval,
+          ]
         );
-      } else {
-        start_date.setDate(task_due_date.getDate());
-        due_date.setDate(task_due_date.getDate());
+
+        total_estimate_completion_time += parseInt(subtask_time);
+        past_due_date = due_date;
       }
-
-      const subtask_result = await client.query(
-        "INSERT INTO subtasks (user_id, subtask_name, subtask_start_date, subtask_due_date, priority_level, estimate_completion_time, task_id) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-        [
-          user_id,
-          subtask_name,
-          `'${start_date.getFullYear()}-${start_date.getMonth()}-${start_date.getDate()}'`,
-          `'${due_date.getFullYear()}-${due_date.getMonth()}-${due_date.getDate()}'`,
-          priority_level,
-          subtask_time,
-          IDresult.rows[0].lastval,
-        ]
-      );
-
-      total_estimate_completion_time += parseInt(subtask_time);
-      past_due_date = due_date;
     }
 
     if (total_estimate_completion_time) {
@@ -372,7 +373,9 @@ const insertEvents = async (data, subtasks) => {
 
   if (task_subtasks.length) {
     query = `INSERT INTO Events (event_name, event_start_time, event_end_time, user_id, task_id, work_done_pct, event_date, priority_level, regen_count, max_reschedule) VALUES`;
-    let past_end_time = convertTimeStringtoIndex(event_start_time.substring(1, event_start_time.length - 1));
+    let past_end_time = convertTimeStringtoIndex(
+      event_start_time.substring(1, event_start_time.length - 1)
+    );
     const total_time =
       (parseInt(event_end_time.substring(0, 2)) -
         parseInt(event_start_time.substring(0, 2))) *
@@ -382,14 +385,15 @@ const insertEvents = async (data, subtasks) => {
           parseInt(event_start_time.substring(3, 5))
       );
     for (const task_subtask of task_subtasks) {
-      const {indx, subtask} = task_subtask;
+      const { indx, subtask } = task_subtask;
       if (subtask.estimate_completion_time >= total_time) {
-        query += ` (${subtask.subtask_name}, ${convertValuetoTimeString(past_end_time)}, ${convertValuetoTimeString(past_end_time + total_time)}, 
+        query += ` (${subtask.subtask_name}, ${convertValuetoTimeString(
+          past_end_time
+        )}, ${convertValuetoTimeString(past_end_time + total_time)}, 
         ${user_id}, ${task_id}, 0, ${event_date}, ${priority_level}, 0, 0)`;
         subtasks[indx].estimate_completion_time -= total_time;
         break;
-      }else{
-
+      } else {
       }
     }
   }
