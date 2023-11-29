@@ -483,11 +483,16 @@ router.post("/get-recommendations", async (req, res) => {
 // get all uncompleted events for a user
 router.get("/get-due-tasks", async (req, res) => {
   const user_id = req.query.user_id;
-  const currentDate = new Date().toISOString().slice(0, 10);
+    // Get the current date and time
+  let currentDate = new Date();
+
+  // Subtract 6 hours (in milliseconds) from the current time
+  currentDate = new Date(currentDate.getTime() - (6 * 60 * 60 * 1000));
+  currentDate = currentDate.toISOString().slice(0, 10);
 
   try {
     const query = {
-      text: "SELECT * FROM tasks WHERE user_id = $1 AND completion_date IS NULL AND $2 < task_due_date ORDER BY task_due_date;",
+      text: "SELECT * FROM tasks WHERE user_id = $1 AND completion_date IS NULL AND $2 <= task_due_date ORDER BY task_due_date;",
       values: [user_id, currentDate],
     };
 
