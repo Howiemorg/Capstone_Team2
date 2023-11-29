@@ -5,6 +5,7 @@ import vercel from "../api/vercel";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { LineChart } from 'react-native-chart-kit';
 import { logout } from '../store/Users/user-actions';
+import moment from 'moment-timezone';
 
 const UserProfileScreen = ({ navigation }) => {
     const [user, setUser] = useState(null);
@@ -41,6 +42,7 @@ const UserProfileScreen = ({ navigation }) => {
             Alert.alert('Error', 'Could not fetch user data.');
         }
     };
+    
 
     const onChangeSleepTime = (event, selectedDate) => {
         const currentDate = selectedDate || sleepTime;
@@ -49,7 +51,10 @@ const UserProfileScreen = ({ navigation }) => {
 
     const onConfirmSleepTime = async () => {
         setShowSleepPicker(false); 
-        const formattedSleepTime = sleepTime.toISOString().split('T')[1].substr(0, 8);
+        let modifiedSleepTime = new Date(sleepTime);
+        modifiedSleepTime.setMilliseconds(modifiedSleepTime.getMilliseconds() - 6 * 60 * 60 * 1000);
+        const formattedSleepTime = modifiedSleepTime.toISOString().split('T')[1].substr(0, 8);
+    
         try {
             await vercel.post(`/update-user-sleep-time`, {
                 user_id: userID,
@@ -61,13 +66,21 @@ const UserProfileScreen = ({ navigation }) => {
             Alert.alert('Error', 'Could not update sleep time.');
         }
     };
+
+
     
-    const onChangeWakeTime = async (event, selectedDate) => {
+
+    const onChangeWakeTime = (event, selectedDate) => {
         const currentDate = selectedDate || wakeTime;
-        currentDate.setHours(currentDate.getHours() - 6); 
-        setShowWakePicker(false);
         setWakeTime(currentDate); 
-        const formattedWakeTime = currentDate.toISOString().split('T')[1].substr(0, 8);
+    };
+
+    const onConfirmWakeTime = async () => {
+        setShowWakePicker(false); 
+        let modifiedWakeTime = new Date(wakeTime);
+        modifiedWakeTime.setMilliseconds(modifiedWakeTime.getMilliseconds() - 6 * 60 * 60 * 1000);
+        const formattedWakeTime = modifiedWakeTime.toISOString().split('T')[1].substr(0, 8);
+    
         try {
             await vercel.post(`/update-user-wake-time`, {
                 user_id: userID,
@@ -112,14 +125,17 @@ const UserProfileScreen = ({ navigation }) => {
 
             <Button onPress={() => setShowWakePicker(true)} title="Change Wake Time" />
             {showWakePicker && (
-                <DateTimePicker
-                    value={wakeTime}
-                    mode="time"
-                    is24Hour={true}
-                    display="default"
-                    onChange={onChangeWakeTime}
-                    minuteInterval={30}
-                />
+                <>
+                    <DateTimePicker
+                        value={wakeTime}
+                        mode="time"
+                        is24Hour={false}
+                        display="default"
+                        onChange={onChangeWakeTime}
+                        minuteInterval={30}
+                    />
+                    <Button title="Done" onPress={onConfirmWakeTime} />
+                </>
             )}
 
             <Button onPress={() => setShowSleepPicker(true)} title="Change Sleep Time" />
