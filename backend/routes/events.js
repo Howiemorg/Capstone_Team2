@@ -193,38 +193,48 @@ router.delete("/cancel-recommended-event", async (req, res) => {
   }
 });
 
-router.get("/get-user-survey-events", async(req, res) => {
+router.get("/get-user-survey-events", async (req, res) => {
   const user_id = req.query.user_id;
 
   let currentDate = new Date();
 
   // Subtract 6 hours (in milliseconds) from the current time
-  currentDate = new Date(currentDate.getTime() - (6 * 60 * 60 * 1000));
-  let currentTime = currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds()
+  currentDate = new Date(currentDate.getTime() - 6 * 60 * 60 * 1000);
+  let currentTime =
+    currentDate.getHours() +
+    ":" +
+    currentDate.getMinutes() +
+    ":" +
+    currentDate.getSeconds();
   currentDate = currentDate.toISOString().slice(0, 10);
 
   try {
     const result = await client.query(
-      `SELECT * FROM events WHERE user_id = ${user_id} AND (event_date < '${currentDate}' OR (event_date = '${currentDate}' AND event_end_time <= '${currentTime}')) AND (user_survey IS NULL OR NOT user_survey) ORDER BY event_start_time ASC;`
+      `SELECT * FROM events WHERE user_id = ${user_id} AND (event_date < '${currentDate}' OR (event_date = '${currentDate}' AND event_end_time <= '${currentTime}')) AND (user_survey IS NULL OR NOT user_survey) AND task_id IS NOT NULL ORDER BY event_date ASC, event_start_time ASC;`
     );
     res.send(result.rows);
   } catch (err) {
     console.log(err.message);
     res.send(err.message);
   }
-})
+});
 
 router.put("/event-survey-results", async (req, res) => {
   const subtasks = req.body.subtasks;
   const task_id = req.query.task_id;
-  let time_remaining =
-    subtasks && subtasks.length ? 0 : req.query.estimate_completion_time;
   const event_block_id = req.query.event_block_id;
   const productivity_score = req.query.productivity_score;
   const event_start_time = req.query.event_start_time;
   const event_end_time = req.query.event_end_time;
   const user_id = req.query.user_id;
   const selected_date = req.query.selected_date;
+
+  let event_total_time =
+    (parseInt(event_end_time.split(":")[0]) - parseInt(event_start_time.split(":")[0])) * 60 +
+    parseInt(event_end_time.split(":")[1]) -
+    parseInt(event_start_time.split(":")[1]);
+
+  const task_time_to_remove = event_total_time;
 
   try {
     const result = await client.query(
@@ -236,13 +246,13 @@ router.put("/event-survey-results", async (req, res) => {
     res.send(err.message);
   }
 
-  if (!time_remaining) {
-    time_remaining = await client.query(
+  let time_remaining = time_remaining = await client.query(
       `SELECT estimate_completion_time FROM tasks WHERE task_id=${task_id}`
     );
 
-    time_remaining = time_remaining.rows[0].estimate_completion_time;
-  }
+  time_remaining = time_remaining.rows[0].estimate_completion_time;
+  
+  time_remaining -= task_time_to_remove;
 
   const today = new Date(selected_date);
 
@@ -258,7 +268,7 @@ router.put("/event-survey-results", async (req, res) => {
 
   try {
     for (const subtask of subtasks) {
-      const { task_name: subtask_name, time_remaining: sub_time_remaining } =
+      const { task_name: subtask_name } =
         subtask;
 
       let subtask_completion_time = await client.query(
@@ -267,14 +277,16 @@ router.put("/event-survey-results", async (req, res) => {
       );
 
       subtask_completion_time =
-        subtask_completion_time.rows[0].estimate_completion_time;
+        parseInt(subtask_completion_time.rows[0].estimate_completion_time);
+
+      const sub_time_remaining = Math.max(subtask_completion_time - event_total_time, 0);
 
       const subtaskUpdateResult = await client.query(
         `
           UPDATE subtasks 
           SET estimate_completion_time = $1 
           ${
-            subtask.time_remaining === 0
+            sub_time_remaining === 0
               ? `completion_date = ${today
                   .toISOString()
                   .substring(
@@ -287,11 +299,16 @@ router.put("/event-survey-results", async (req, res) => {
         [sub_time_remaining, subtask_name]
       );
 
-      time_remaining =
-        time_remaining - subtask_completion_time + parseInt(sub_time_remaining);
+      event_total_time -= subtask_completion_time;
+      if(event_total_time <= 0){
+        break;
+      }
     }
 
-    if (parseInt(productivity_score) === 1) {
+    if (
+      parseInt(productivity_score) === 1 ||
+      parseInt(productivity_score) == 0
+    ) {
       for (
         ;
         circadian_start_indx < circadian_end_indx;
@@ -304,12 +321,12 @@ router.put("/event-survey-results", async (req, res) => {
         );
         curr_score = curr_score.rows[0].circadian_rhythm;
         if (curr_score - 1.6 < 0.1) {
-          const taskUpdateResult = await client.query(`
+          const circadianUpdateResult = await client.query(`
           UPDATE users 
           SET circadian_rhythm[${circadian_start_indx + 1}]=0.1
           WHERE user_id=${user_id};`);
         } else {
-          const taskUpdateResult = await client.query(`
+          const circaidanUpdateResult = await client.query(`
           UPDATE users 
           SET circadian_rhythm[${circadian_start_indx + 1}]=${(
             curr_score - 1.6
@@ -330,12 +347,12 @@ router.put("/event-survey-results", async (req, res) => {
         );
         curr_score = curr_score.rows[0].circadian_rhythm;
         if (curr_score + 1.6 > 16) {
-          const taskUpdateResult = await client.query(`
+          const circadianUpdateResult = await client.query(`
           UPDATE users 
           SET circadian_rhythm[${circadian_start_indx + 1}]=16
           WHERE user_id=${user_id};`);
         } else {
-          const taskUpdateResult = await client.query(`
+          const circadianUpdateResult = await client.query(`
           UPDATE users 
           SET circadian_rhythm[${circadian_start_indx + 1}]=${(
             curr_score + 1.6
@@ -345,10 +362,10 @@ router.put("/event-survey-results", async (req, res) => {
       }
     }
 
-    if (parseInt(time_remaining) == 0) {
+    if (parseInt(time_remaining) <= 0) {
       const taskUpdateResult = await client.query(`
         UPDATE tasks 
-        SET estimate_completion_time=${time_remaining}, completion_date='${today
+        SET estimate_completion_time=0, completion_date='${today
         .toISOString()
         .substring(
           0,
