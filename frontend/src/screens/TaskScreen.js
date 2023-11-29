@@ -91,7 +91,7 @@ const TaskScreen = ({ setSelected }) => {
                 .substring(0, 10)}&selected_tasks=(${generateTasks})`
         );
 
-        console.log(response);
+        console.log(response.data);
         if (response.data.success) {
             setSelected("Calendar");
         } else {
