@@ -224,4 +224,19 @@ router.post("/increment-user-login", async (req, res) => {
     }
   });
 
+  router.get("/get-total-reschedule", async (req, res) => {
+    const user_id = req.query.user_id;
+    try {
+        const query = {
+          text: 'UPDATE user_weekly_metrics SET num_reschedule = (SELECT SUM(regen_count) FROM events WHERE user_id = $1) WHERE user_id = $1 RETURNING num_reschedule;',
+          values: [user_id],
+        };
+        const result = await client.query(query);
+        res.send(result.rows);
+    } catch (error) {
+        console.error('Error getting total reschedule count', error);
+        res.status(500).send('Error total reschedule count');
+    }
+  });
+
 module.exports = router
