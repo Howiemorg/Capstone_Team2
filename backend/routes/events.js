@@ -193,6 +193,27 @@ router.delete("/cancel-recommended-event", async (req, res) => {
   }
 });
 
+router.get("/get-user-survey-events", async(req, res) => {
+  const user_id = req.query.user_id;
+
+  let currentDate = new Date();
+
+  // Subtract 6 hours (in milliseconds) from the current time
+  currentDate = new Date(currentDate.getTime() - (6 * 60 * 60 * 1000));
+  let currentTime = currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds()
+  currentDate = currentDate.toISOString().slice(0, 10);
+
+  try {
+    const result = await client.query(
+      `SELECT * FROM events WHERE user_id = ${user_id} AND (event_date < '${currentDate}' OR (event_date = '${currentDate}' AND event_end_time <= '${currentTime}')) AND (user_survey IS NULL OR NOT user_survey) ORDER BY event_start_time ASC;`
+    );
+    res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+})
+
 router.put("/event-survey-results", async (req, res) => {
   const subtasks = req.body.subtasks;
   const task_id = req.query.task_id;
@@ -204,6 +225,16 @@ router.put("/event-survey-results", async (req, res) => {
   const event_end_time = req.query.event_end_time;
   const user_id = req.query.user_id;
   const selected_date = req.query.selected_date;
+
+  try {
+    const result = await client.query(
+      `UPDATE events SET user_survey = '1' WHERE event_block_id = ${event_block_id};`
+    );
+    res.send(result.rows);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
 
   if (!time_remaining) {
     time_remaining = await client.query(
