@@ -115,13 +115,12 @@ router.put("/update-set-event", async (req, res) => {
   const event_date = req.query.event_date;
 
   try {
-
     const pastDate = await client.query(
       `SELECT DISTINCT task_id FROM events where event_date = '${event_date}' AND task_id is NOT NULL;`
     );
 
-    let current_tasks = pastDate.rows.map(row => row.task_id);
-    current_tasks = '(' + current_tasks.join(', ') + ')';
+    let current_tasks = pastDate.rows.map((row) => row.task_id);
+    current_tasks = "(" + current_tasks.join(", ") + ")";
 
     const result = await client.query(
       `UPDATE Events
@@ -136,17 +135,18 @@ router.put("/update-set-event", async (req, res) => {
     );
 
     selected_user = result.rows[0]["user_id"];
-    
+
     const dropEvents = await client.query(
       `DELETE FROM events where event_date = '${event_date}' and task_id is NOT NULL;`
     );
 
-    const message = await runAlgo(
-      selected_user,
-      event_date,
-      current_tasks
-    );
-    res.json({ success: true, message: "Updated event successfully and regenerated schedule", output: current_tasks, message });
+    const message = await runAlgo(selected_user, event_date, current_tasks);
+    res.json({
+      success: true,
+      message: "Updated event successfully and regenerated schedule",
+      output: current_tasks,
+      message,
+    });
   } catch (err) {
     console.error(err.message);
     res.send(err.message);
@@ -194,14 +194,32 @@ router.delete("/cancel-recommended-event", async (req, res) => {
 });
 
 router.put("/event-survey-results", async (req, res) => {
-  const time_remaining = req.query.time_remaining;
-  const event_block_id = req.query.event_block_id;
+  const subtasks = req.body.subtasks;
   const task_id = req.query.task_id;
+  let time_remaining =
+    subtasks && subtasks.length ? 0 : req.query.estimate_completion_time;
+  const event_block_id = req.query.event_block_id;
   const productivity_score = req.query.productivity_score;
   const event_start_time = req.query.event_start_time;
   const event_end_time = req.query.event_end_time;
   const user_id = req.query.user_id;
   const selected_date = req.query.selected_date;
+
+  if (!time_remaining) {
+    time_remaining = await client.query(
+      `SELECT estimate_completion_time FROM tasks WHERE task_id=${task_id}`
+    );
+
+    time_remaining =
+      time_remaining.rows[0].estimate_completion_time -
+      ((parseInt(event_end_time.split(":")[0]) -
+        parseInt(event_start_time.split(":")[0])) *
+        60 +
+        Math.abs(
+          parseInt(event_end_time.split(":")[1]) -
+            parseInt(event_start_time.split(":")[1])
+        ));
+  }
 
   const today = new Date(selected_date);
 
@@ -209,13 +227,38 @@ router.put("/event-survey-results", async (req, res) => {
   tomorrow.setDate(today.getDate() + 1);
 
   let circadian_start_indx =
-    parseInt(event_start_time.substring(0, 2)) * 2 +
-    (event_start_time.substring(3, 5) != "00");
+    parseInt(event_start_time.split(":")[0]) * 2 +
+    (event_start_time.split(":")[1] != "00");
   const circadian_end_indx =
-    parseInt(event_end_time.substring(0, 2)) * 2 +
-    (event_end_time.substring(3, 5) != "00");
+    parseInt(event_end_time.split(":")[0]) * 2 +
+    (event_end_time.split(":")[1] != "00");
 
   try {
+    for (const subtask of subtasks) {
+      const { task_name: subtask_name, time_remaining: sub_time_remaining } =
+        subtask;
+
+      const subtaskUpdateResult = await client.query(
+        `
+          UPDATE subtasks 
+          SET estimate_completion_time = $1 
+          ${
+            subtask.time_remaining === 0
+              ? `completion_date = ${today
+                  .toISOString()
+                  .substring(
+                    0,
+                    10
+                  )} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`
+              : ""
+          }
+          WHERE task_id=${task_id} AND subtask_name=$2;`,
+        [sub_time_remaining, subtask_name]
+      );
+
+      time_remaining += parseInt(sub_time_remaining);
+    }
+
     if (parseInt(productivity_score) === 1) {
       for (
         ;
@@ -273,7 +316,7 @@ router.put("/event-survey-results", async (req, res) => {
     if (parseInt(time_remaining) == 0) {
       const taskUpdateResult = await client.query(`
         UPDATE tasks 
-        SET estimate_completion_time=${time_remaining}, completion_date='${tomorrow
+        SET estimate_completion_time=${time_remaining}, completion_date='${today
         .toISOString()
         .substring(
           0,
@@ -305,55 +348,61 @@ router.put("/event-survey-results", async (req, res) => {
         .substring(0, 10)}'::date);`
     );
 
-    const deleteResult = await client.query(
-      `DELETE FROM Events
-            WHERE
-            event_block_id = ${event_block_id} OR event_date >= '${tomorrow
-        .toISOString()
-        .substring(0, 10)}'::date;`
-    );
+    // const deleteResult = await client.query(
+    //   `DELETE FROM Events
+    //         WHERE
+    //         event_block_id = ${event_block_id} OR event_date >= '${tomorrow
+    //     .toISOString()
+    //     .substring(0, 10)}'::date;`
+    // );
 
-    let task_ids = "(" + tasks.rows[0].task_id;
+    // let task_ids = "(" + tasks.rows[0].task_id;
 
-    for (let i = 1; i < tasks.rowCount; ++i) {
-      task_ids += "," + tasks.rows[i].task_id;
-    }
+    // for (let i = 1; i < tasks.rowCount; ++i) {
+    //   task_ids += "," + tasks.rows[i].task_id;
+    // }
 
-    task_ids += ")";
+    // task_ids += ")";
 
-    const message = await runAlgo(
-      user_id,
-      `${tomorrow.toISOString().substring(0, 10)} 00:00:00`,
-      task_ids
-    );
+    // const message = await runAlgo(
+    //   user_id,
+    //   `${tomorrow.toISOString().substring(0, 10)} 00:00:00`,
+    //   task_ids
+    // );
 
-    res.json({ success: true, message: message });
+    res.json({ success: true });
   } catch (err) {
     console.error(err.message);
     res.send(err.message);
   }
 });
 
-  router.put("/reschedule-event", async (req, res) => {
-    const event_block_id = req.query.event_block_id;
-    const user_id = req.query.user_id;
-    const selected_date = req.query.selected_date;
-    const task_id = req.query.task_id;
+router.put("/reschedule-event", async (req, res) => {
+  const event_block_id = req.query.event_block_id;
+  const user_id = req.query.user_id;
+  const selected_date = req.query.selected_date;
+  const task_id = req.query.task_id;
   try {
     let regen_count = await client.query(
-        `UPDATE events
+      `UPDATE events
         SET regen_count = regen_count + 1
         WHERE event_block_id = ${event_block_id}
         RETURNING regen_count;`
     );
     regen_count = regen_count.rows[0]["regen_count"];
-    
-    const message = await runAlgo(user_id, selected_date, `(${task_id})`, regen_count, event_block_id);
+
+    const message = await runAlgo(
+      user_id,
+      selected_date,
+      `(${task_id})`,
+      regen_count,
+      event_block_id
+    );
 
     res.json({ success: true, message: message });
   } catch (err) {
     res.json({ success: false, message: err });
   }
-  });
+});
 
 module.exports = router;

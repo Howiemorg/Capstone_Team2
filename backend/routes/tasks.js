@@ -339,7 +339,7 @@ const convertValuetoTimeString = (value) => {
   return Math.floor(value / 2) + ":" + (value % 2 ? "30" : "00") + ":00";
 };
 
-const insertEvents = async (data, subtasks) => {
+const insertEvents = async (data) => {
   const event_start_time = data[1];
   const event_end_time = data[2];
   const task_id = data[4];
@@ -416,10 +416,10 @@ const runAlgo = async (
     let tasks = await client.query(query);
     tasks = tasks.rows;
 
-    let subtasks = await client.query(
-      `SELECT * FROM tasks WHERE task_id IN (${selected_tasks});`
-    );
-    subtasks = subtasks.rows;
+    // let subtasks = await client.query(
+    //   `SELECT * FROM subtasks WHERE task_id IN (${selected_tasks});`
+    // );
+    // subtasks = subtasks.rows;
     // get all the events from the DB
     let events = await client.query(
       `SELECT * FROM events WHERE user_id = ${user_id} AND event_date >= '${selected_date}' ORDER BY event_start_time;`
@@ -449,7 +449,7 @@ const runAlgo = async (
       const results = await client.query(query);
     } else {
       for (const query of eventQuerys) {
-        const insertQuery = insertEvents(query, subtasks);
+        const insertQuery = insertEvents(query);
         console.log(query);
         console.log(insertQuery);
         let results = await client.query(insertQuery);
