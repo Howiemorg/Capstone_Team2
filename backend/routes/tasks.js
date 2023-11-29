@@ -363,6 +363,7 @@ const runAlgo = async (
     };
     let tasks = await client.query(query);
     tasks = tasks.rows;
+    console.log(tasks);
 
     // let subtasks = await client.query(
     //   `SELECT * FROM subtasks WHERE task_id IN (${selected_tasks});`
@@ -374,7 +375,7 @@ const runAlgo = async (
     );
     events = events.rows;
 
-    console.log(events);
+    // console.log(events);
     //get the circadian rhythm array
     let circadian_rhythm = await client.query(
       `SELECT circadian_rhythm from users WHERE user_id = ${user_id};`
@@ -398,10 +399,81 @@ const runAlgo = async (
     } else {
       for (const query of eventQuerys) {
         const insertQuery = insertEvents(query);
-        console.log(query);
-        console.log(insertQuery);
+        // console.log(query);
+        // console.log(insertQuery);
         let results = await client.query(insertQuery);
       }
+
+      // subtask name processing
+      for (const task of tasks){
+        if (task.template_name && task.template_name != "No Template"){
+          console.log(task.template_name);
+          console.log((task.task_id))
+          // query for subtask info
+          const query = {
+            text: "SELECT * FROM subtasks where task_id = $1 ORDER BY subtask_id",
+            values: [task.task_id],
+          };
+          let subtasks = await client.query(query);
+          subtasks = subtasks.rows;
+          // query for newly generated events to edit their names
+          const event_query = {
+            text: "SELECT * FROM events where task_id = $1",
+            values: [task.task_id],
+          };
+          let new_events = await client.query(event_query);
+          new_events = new_events.rows;
+          console.log(new_events);
+          let subtask_index = 0;
+          const subtask_length = subtasks.length
+          let subtask_remaining_time = subtasks[0].estimate_completion_time;
+          let new_event_index = 0;
+          while (subtask_index!=subtask_length-1){
+              let new_event = new_events[new_event_index];
+              const new_event_start = new_event.event_start_time;
+              const new_event_end = new_event.event_end_time;
+              const startTime = new Date(`1970-01-01T${new_event_start}Z`);
+              const endTime = new Date(`1970-01-01T${new_event_end}Z`);
+
+              // Calculate the difference in milliseconds
+              const timeDifferenceMs = endTime - startTime;
+
+              // Gives duration of event block
+              const event_minutes = Math.floor(timeDifferenceMs / (1000 * 60));
+              console.log(event_minutes)
+              
+              while(subtask_remaining_time<=0){
+                subtask_index++;
+                // if the subtask_remaining_time is less than zero then there are two subtasks for the time block
+                if(subtask_remaining_time < 0){
+                  const event_update_query_add = {
+                    text: "UPDATE events SET subtask_name = subtask_name || $1 WHERE event_block_id = $2;",
+                    values: ['/'+subtasks[subtask_index].subtask_name, new_events[new_event_index-1].event_block_id],
+                  };
+                  console.log(event_update_query_add);
+                  const update_result_add = await client.query(event_update_query_add);
+                  // console.log(update_result_add.message)
+                }
+                subtask_remaining_time = subtask_remaining_time + subtasks[subtask_index].estimate_completion_time;
+                console.log("new remaining time "+ subtask_remaining_time);
+              }
+
+              subtask_remaining_time = subtask_remaining_time - event_minutes;
+              console.log("after subtractions "+subtask_remaining_time) 
+              const event_update_query = {
+                text: "UPDATE events SET subtask_name = $1 WHERE event_block_id = $2;",
+                values: [subtasks[subtask_index].subtask_name, new_event.event_block_id],
+              };
+              console.log(event_update_query)
+              const update_result = await client.query(event_update_query);
+              new_event_index++;
+            // }
+
+          }
+        
+      }
+    }
+      // }
     }
     return eventQuerys;
   } catch (err) {
