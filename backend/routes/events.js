@@ -210,15 +210,7 @@ router.put("/event-survey-results", async (req, res) => {
       `SELECT estimate_completion_time FROM tasks WHERE task_id=${task_id}`
     );
 
-    time_remaining =
-      time_remaining.rows[0].estimate_completion_time -
-      ((parseInt(event_end_time.split(":")[0]) -
-        parseInt(event_start_time.split(":")[0])) *
-        60 +
-        Math.abs(
-          parseInt(event_end_time.split(":")[1]) -
-            parseInt(event_start_time.split(":")[1])
-        ));
+    time_remaining = time_remaining.rows[0].estimate_completion_time;
   }
 
   const today = new Date(selected_date);
@@ -238,6 +230,14 @@ router.put("/event-survey-results", async (req, res) => {
       const { task_name: subtask_name, time_remaining: sub_time_remaining } =
         subtask;
 
+      let subtask_completion_time = await client.query(
+        `SELECT estimate_completion_time FROM subtasks WHERE task_id=${task_id} AND subtask_name=$1;`,
+        [subtask_name]
+      );
+
+      subtask_completion_time =
+        subtask_completion_time.rows[0].estimate_completion_time;
+
       const subtaskUpdateResult = await client.query(
         `
           UPDATE subtasks 
@@ -256,7 +256,8 @@ router.put("/event-survey-results", async (req, res) => {
         [sub_time_remaining, subtask_name]
       );
 
-      time_remaining += parseInt(sub_time_remaining);
+      time_remaining =
+        time_remaining - subtask_completion_time + parseInt(sub_time_remaining);
     }
 
     if (parseInt(productivity_score) === 1) {
@@ -348,29 +349,29 @@ router.put("/event-survey-results", async (req, res) => {
         .substring(0, 10)}'::date);`
     );
 
-    // const deleteResult = await client.query(
-    //   `DELETE FROM Events
-    //         WHERE
-    //         event_block_id = ${event_block_id} OR event_date >= '${tomorrow
-    //     .toISOString()
-    //     .substring(0, 10)}'::date;`
-    // );
+    const deleteResult = await client.query(
+      `DELETE FROM Events
+            WHERE
+            event_block_id = ${event_block_id} OR event_date >= '${tomorrow
+        .toISOString()
+        .substring(0, 10)}'::date;`
+    );
 
-    // let task_ids = "(" + tasks.rows[0].task_id;
+    let task_ids = "(" + tasks.rows[0].task_id;
 
-    // for (let i = 1; i < tasks.rowCount; ++i) {
-    //   task_ids += "," + tasks.rows[i].task_id;
-    // }
+    for (let i = 1; i < tasks.rowCount; ++i) {
+      task_ids += "," + tasks.rows[i].task_id;
+    }
 
-    // task_ids += ")";
+    task_ids += ")";
 
-    // const message = await runAlgo(
-    //   user_id,
-    //   `${tomorrow.toISOString().substring(0, 10)} 00:00:00`,
-    //   task_ids
-    // );
+    const message = await runAlgo(
+      user_id,
+      `${tomorrow.toISOString().substring(0, 10)} 00:00:00`,
+      task_ids
+    );
 
-    res.json({ success: true });
+    res.json({ success: true, time_remaining });
   } catch (err) {
     console.error(err.message);
     res.send(err.message);
