@@ -156,6 +156,7 @@ const SignUpScreen = ({ navigation }) => {
                             show={wakeTimeShow}
                             setShow={setWakeTimeShow}
                             onClick={wakeClick}
+                            eventTime = {wakeTime}
                         />
                     </View>
 
@@ -166,6 +167,7 @@ const SignUpScreen = ({ navigation }) => {
                             show={sleepTimeShow}
                             setShow={setSleepTimeShow}
                             onClick={sleepClick}
+                            eventTime = {sleepTime}
                         />
                     </View>
 

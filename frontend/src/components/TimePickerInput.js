@@ -10,21 +10,21 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
-const TimePickerInput = ({ setEventTime, onClick, show, setShow, value, eventTime }) => {
+const TimePickerInput = ({ setEventTime, onClick, show, setShow, eventTime }) => {
 
-    // useEffect(() => {
-    //     if(value){
-    //         setTime(value);
-    //     }
-    // }, [value]);
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            // Your timeout logic here
+            setShow(false);
+        }, 1500); // Wait for 2 seconds before executing
+
+        // Cleanup function to clear the timeout when the component
+        // unmounts or selectedPriority changes again
+        return () => clearTimeout(timeoutId);
+    }, [eventTime]);
 
     const onChange = (event, selectedTime) => {
         setEventTime(new Date(selectedTime)); // Ensure the new time is a Date object
-
-        setShow(Platform.OS === "ios"); // iOS requires manual handling to hide the picker
-        setTimeout(() => {
-            setShow(false);
-        }, 1500);
     };
 
     // Helper function to format the time as a string
