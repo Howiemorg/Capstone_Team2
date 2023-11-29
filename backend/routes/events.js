@@ -227,34 +227,26 @@ router.put("/event-survey-results", async (req, res) => {
   const event_start_time = req.query.event_start_time;
   const event_end_time = req.query.event_end_time;
   const user_id = req.query.user_id;
-  const selected_date = req.query.selected_date;
 
   let event_total_time =
-    (parseInt(event_end_time.split(":")[0]) - parseInt(event_start_time.split(":")[0])) * 60 +
+    (parseInt(event_end_time.split(":")[0]) -
+      parseInt(event_start_time.split(":")[0])) *
+      60 +
     parseInt(event_end_time.split(":")[1]) -
     parseInt(event_start_time.split(":")[1]);
 
   const task_time_to_remove = event_total_time;
 
-  try {
-    const result = await client.query(
-      `UPDATE events SET user_survey = '1' WHERE event_block_id = ${event_block_id};`
-    );
-    res.send(result.rows);
-  } catch (err) {
-    console.log(err.message);
-    res.send(err.message);
-  }
+  let time_remaining = await client.query(
+    `SELECT estimate_completion_time FROM tasks WHERE task_id=${task_id}`
+  );
 
-  let time_remaining = time_remaining = await client.query(
-      `SELECT estimate_completion_time FROM tasks WHERE task_id=${task_id}`
-    );
+  time_remaining = parseInt(time_remaining.rows[0].estimate_completion_time);
 
-  time_remaining = time_remaining.rows[0].estimate_completion_time;
-  
   time_remaining -= task_time_to_remove;
 
-  const today = new Date(selected_date);
+  let today = new Date();
+  today = new Date(today.getTime() - 6 * 60 * 60 * 1000);
 
   const tomorrow = new Date();
   tomorrow.setDate(today.getDate() + 1);
@@ -267,19 +259,26 @@ router.put("/event-survey-results", async (req, res) => {
     (event_end_time.split(":")[1] != "00");
 
   try {
+    const userSurveyResult = await client.query(
+      `UPDATE events SET user_survey = '1' WHERE event_block_id = ${event_block_id};`
+    );
+
     for (const subtask of subtasks) {
-      const { task_name: subtask_name } =
-        subtask;
+      const { task_name: subtask_name } = subtask;
 
       let subtask_completion_time = await client.query(
-        `SELECT estimate_completion_time FROM subtasks WHERE task_id=${task_id} AND subtask_name=$1;`,
+        `SELECT estimate_completion_time FROM subtasks WHERE task_id=${task_id} AND subtask_name= $1;`,
         [subtask_name]
       );
 
-      subtask_completion_time =
-        parseInt(subtask_completion_time.rows[0].estimate_completion_time);
+      subtask_completion_time = parseInt(
+        subtask_completion_time.rows[0].estimate_completion_time
+      );
 
-      const sub_time_remaining = Math.max(subtask_completion_time - event_total_time, 0);
+      const sub_time_remaining = Math.max(
+        subtask_completion_time - event_total_time,
+        0
+      );
 
       const subtaskUpdateResult = await client.query(
         `
@@ -300,7 +299,7 @@ router.put("/event-survey-results", async (req, res) => {
       );
 
       event_total_time -= subtask_completion_time;
-      if(event_total_time <= 0){
+      if (event_total_time <= 0) {
         break;
       }
     }
@@ -366,11 +365,11 @@ router.put("/event-survey-results", async (req, res) => {
       const taskUpdateResult = await client.query(`
         UPDATE tasks 
         SET estimate_completion_time=0, completion_date='${today
-        .toISOString()
-        .substring(
-          0,
-          10
-        )} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}'
+          .toISOString()
+          .substring(
+            0,
+            10
+          )} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}'
         WHERE task_id=${task_id}`);
 
       if (parseInt(productivity_score) === 2) {
@@ -459,13 +458,21 @@ router.get("/get-done-event", async (req, res) => {
   let currentDate = new Date();
 
   // Subtract 6 hours (in milliseconds) from the current time
-  currentDate = new Date(currentDate.getTime() - (6 * 60 * 60 * 1000));
+  currentDate = new Date(currentDate.getTime() - 6 * 60 * 60 * 1000);
   // currentDate = currentDate.toISOString().slice(0, 15);
-  const currentDateFormatted = currentDate.toISOString().split('T')[0].slice(0,15) 
-  const currentTimeFormatted = currentDate.toISOString().split('T')[1].slice(0, 8);
-  console.log(currentDateFormatted, currentTimeFormatted)
+  const currentDateFormatted = currentDate
+    .toISOString()
+    .split("T")[0]
+    .slice(0, 15);
+  const currentTimeFormatted = currentDate
+    .toISOString()
+    .split("T")[1]
+    .slice(0, 8);
+  console.log(currentDateFormatted, currentTimeFormatted);
   try {
-    const result = await client.query(`SELECT event_block_id, event_name FROM events WHERE event_date <= '${currentDateFormatted}' AND event_end_time <= '${currentTimeFormatted}' AND user_survey = false;`)
+    const result = await client.query(
+      `SELECT event_block_id, event_name FROM events WHERE event_date <= '${currentDateFormatted}' AND event_end_time <= '${currentTimeFormatted}' AND user_survey = false;`
+    );
     res.json({ success: true, message: result.rows });
   } catch (err) {
     res.json({ success: false, message: err });
