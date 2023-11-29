@@ -286,7 +286,7 @@ router.put("/event-survey-results", async (req, res) => {
           SET estimate_completion_time = $1 
           ${
             sub_time_remaining === 0
-              ? `completion_date = ${today
+              ? `, completion_date = ${today
                   .toISOString()
                   .substring(
                     0,
