@@ -399,9 +399,9 @@ router.put("/event-survey-results", async (req, res) => {
     const deleteResult = await client.query(
       `DELETE FROM Events
             WHERE
-            event_block_id = ${event_block_id} OR event_date >= '${tomorrow
+            event_block_id = ${event_block_id} OR (event_date >= '${tomorrow
         .toISOString()
-        .substring(0, 10)}'::date;`
+        .substring(0, 10)}'::date AND task_id IS NOT NULL);`
     );
 
     let task_ids = "(" + tasks.rows[0].task_id;
