@@ -115,17 +115,38 @@ router.put("/update-set-event", async (req, res) => {
   const event_date = req.query.event_date;
 
   try {
+
+    const pastDate = await client.query(
+      `SELECT DISTINCT task_id FROM events where event_date = '${event_date}' AND task_id is NOT NULL;`
+    );
+
+    let current_tasks = pastDate.rows.map(row => row.task_id);
+    current_tasks = '(' + current_tasks.join(', ') + ')';
+
     const result = await client.query(
       `UPDATE Events
             SET
               event_name = ${event_name},
               event_start_time = ${event_start_time},
               event_end_time = ${event_end_time},
-              event_date = ${event_date}
+              event_date = '${event_date}'
             WHERE
-            event_block_id = ${event_block_id};`
+            event_block_id = ${event_block_id}
+            RETURNING user_id;`
     );
-    res.json({ success: true, message: "Updated event successfully" });
+
+    selected_user = result.rows[0]["user_id"];
+    
+    const dropEvents = await client.query(
+      `DELETE FROM events where event_date = '${event_date}' and task_id is NOT NULL;`
+    );
+
+    const message = await runAlgo(
+      selected_user,
+      event_date,
+      current_tasks
+    );
+    res.json({ success: true, message: "Updated event successfully and regenerated schedule", output: current_tasks, message });
   } catch (err) {
     console.error(err.message);
     res.send(err.message);

@@ -27,7 +27,7 @@ const UserSlice = createSlice({
       state.loading = false;
     },
     userLogout(state) {
-      state.userInfo = null;
+      state.userID = null;
     },
   },
 });

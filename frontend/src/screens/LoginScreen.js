@@ -32,6 +32,8 @@ const LoginScreen = ({ navigation }) => {
   useEffect(() => {
     if (userID) {
       navigation.navigate("Home");
+      setUsername("");
+      setPassword("");
       dispatch(userActions.userReset());
     } 
     setError("");

@@ -1,4 +1,5 @@
 import React from "react";
+import Icon from "react-native-vector-icons/Ionicons";
 import {
     Text,
     StyleSheet,
@@ -58,7 +59,6 @@ const CalendarScreen = () => {
     };
 
     const cancelRecommendedEvent = async (eventBlockRemove) => {
-        // console.log("Here is the info: ", eventBlockRemove)
         try{
             const response = await vercel.delete(`/cancel-recommended-event?user_id=${eventBlockRemove.user_id}&event_block_id=${eventBlockRemove.event_block_id}&task_id=${eventBlockRemove.task_id}&selected_date=${eventBlockRemove.event_date}`);
 
@@ -69,37 +69,73 @@ const CalendarScreen = () => {
                             eventBlock.event_block_id != eventBlockRemove.event_block_id
                     )
                 );
-            // console.log("Cancelling event successfully:", response.data)
             } else {
               setError("There was an error in the route for deleting a user defined event", response.data.message);
             }
         } catch(error) {
-            setError("An error occurred while deleting the user defined event.");
+            setError("An error occurred while deleting the user event.");
         }
     };
 
     const reschedule = async (task) => {
-        // const response = await vercel.post(`/reschedule?user_id=${userID}&task_id=${task.task_id}`)
-
-        // if (response.data.success) {
-        getEventBlocks();
-        // } else {
-        //   setError(response.data.message);
-        // }
+        try {
+            const response = await vercel.put(`/reschedule-event?user_id=${task.user_id}&event_block_id=${task.event_block_id}&selected_date=${task.event_date}&task_id=${task.task_id}`)
+            
+            if (response.data.success) {
+                getEventBlocks();
+            } else {
+            setError(response.data.message);
+            }
+        } catch(error) {
+            setError("An error occurred while rescheduling the user task");
+        }
     };
 
     useEffect(() => {
         getEventBlocks();
     }, [date]);
 
+    const handleSwipe = (item, direction) => {
+        if (direction === 'right') {
+            cancelRecommendedEvent(item);
+        } else if (direction === 'left') {
+            reschedule(item);
+        }
+    };
+
     const renderLeftActions = (progress, dragX) => {
         const trans = dragX.interpolate({
             inputRange: [0, 50, 100, 101],
             outputRange: [-20, 0, 0, 1],
         });
+
+        
         return (
-            <TouchableOpacity style={styles.leftAction} onPress={this.close}>
-                <Text> </Text>
+            <TouchableOpacity style={styles.leftAction}
+            >
+                <View style={[styles.leftActionContent, { transform: [{ translateY: 50 }] }]}>
+                        <Icon name="trash-bin" size={30} color="red" />
+                        <Text style={styles.actionText}>Delete</Text>
+                </View>
+            </TouchableOpacity>
+        );
+    };
+
+    const renderRightActions = (progress, dragX) => {
+        const trans = dragX.interpolate({
+            inputRange: [0, 50, 100, 101],
+            outputRange: [-20, 0, 0, 1],
+        });
+
+        
+        return (
+            <TouchableOpacity 
+            style={styles.rightAction} 
+            >
+                 <View style={[styles.leftActionContent, { transform: [{ translateY: 50 }] }]}>
+                    <Icon name="refresh" size={30} color="blue" />
+                    <Text style={styles.actionText}>Regenerate</Text>
+                </View>
             </TouchableOpacity>
         );
     };
@@ -110,10 +146,10 @@ const CalendarScreen = () => {
     };
 
     const handleUserDefinedEventPress = (item) => {
-        console.log(item)
-        setEventID(item.event_block_id);
-        setEditEventModalVisable(true);
-        console.log("pressed now");
+        if(!item.task_id) {
+            setEventID(item.event_block_id);
+            setEditEventModalVisable(true);
+        }
     }
 
     return (
@@ -153,56 +189,16 @@ const CalendarScreen = () => {
                 style={styles.tasklist}
                 scrollEnabled={true}
                 showsVerticalScrollIndicator={false}
-                // renderItem={({ item }) => {
-                //     return (
-                //         <Swipeable
-                //             onSwipeableOpen={
-                //                 item.task_id
-                //                     ? reschedule.bind(null, item)
-                //                     : cancelEvent.bind(null, item)
-                //             }
-                //             renderRightActions={renderLeftActions}
-                //         >
-                //             {item.task_id ? (
-                //                 <View style={[styles.block]}>
-                //                     <Text style={styles.title}>
-                //                         {item.event_name}
-                //                     </Text>
-                //                     <Text style={[styles.task_time]}>
-                //                         {item.event_start_time} -{" "}
-                //                         {item.event_end_time}
-                //                     </Text>
-                //                 </View>
-                //             ) : (
-                //                 // User defined events start here
-                //                 <TouchableOpacity onPress= {handleUserDefinedEventPress.bind(null, item)}>
-                //                     <View style={[styles.block, styles.event]} >
-                //                         <Text
-                //                             style={[
-                //                                 styles.title,
-                //                                 { color: "white" },
-                //                             ]}
-                //                         >
-                //                             {item.event_name}
-                //                         </Text>
-                //                         <Text style={styles.event_time}>
-                //                             {item.event_start_time} -{" "}
-                //                             {item.event_end_time}
-                //                         </Text>
-                //                     </View>
-                //                 </TouchableOpacity>
-                //             )}
-                //         </Swipeable>
-                //     );
-                // }}
                 renderItem={({ item }) => {
                     // User task events
                     if (item.task_id) {
                         return (
                             <Swipeable
                                 leftThreshold={0.75}
-                                onSwipeableOpen={() => cancelRecommendedEvent(item)}
+                                rightThreshold={0.75}
+                                onSwipeableOpen={(direction) => handleSwipe(item, direction)}
                                 renderRightActions={renderLeftActions}
+                                renderLeftActions={renderRightActions}
                             >
                                 <TouchableOpacity onPress={handleUserDefinedEventPress.bind(null, item)}>
                                 <View style={[styles.block]}>
