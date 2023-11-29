@@ -123,30 +123,57 @@ router.post("/register-user", async (req, res) => {
 });
 
 
-// Endpoint to update user wake time
+// // Endpoint to update user wake time
+// router.post("/update-user-wake-time", async (req, res) => {
+//     const { user_id, wake_time } = req.body;
+//     try {
+//         const query = 'UPDATE users SET wake_time = $1 WHERE user_id = $2';
+//         await client.query(query, [wake_time, user_id]);
+//         res.status(200).send('Wake time updated successfully');
+//     } catch (error) {
+//         console.error('Error updating wake time', error);
+//         res.status(500).send('Error updating wake time');
+//     }
+// });
+
+
+// // Endpoint to update user sleep time
+// router.post("/update-user-sleep-time", async (req, res) => {
+//     const { user_id, sleep_time } = req.body;
+//     try {
+//         const query = 'UPDATE users SET sleep_time = $1 WHERE user_id = $2';
+//         await client.query(query, [sleep_time, user_id]);
+//         res.status(200).send('Sleep time updated successfully');
+//     } catch (error) {
+//         console.error('Error updating sleep time', error);
+//         res.status(500).send('Error updating sleep time');
+//     }
+// });
+
 router.post("/update-user-wake-time", async (req, res) => {
     const { user_id, wake_time } = req.body;
-    try {
-        const query = 'UPDATE users SET wake_time = $1 WHERE user_id = $2';
-        await client.query(query, [wake_time, user_id]);
-        res.status(200).send('Wake time updated successfully');
-    } catch (error) {
-        console.error('Error updating wake time', error);
-        res.status(500).send('Error updating wake time');
-    }
-});
 
-
-// Endpoint to update user sleep time
-router.post("/update-user-sleep-time", async (req, res) => {
-    const { user_id, sleep_time } = req.body;
     try {
-        const query = 'UPDATE users SET sleep_time = $1 WHERE user_id = $2';
-        await client.query(query, [sleep_time, user_id]);
-        res.status(200).send('Sleep time updated successfully');
+        // Convert wake_time to a Date object for manipulation
+        const wakeTimeParts = wake_time.split(':');
+        const wakeDate = new Date();
+        wakeDate.setHours(parseInt(wakeTimeParts[0]), parseInt(wakeTimeParts[1]), 0);
+
+        // Calculate the sleep time to be 8 hours after the wake time
+        const sleepDate = new Date(wakeDate);
+        sleepDate.setHours(sleepDate.getHours() - 8);
+
+        // Format sleep time to match database format (HH:MM:SS)
+        const sleepTimeFormatted = sleepDate.toISOString().split('T')[1].substr(0, 8);
+
+        // Update both wake time and sleep time in the database
+        const query = 'UPDATE users SET wake_time = $1, sleep_time = $2 WHERE user_id = $3';
+        await client.query(query, [wake_time, sleepTimeFormatted, user_id]);
+        
+        res.status(200).send('Wake time and sleep time updated successfully');
     } catch (error) {
-        console.error('Error updating sleep time', error);
-        res.status(500).send('Error updating sleep time');
+        console.error('Error updating wake and sleep time', error);
+        res.status(500).send('Error updating wake and sleep time');
     }
 });
 
