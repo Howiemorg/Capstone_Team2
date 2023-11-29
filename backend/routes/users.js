@@ -151,16 +151,17 @@ router.post("/register-user", async (req, res) => {
 // });
 
 router.post("/update-user-wake-time", async (req, res) => {
-    const { user_id, wake_time } = req.body;
+    const { user_id, wake_time } = req.query;
 
     try {
         // Convert wake_time to a Date object for manipulation
-        const wakeTimeParts = wake_time.split(':');
+        const wakeTimeParts = wake_time.replace(/'/g, '').split(':')
         const wakeDate = new Date();
         wakeDate.setHours(parseInt(wakeTimeParts[0]), parseInt(wakeTimeParts[1]), 0);
 
         // Calculate the sleep time to be 8 hours after the wake time
-        const sleepDate = new Date(wakeDate);
+        let sleepDate = new Date(wakeDate);
+        sleepDate = new Date(sleepDate.getTime() - (6 * 60 * 60 * 1000));
         sleepDate.setHours(sleepDate.getHours() - 8);
 
         // Format sleep time to match database format (HH:MM:SS)
@@ -177,5 +178,19 @@ router.post("/update-user-wake-time", async (req, res) => {
     }
 });
 
+router.post("/increment-user-login", async (req, res) => {
+    const user_id = req.query.user_id;
+    try {
+        const query = {
+          text: 'UPDATE user_weekly_metrics SET num_login_count = num_login_count + 1 WHERE user_id=$1',
+          values: [user_id],
+        };
+        const result = await client.query(query);
+        res.status(200).send(result);
+    } catch (error) {
+        console.error('Error updating num_login_count', error);
+        res.status(500).send('Error updating num_login_count');
+    }
+  });
 
 module.exports = router
