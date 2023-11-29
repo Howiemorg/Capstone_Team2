@@ -329,74 +329,22 @@ router.put("/update-task", async (req, res) => {
   }
 });
 
-const convertTimeStringtoIndex = (time) => {
-  return (
-    parseInt(time.substring(0, 2)) * 2 + (parseInt(time.substring(3, 5)) > 0)
-  );
-};
-
-const convertValuetoTimeString = (value) => {
-  return Math.floor(value / 2) + ":" + (value % 2 ? "30" : "00") + ":00";
-};
-
-const insertEvents = async (data) => {
-  const event_start_time = data[1];
-  const event_end_time = data[2];
-  const task_id = data[4];
-  const user_id = data[3];
-  const event_date = data[5];
-  const priority_level = data[6];
-
-  let query = {
+const insertEvents = (data) => {
+  const query = {
     text: "INSERT INTO Events (event_name, event_start_time, event_end_time, user_id, task_id, work_done_pct, event_date, priority_level, regen_count, max_reschedule) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
     values: [
       data[0],
-      event_start_time,
-      event_end_time,
-      user_id,
-      task_id,
+      data[1],
+      data[2],
+      data[3],
+      data[4],
       0,
-      event_date,
-      priority_level,
+      data[5],
+      data[6],
       0,
       0,
     ],
   };
-
-  // const task_subtasks = subtasks
-  //   .map((currentValue, index) => {
-  //     return { indx: index, subtask: currentValue };
-  //   })
-  //   .filter(
-  //     (value) => value.task_id == data[4] && value.estimate_completion_time != 0
-  //   );
-
-  // if (task_subtasks.length) {
-  //   query = `INSERT INTO Events (event_name, event_start_time, event_end_time, user_id, task_id, work_done_pct, event_date, priority_level, regen_count, max_reschedule) VALUES`;
-  //   let past_end_time = convertTimeStringtoIndex(
-  //     event_start_time.substring(1, event_start_time.length - 1)
-  //   );
-  //   const total_time =
-  //     (parseInt(event_end_time.substring(0, 2)) -
-  //       parseInt(event_start_time.substring(0, 2))) *
-  //       60 +
-  //     Math.abs(
-  //       parseInt(event_end_time.substring(3, 5)) +
-  //         parseInt(event_start_time.substring(3, 5))
-  //     );
-  //   for (const task_subtask of task_subtasks) {
-  //     const { indx, subtask } = task_subtask;
-  //     if (subtask.estimate_completion_time >= total_time) {
-  //       query += ` (${subtask.subtask_name}, ${convertValuetoTimeString(
-  //         past_end_time
-  //       )}, ${convertValuetoTimeString(past_end_time + total_time)}, 
-  //       ${user_id}, ${task_id}, 0, ${event_date}, ${priority_level}, 0, 0)`;
-  //       subtasks[indx].estimate_completion_time -= total_time;
-  //       break;
-  //     } else {
-  //     }
-  //   }
-  // }
 
   return query;
 };
