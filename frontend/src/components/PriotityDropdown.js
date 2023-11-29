@@ -54,7 +54,7 @@ const PriorityDropdown = ({
             {show && (
                 <Picker
                     selectedValue={selectedPriority}
-                    onValueChange={(itemValue, itemIndex) =>
+                    onValueChange={(itemValue) =>
                         setSelectedPriority(itemValue)
                     }
                     style={styles.picker}
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     },
     picker: {
         // Picker styles
-        height: 50, // Set the height accordingly
+        height: 130, // Set the height accordingly
         width: "100%", // Set the width accordingly, or use a fixed width
     },
     priorityText: {

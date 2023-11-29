@@ -36,7 +36,8 @@ const TaskScreen = ({ setSelected }) => {
     };
 
     const getTasks = async () => {
-        const response = await vercel.get(`/get-due-tasks?user_id=${userID}`);
+        const response = await vercel.get(`get-due-tasks?user_id=${userID}`);
+        console.log(response.data)
 
         if (response.data) {
             setTasks(response.data);

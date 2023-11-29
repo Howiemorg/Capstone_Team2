@@ -16,6 +16,9 @@ import { useSelector } from "react-redux";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import vercel from "../api/vercel";
 import PriorityDropdown from "./PriotityDropdown";
+import axios from "axios";
+import Dropdown from "./Dropdown";
+import SubtasksInput from "./SubtasksInput";
 
 const AddTaskModal = ({ onAddTask, onHideModal }) => {
     const [taskName, setTaskName] = useState("");
@@ -26,11 +29,36 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
     const [error, setError] = useState("");
     const [selectedPriority, setSelectedPriority] = useState("Critical"); // Default selected value
     const [priorityShow, setPriorityShow] = useState(false);
+    const [templates, setTemplates] = useState([]);
+    const [selectedTemplateLabel, setSelectedTemplateLabel] =
+        useState("No Template");
+    const [selectedTemplate, setSelectedTemplate] = useState(null);
+    const [templateShow, setTemplateShow] = useState(false);
+    const [templateNames, setTemplateNames] = useState(["No Template"]);
+    const [subtasks, setSubtasks] = useState([]);
 
     const { userID } = useSelector((state) => state.user);
     useEffect(() => {
         // Define the timeout
         const timeoutId = setTimeout(() => {
+            const fetchTemplates = async () => {
+                try {
+                    const response = await axios.get(
+                        "https://capstone-team2.vercel.app/get-templates"
+                    );
+                    setTemplates(response.data); // Set the data to the templates state
+                    console.log(response.data);
+                    const templatenames = ["No Template"];
+                    response.data.map((item) => {
+                        templatenames.push(item["template_name"]);
+                    });
+                    setTemplateNames(templatenames);
+                    console.log("template names: ", templatenames);
+                } catch (error) {
+                    console.error("There was an error!", error);
+                }
+            };
+            fetchTemplates();
             // Your timeout logic here
             setIsDueDateShow(false);
             console.log("Date Changed to:", taskDueDate);
@@ -44,7 +72,8 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
     const padWithZero = (number) => String(number).padStart(2, "0");
 
     const TaskSubmit = async () => {
-        if (!taskDueDate || !taskName || !estimateCompletionTime) {
+        if (!taskDueDate || !taskName) {
+            console.log("*All fields must be filled");
             setError("*All fields must be filled");
             return;
         }
@@ -61,22 +90,22 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
             } else {
                 priority_level = 1;
             }
+
             const url = `/add-tasks?user_id=${userID}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${padWithZero(
                 taskStartDate.getMonth() + 1
-            )}-${padWithZero(taskStartDate.getDate())} ${padWithZero(
-                taskStartDate.getHours()
-            )}:${padWithZero(
-                taskStartDate.getMinutes()
-            )}:00'&task_due_date='${taskDueDate.getFullYear()}-${padWithZero(
+            )}-${padWithZero(
+                taskStartDate.getDate()
+            )} 23:59:59'&task_due_date='${taskDueDate.getFullYear()}-${padWithZero(
                 taskDueDate.getMonth() + 1
-            )}-${padWithZero(taskDueDate.getDate())} ${padWithZero(
-                taskDueDate.getHours()
-            )}:${padWithZero(
-                taskDueDate.getMinutes()
-            )}:00'&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'&priority_level=${priority_level}`;
-
-            const response = await vercel.post(url);
-
+            )}-${padWithZero(
+                taskDueDate.getDate()
+            )} 23:59:59'&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'&priority_level=${priority_level}&template_name='${selectedTemplateLabel}'`;
+            console.log(url);
+            console.log(subtasks);
+            const response = await vercel.post(url, {
+                subtasks: subtasks,
+            });
+            console.log(response.data);
             if (!response.data.success) {
                 setError(response.data.message);
                 return;
@@ -98,11 +127,27 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
     const onPriorityClick = () => {
         setPriorityShow(!priorityShow);
         setIsDueDateShow(false);
+        setTemplateShow(false);
+
         Keyboard.dismiss();
     };
     const hideClickers = () => {
         setIsDueDateShow(false);
         setPriorityShow(false);
+        setTemplateShow(false);
+    };
+
+    const onTemplateClick = () => {
+        setPriorityShow(false);
+        setIsDueDateShow(false);
+        setTemplateShow(!templateShow);
+        Keyboard.dismiss();
+    };
+    const onTemplateChange = (index, label) => {
+        setSelectedTemplateLabel(label);
+        const curr_template = index === 0 ? null : templates[index - 1];
+        console.log("template: ", curr_template);
+        setSelectedTemplate(curr_template);
     };
     return (
         <View style={styles.container}>
@@ -120,18 +165,27 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
                         onPressIn={hideClickers}
                         onChangeText={(newValue) => setTaskName(newValue)}
                     />
-                    <Text style={styles.label}>Estimate Time (Minutes)</Text>
-                    <TextInput
-                        inputMode='decimal'
-                        style={styles.input}
-                        value={estimateCompletionTime}
-                        onPressIn={hideClickers}
-                        onSubmitEditing={() => Keyboard.dismiss()}
-                        onChangeText={(newValue) =>
-                            setEstimateCompletionTime(newValue)
-                        }
-                    />
                 </TouchableWithoutFeedback>
+
+                <Dropdown
+                    label='Template'
+                    selected={selectedTemplateLabel}
+                    items={templateNames}
+                    onPress={onTemplateClick}
+                    showPicker={templateShow}
+                    setShowPicker={setTemplateShow}
+                    onChange={onTemplateChange}
+                />
+                <SubtasksInput
+                    template={selectedTemplate}
+                    estimateCompletionTime={estimateCompletionTime}
+                    setEstimateCompletionTime={setEstimateCompletionTime}
+                    hideClickers={hideClickers}
+                    show={templateShow}
+                    times={subtasks}
+                    setTimes={setSubtasks}
+                />
+
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <Text style={styles.label}>Due date</Text>
                 </TouchableWithoutFeedback>
@@ -189,7 +243,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     container: {
-        height: "80%",
         width: "90%",
         alignSelf: "center",
         backgroundColor: "white",
@@ -201,8 +254,7 @@ const styles = StyleSheet.create({
         backgroundColor: "black",
         alignSelf: "center",
         padding: 8,
-        position: "absolute",
-        bottom: 32,
+        margin: 30,
     },
     dateTimeButton: {
         borderRadius: 12,
