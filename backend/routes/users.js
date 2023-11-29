@@ -161,11 +161,42 @@ router.post("/update-user-wake-time", async (req, res) => {
 
         // Calculate the sleep time to be 8 hours after the wake time
         let sleepDate = new Date(wakeDate);
-        sleepDate = new Date(sleepDate.getTime() - (6 * 60 * 60 * 1000));
         sleepDate.setHours(sleepDate.getHours() - 8);
+
+        let circadian_rhythm =  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,8,10,11,10,9,7,6,5,4.5,4.5,4.5,5,5.5,7,8.5,10,11,12,13,13.5,14,14,14,13,11,9,7,5,3,1]
+    
+        const hourPart = wakeTimeParts[0];
+        const minutesPart = wakeTimeParts[1];
+
+        // Convert to a number if needed
+        const hour = parseInt(hourPart, 10);
+        const minutes = parseInt(minutesPart, 10);
+
+        // find the slice to put the beginning of the interval
+        let beginningInterval = hour*2;
+        if (minutes>=30){
+            beginningInterval = beginningInterval+1
+        }
+
+        function shift_array(arr, shiftAmount) {
+            const length = arr.length;
+            const shift = shiftAmount % length;
+            const shiftedArray = [...arr.slice(-shift), ...arr.slice(0, -shift)];
+        
+            return shiftedArray;
+        }
+        
+        // Find the interval position from 9:00 am which is our base circadian_rhythm then shift array depending on value
+        beginningInterval = beginningInterval - 18;
+        let shifted_circadian_rhythm = []
+        shifted_circadian_rhythm = shift_array(circadian_rhythm, beginningInterval);
 
         // Format sleep time to match database format (HH:MM:SS)
         const sleepTimeFormatted = sleepDate.toISOString().split('T')[1].substr(0, 8);
+
+        // Update circadian rythmn to shift based on new wake time
+        const shift_query = 'UPDATE users SET circadian_rhythm = $1 WHERE user_id = $2';
+        await client.query(shift_query, [shifted_circadian_rhythm, user_id]);
 
         // Update both wake time and sleep time in the database
         const query = 'UPDATE users SET wake_time = $1, sleep_time = $2 WHERE user_id = $3';
