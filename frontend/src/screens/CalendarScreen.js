@@ -203,7 +203,7 @@ const CalendarScreen = () => {
                                 <TouchableOpacity onPress={handleUserDefinedEventPress.bind(null, item)}>
                                 <View style={[styles.block]}>
                                      <Text style={styles.title}>
-                                         {item.event_name}
+                                         {item.subtask_name ? item.subtask_name : item.event_name}
                                      </Text>
                                      <Text style={[styles.task_time]}>
                                          {item.event_start_time} -{" "}
