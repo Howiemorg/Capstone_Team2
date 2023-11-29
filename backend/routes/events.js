@@ -437,4 +437,22 @@ router.put("/reschedule-event", async (req, res) => {
   }
 });
 
+router.get("/get-done-event", async (req, res) => {
+  const user_id = req.query.user_id;
+  let currentDate = new Date();
+
+  // Subtract 6 hours (in milliseconds) from the current time
+  currentDate = new Date(currentDate.getTime() - (6 * 60 * 60 * 1000));
+  // currentDate = currentDate.toISOString().slice(0, 15);
+  const currentDateFormatted = currentDate.toISOString().split('T')[0].slice(0,15) 
+  const currentTimeFormatted = currentDate.toISOString().split('T')[1].slice(0, 8);
+  console.log(currentDateFormatted, currentTimeFormatted)
+  try {
+    const result = await client.query(`SELECT event_block_id, event_name FROM events WHERE event_date <= '${currentDateFormatted}' AND event_end_time <= '${currentTimeFormatted}' AND user_survey = false;`)
+    res.json({ success: true, message: result.rows });
+  } catch (err) {
+    res.json({ success: false, message: err });
+  }
+});
+
 module.exports = router;
