@@ -10,7 +10,7 @@ import {
     Keyboard,
 } from "react-native";
 
-const EndUserSurvey = ({ closeModal, events, userID }) => {
+const EndUserSurvey = ({ closeModal, events, userID, getEventBlocks }) => {
     const [index, setIndex] = useState(0);
     const getTitle = () => {
         console.log(events[index]["event_name"]);
@@ -45,10 +45,11 @@ const EndUserSurvey = ({ closeModal, events, userID }) => {
                 });
             }
         }
+        const response = await axios.put(url, { subtasks });
         if (index === events.length - 1) {
+            getEventBlocks()
             closeModal();
         }
-        const response = await axios.put(url, { subtasks });
         console.log(response.data)
         console.log(subtasks);
 
@@ -165,14 +166,14 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 22,
-        color: "Black",
+        color: "black",
         paddingBottom: 5,
         fontWeight: "bold",
         marginBottom: 40,
     },
     title2: {
         fontSize: 16,
-        color: "Black",
+        color: "black",
         paddingBottom: 5,
         fontWeight: "bold",
         marginBottom: 30,

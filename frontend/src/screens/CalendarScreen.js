@@ -52,6 +52,7 @@ const CalendarScreen = () => {
                 date.getMonth() + 1
             }-${date.getDate()}`
         );
+        console.log(response.data)
 
         setEventBlocks(response.data);
     };
@@ -231,6 +232,7 @@ const CalendarScreen = () => {
                     closeModal={() => setEndSurveyShow(false)}
                     events={neededSurverys}
                     userID={userID}
+                    getEventBlocks={getEventBlocks}
                 />
             </Modal>
 
