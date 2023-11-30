@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { signup } from "../store/Users/user-actions";
 import { userActions } from "../store/Users/user-slice";
-import TimePickerInput from "../components/TimePickerInput";
+import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   View,
   Text,
@@ -91,16 +91,28 @@ const SignUpScreen = ({ navigation }) => {
     setError("");
   }, [userID, username, password, dispatch]);
 
-  const wakeClick = () => {
-    setWakeTimeShow(!wakeTimeShow);
-    setSleepTimeShow(false);
-    Keyboard.dismiss();
+  // const wakeClick = () => {
+  //   setWakeTimeShow(!wakeTimeShow);
+  //   setSleepTimeShow(false);
+  //   Keyboard.dismiss();
+  // };
+
+  // const sleepClick = () => {
+  //   setSleepTimeShow(!sleepTimeShow);
+  //   setWakeTimeShow(false);
+  //   Keyboard.dismiss();
+  // };
+
+  const onChangeWakeTime = (event, selectedDate) => {
+    const currentDate = selectedDate || wakeTime;
+    setWakeTimeShow(false);
+    setWakeTime(currentDate);
   };
 
-  const sleepClick = () => {
-    setSleepTimeShow(!sleepTimeShow);
-    setWakeTimeShow(false);
-    Keyboard.dismiss();
+  const onChangeSleepTime = (event, selectedDate) => {
+    const currentDate = selectedDate || sleepTime;
+    setSleepTimeShow(false);
+    setSleepTime(currentDate);
   };
 
   return (
@@ -157,25 +169,25 @@ const SignUpScreen = ({ navigation }) => {
 
           <Text style={styles.label}>Wake Time</Text>
           <View style={styles.centeredViewPadding}>
-            <TimePickerInput
-              setEventTime={setWakeTime}
-              show={wakeTimeShow}
-              setShow={setWakeTimeShow}
-              onClick={wakeClick}
-              eventTime={wakeTime}
-              txtColor={"black"}
+            <DateTimePicker
+              value={wakeTime}
+              mode="time"
+              is24Hour={true}
+              display="default"
+              onChange={onChangeWakeTime}
+              minuteInterval={30}
             />
           </View>
 
           <Text style={styles.label}>Sleep Time</Text>
           <View style={styles.centeredViewPadding}>
-            <TimePickerInput
-              setEventTime={setSleepTime}
-              show={sleepTimeShow}
-              setShow={setSleepTimeShow}
-              onClick={sleepClick}
-              eventTime={sleepTime}
-              txtColor={"black"}
+            <DateTimePicker
+              value={sleepTime}
+              mode="time"
+              is24Hour={true}
+              display="default"
+              onChange={onChangeSleepTime}
+              minuteInterval={30}
             />
           </View>
 
