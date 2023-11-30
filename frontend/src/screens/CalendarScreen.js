@@ -279,7 +279,7 @@ const CalendarScreen = () => {
                                     <View style={[styles.block]}>
                                         <Text style={styles.title}>
                                             {item.subtask_name
-                                                ? item.subtask_name
+                                                ? `${item.event_name}: ${item.subtask_name}`
                                                 : item.event_name}
                                         </Text>
                                         <Text style={[styles.task_time]}>
