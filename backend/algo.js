@@ -95,10 +95,13 @@ const stringToDate = (string_date) => {
   console.log(typeof string_date);
   console.log(string_date);
   const date = new Date(string_date.substring(0, 10));
-  date.setDate(date.getDate());
-  date.setHours(string_date.substring(11, 13));
-  date.setMinutes(string_date.substring(14, 16));
-  date.setSeconds(string_date.substring(17, 19));
+
+  date.setUTCHours(parseInt(string_date.substring(11, 13)),0,0,0);
+  date.setUTCMinutes(parseInt(string_date.substring(14, 16)));
+  date.setUTCSeconds(parseInt(string_date.substring(17, 19)));
+  console.log("HOURS: ", string_date.substring(11, 13))
+  console.log("MINUTES: ", (string_date.substring(14, 16)))
+  console.log("START DATE CONVERSION: ", date)
   return date;
 };
 
@@ -127,14 +130,16 @@ const generateWeeklyArray = (tasks, startDate) => {
     let total_time = 0;
     for (let i = 0; i < 7; ++i) {
       const currDay = new Date();
-      currDay.setDate(startDate.getDate() + i);
+      currDay.setUTCDate(startDate.getUTCDate() + i);
       const start = new Date(currDay);
-      start.setHours(23);
-      start.setMinutes(59);
-      start.setSeconds(59);
-      currDay.setHours(0);
-      currDay.setMinutes(0);
-      currDay.setSeconds(0);
+      start.setUTCHours(23);
+      start.setUTCMinutes(59);
+      start.setUTCSeconds(59);
+      currDay.setUTCHours(0);
+      currDay.setUTCMinutes(0);
+      currDay.setUTCSeconds(0);
+      console.log("CURR DAY: ", currDay)
+      console.log("START: ", start)
       if (taskStartDate <= start && taskDueDate >= currDay) {
         tasks_per_day[task.task_id].push(avg_time);
         total_time += avg_time * 30;
@@ -208,6 +213,7 @@ const algorithm = (
     const already_recommended = [];
     const already_scheduled = [];
     const new_events = [];
+    // console.log("Date",startDate)
     for (const task of tasks) {
       task.estimate_completion_time = task_time_per_day[task.task_id][i];
       let curr_task_recommendations = get_best_time_intervals(
