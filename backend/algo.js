@@ -31,22 +31,23 @@ function get_available_intervals(events, circadian_rhythm, startDate, curr_day) 
   const available_intervals = [];
   let begin = startDate.getDate() === curr_day.getDate()
     ? Math.max(
-        parseInt(startDate.toTimeString().substring(0, 2)) * 2 +
-          (parseInt(startDate.toTimeString().substring(3, 5)) >
-          0) + (parseInt(startDate.toTimeString().substring(3, 5)) >
+        parseInt(startDate.toTimeString().split(":")[0]) * 2 +
+          (parseInt(startDate.toTimeString().split(":")[1]) >
+          0) + (parseInt(startDate.toTimeString().split(":")[1]) >
           30),
         circadian_rhythm.findIndex((score) => score > 0)
       )
     : circadian_rhythm.findIndex((score) => score > 0);
+
   events.forEach((event) => {
     if (timeIndex(event.event_start_time) - 1 >= begin) {
       available_intervals.push({
         start: begin,
         end: timeIndex(event.event_start_time),
       });
-      begin = timeIndex(event.event_end_time);
+      begin = Math.max(begin, timeIndex(event.event_end_time));
     } else {
-      begin = timeIndex(event.event_end_time);
+      begin = Math.max(begin, timeIndex(event.event_end_time));
     }
   });
   const start_sleep = circadian_rhythm.findIndex(
@@ -194,7 +195,6 @@ const algorithm = (
       startDate,
       curr_day
     );
-
 
     const already_recommended = [];
     const already_scheduled = [];
