@@ -157,6 +157,8 @@ const SignUpScreen = ({ navigation }) => {
                             setShow={setWakeTimeShow}
                             onClick={wakeClick}
                             eventTime = {wakeTime}
+                            txtColor={"black"}
+                            
                         />
                     </View>
 
@@ -168,6 +170,7 @@ const SignUpScreen = ({ navigation }) => {
                             setShow={setSleepTimeShow}
                             onClick={sleepClick}
                             eventTime = {sleepTime}
+                            txtColor={"black"}
                         />
                     </View>
 

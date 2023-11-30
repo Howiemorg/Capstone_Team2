@@ -119,6 +119,7 @@ const EventModal = ({ onAddEvent, onHideModal, userID }) => {
                                 show={startTimeShow}
                                 setShow= {setStartTimeShow}
                                 eventTime={eventStartTime}
+                                txtColor={"white"}
                             />
                         </View>
                         <View style={styles.inputContainer}>
@@ -129,6 +130,7 @@ const EventModal = ({ onAddEvent, onHideModal, userID }) => {
                                 show={endTimeShow}
                                 setShow={setEndTimeShow}
                                 eventTime = {eventEndTime}
+                                txtColor={"white"}
                             />
                         </View>
                         <TouchableOpacity
