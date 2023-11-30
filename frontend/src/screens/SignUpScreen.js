@@ -120,7 +120,7 @@ const SignUpScreen = ({ navigation }) => {
                         value={lastname}
                         onChangeText={(newValue) => setLastname(newValue)}
                     />
-                    <Text style={styles.label}>Username</Text>
+                    <Text style={styles.label}>Email</Text>
                     <TextInput
                         style={styles.input}
                         autoCapitalize='none'
