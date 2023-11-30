@@ -52,7 +52,7 @@ const CalendarScreen = () => {
                 date.getMonth() + 1
             }-${date.getDate()}`
         );
-        console.log(response.data)
+        console.log(response.data);
 
         setEventBlocks(response.data);
     };
@@ -126,7 +126,9 @@ const CalendarScreen = () => {
     };
 
     const getEndUserSurveys = async () => {
-        const response = await vercel.get(`get-user-survey-events?user_id=${userID}`);
+        const response = await vercel.get(
+            `get-user-survey-events?user_id=${userID}`
+        );
         setNeededSurverys(response.data);
         if (response.data.length > 0) {
             setEndSurveyShow(true);
@@ -189,6 +191,17 @@ const CalendarScreen = () => {
                 </View>
             </TouchableOpacity>
         );
+    };
+    const formatTime = (date) => {
+        const new_date = date.split(":");
+
+        const hours = new_date[0];
+        const minutes = new_date[1];
+        const ampm = hours >= 12 ? "PM" : "AM";
+        const formattedHours = hours > 12 ? hours - 12 : hours;
+        const formattedMinutes = minutes < 10 ? `${minutes}` : minutes;
+
+        return `${formattedHours}:${formattedMinutes} ${ampm}`;
     };
 
     const handlePress = () => {
@@ -281,8 +294,8 @@ const CalendarScreen = () => {
                                                 : item.event_name}
                                         </Text>
                                         <Text style={[styles.task_time]}>
-                                            {item.event_start_time} -{" "}
-                                            {item.event_end_time}
+                                            {formatTime(item.event_start_time)} -{" "}
+                                            {formatTime(item.event_end_time)}
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
@@ -312,8 +325,8 @@ const CalendarScreen = () => {
                                             {item.event_name}
                                         </Text>
                                         <Text style={styles.event_time}>
-                                            {item.event_start_time} -{" "}
-                                            {item.event_end_time}
+                                            {formatTime(item.event_start_time)} -{" "}
+                                            {formatTime(item.event_end_time)}
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
