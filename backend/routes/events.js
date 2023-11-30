@@ -286,12 +286,7 @@ router.put("/event-survey-results", async (req, res) => {
           SET estimate_completion_time = $1 
           ${
             sub_time_remaining === 0
-              ? `, completion_date = ${today
-                  .toISOString()
-                  .substring(
-                    0,
-                    10
-                  )} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`
+              ? `, completion_date = '${today.toISOString().substring(0, 10)}'`
               : ""
           }
           WHERE task_id=${task_id} AND subtask_name=$2;`,
@@ -366,10 +361,7 @@ router.put("/event-survey-results", async (req, res) => {
         UPDATE tasks 
         SET estimate_completion_time=0, completion_date='${today
           .toISOString()
-          .substring(
-            0,
-            10
-          )} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}'
+          .substring(0, 10)}'
         WHERE task_id=${task_id}`);
 
       if (parseInt(productivity_score) === 2) {
@@ -404,19 +396,21 @@ router.put("/event-survey-results", async (req, res) => {
         .substring(0, 10)}'::date AND task_id IS NOT NULL);`
     );
 
-    let task_ids = "(" + tasks.rows[0].task_id;
+    if (tasks.rowCount) {
+      let task_ids = "(" + tasks.rows[0].task_id;
 
-    for (let i = 1; i < tasks.rowCount; ++i) {
-      task_ids += "," + tasks.rows[i].task_id;
+      for (let i = 1; i < tasks.rowCount; ++i) {
+        task_ids += "," + tasks.rows[i].task_id;
+      }
+
+      task_ids += ")";
+
+      const message = await runAlgo(
+        user_id,
+        `${tomorrow.toISOString().substring(0, 10)} 00:00:00`,
+        task_ids
+      );
     }
-
-    task_ids += ")";
-
-    const message = await runAlgo(
-      user_id,
-      `${tomorrow.toISOString().substring(0, 10)} 00:00:00`,
-      task_ids
-    );
 
     res.json({ success: true, time_remaining });
   } catch (err) {
