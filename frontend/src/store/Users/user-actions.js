@@ -38,7 +38,7 @@ export const signup = (body) => {
                 dispatch(userActions.userFail("Failed to Register!"));
                 return;
             }
-
+            dispatch(userActions.userSuccess(response.data.userID));
         } catch (err) {
             dispatch(userActions.userFail(err));
         }
