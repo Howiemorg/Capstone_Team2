@@ -56,7 +56,7 @@ const TimePickerInput = ({ setEventTime, onClick, show, setShow, eventTime }) =>
                     display={Platform.OS === "ios" ? "spinner" : "default"}
                     onChange={onChange}
                     style={styles.timePicker}
-                    textColor="white"
+                    textColor="black"
                 />
             )}
         </View>
@@ -81,6 +81,9 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: 16,
     },
+    timePicker: {
+        color: "black",
+    }
 });
 
 export default TimePickerInput;
