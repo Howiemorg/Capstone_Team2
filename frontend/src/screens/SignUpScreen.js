@@ -120,7 +120,7 @@ const SignUpScreen = ({ navigation }) => {
                         value={lastname}
                         onChangeText={(newValue) => setLastname(newValue)}
                     />
-                    <Text style={styles.label}>Username</Text>
+                    <Text style={styles.label}>Email</Text>
                     <TextInput
                         style={styles.input}
                         autoCapitalize='none'
@@ -157,6 +157,8 @@ const SignUpScreen = ({ navigation }) => {
                             setShow={setWakeTimeShow}
                             onClick={wakeClick}
                             eventTime = {wakeTime}
+                            txtColor={"black"}
+                            
                         />
                     </View>
 
@@ -168,6 +170,7 @@ const SignUpScreen = ({ navigation }) => {
                             setShow={setSleepTimeShow}
                             onClick={sleepClick}
                             eventTime = {sleepTime}
+                            txtColor={"black"}
                         />
                     </View>
 

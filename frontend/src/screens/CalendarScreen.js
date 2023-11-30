@@ -52,6 +52,7 @@ const CalendarScreen = () => {
                 date.getMonth() + 1
             }-${date.getDate()}`
         );
+        console.log(response.data)
 
         setEventBlocks(response.data);
     };
@@ -229,6 +230,7 @@ const CalendarScreen = () => {
                     closeModal={() => setEndSurveyShow(false)}
                     events={neededSurverys}
                     userID={userID}
+                    getEventBlocks={getEventBlocks}
                 />
             </Modal>
 
@@ -275,7 +277,7 @@ const CalendarScreen = () => {
                                     <View style={[styles.block]}>
                                         <Text style={styles.title}>
                                             {item.subtask_name
-                                                ? item.subtask_name
+                                                ? `${item.event_name}: ${item.subtask_name}`
                                                 : item.event_name}
                                         </Text>
                                         <Text style={[styles.task_time]}>

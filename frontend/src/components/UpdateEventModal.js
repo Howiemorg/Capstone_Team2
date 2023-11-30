@@ -187,6 +187,7 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
                                 show={startTimeShow}
                                 setShow= {setStartTimeShow}
                                 value={eventStartTime}
+                                txtColor={"white"}
                             />
                         </View>
                         <View style={styles.inputContainer}>
@@ -197,6 +198,7 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
                                 onClick={endTimeClick}
                                 show={endTimeShow}
                                 setShow={setEndTimeShow}
+                                txtColor={"white"}
                             />
                         </View>
                         <TouchableOpacity style={styles.closeButton} onPress={updateEvent}>

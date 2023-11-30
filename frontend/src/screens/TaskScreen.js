@@ -90,10 +90,10 @@ const TaskScreen = ({ setSelected }) => {
             " " +
             today.toISOString().split("T")[1].slice(0, 8);
         const response = await vercel.post(
-            `/get-recommendations?user_id=1&selected_date=${today}&selected_tasks=(${generateTasks})`
+            `/get-recommendations?user_id=${userID}&selected_date=${today}&selected_tasks=(${generateTasks})`
         );
-
-        console.log("generate-schedule", response.data);
+        console.log("here is the recommend"+ `/get-recommendations?user_id=1&selected_date=${today}&selected_tasks=(${generateTasks})`);  
+        console.log(response.data);
         if (response.data.success) {
             setSelected("Calendar");
         } else {

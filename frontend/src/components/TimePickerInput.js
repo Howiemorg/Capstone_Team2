@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
-const TimePickerInput = ({ setEventTime, onClick, show, setShow, eventTime }) => {
+const TimePickerInput = ({ setEventTime, onClick, show, setShow, eventTime, txtColor }) => {
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -56,7 +56,7 @@ const TimePickerInput = ({ setEventTime, onClick, show, setShow, eventTime }) =>
                     display={Platform.OS === "ios" ? "spinner" : "default"}
                     onChange={onChange}
                     style={styles.timePicker}
-                    textColor="black"
+                    textColor={txtColor}
                 />
             )}
         </View>
