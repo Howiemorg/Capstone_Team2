@@ -97,12 +97,12 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
             const url = `/add-tasks?user_id=${userID}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${padWithZero(
                 taskStartDate.getMonth() + 1
             )}-${padWithZero(
-                taskStartDate.getDate() + 1
+                taskStartDate.getDate()
             )} 00:00:00'&task_due_date='${taskDueDate.getFullYear()}-${padWithZero(
                 taskDueDate.getMonth() + 1
             )}-${padWithZero(
-                taskDueDate.getDate() + 1
-            )} 00:00:00'&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'&priority_level=${priority_level}&template_name='${selectedTemplateLabel}'`;
+                taskDueDate.getDate()
+            )} 23:59:59'&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'&priority_level=${priority_level}&template_name='${selectedTemplateLabel}'`;
             const response = await vercel.post(url, {
                 subtasks: subtasks,
             });
