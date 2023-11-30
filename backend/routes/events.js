@@ -356,7 +356,7 @@ router.put("/event-survey-results", async (req, res) => {
       }
     }
 
-    if (time_remaining <= 0) {
+    if (time_remaining <= 0 && parseInt(productivity_score)) {
       const taskUpdateResult = await client.query(`
         UPDATE tasks 
         SET estimate_completion_time=0, completion_date='${today
@@ -376,7 +376,7 @@ router.put("/event-survey-results", async (req, res) => {
       }
     }
 
-    if (parseInt(productivity_score)) {
+    if (parseInt(productivity_score) != 0) {
       const taskUpdateResult = await client.query(`
         UPDATE tasks 
         SET estimate_completion_time=${Math.max(
