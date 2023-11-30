@@ -9,6 +9,7 @@ import {
     TouchableWithoutFeedback,
     Keyboard,
 } from "react-native";
+import vercel from "../api/vercel";
 
 const EndUserSurvey = ({ closeModal, events, userID, getEventBlocks }) => {
     const [index, setIndex] = useState(0);
@@ -45,12 +46,12 @@ const EndUserSurvey = ({ closeModal, events, userID, getEventBlocks }) => {
                 });
             }
         }
-        const response = await axios.put(url, { subtasks });
+        const response = await vercel.put(url, { subtasks });
         if (index === events.length - 1) {
-            getEventBlocks()
+            getEventBlocks();
             closeModal();
         }
-        console.log(response.data)
+        console.log(response.data);
         console.log(subtasks);
 
         setIndex(index + 1);
