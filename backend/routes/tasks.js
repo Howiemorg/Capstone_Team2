@@ -303,8 +303,9 @@ router.put("/update-task", async (req, res) => {
         } = subtasks[i];
 
         const subtask_result = await client.query(
-          "UPDATE subtasks SET estimate_completion_time = $1 WHERE task_id = $2 AND subtask_name = $3",
-          [subtask_time, subtask_name, task_id]
+          `UPDATE subtasks SET estimate_completion_time = $1, priority_level = ${priority_level} 
+          WHERE task_id = $2 AND subtask_name = $3`,
+          [subtask_time, task_id, subtask_name]
         );
 
         estimate_completion_time += parseInt(subtask_time);
