@@ -98,7 +98,7 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
                 taskStartDate.getMonth() + 1
             )}-${padWithZero(
                 taskStartDate.getDate() + 1
-            )} 00:00:00'&task_due_date='${taskDueDate.getFullYear()}-${padWithZero(
+            )} 23:59:59'&task_due_date='${taskDueDate.getFullYear()}-${padWithZero(
                 taskDueDate.getMonth() + 1
             )}-${padWithZero(
                 taskDueDate.getDate() + 1
