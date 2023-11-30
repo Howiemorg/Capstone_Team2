@@ -99,7 +99,7 @@ router.post("/register-user", async (req, res) => {
     }
     
     // Find the interval position from 9:00 am which is our base circadian_rhythm then shift array depending on value
-    beginningInterval = beginningInterval - 18;
+    beginningInterval = beginningInterval - 17;
     let shifted_circadian_rhythm = []
     shifted_circadian_rhythm = shift_array(circadian_rhythm, beginningInterval);
     
@@ -114,6 +114,11 @@ router.post("/register-user", async (req, res) => {
             values: [firstname, lastname, email, password, shifted_circadian_rhythm, wake_time, sleep_time],
           };
         const result = await client.query(query);
+        const metrics_query = {
+            text: 'INSERT INTO user_weekly_metrics (user_id, num_reschedule, work_done_per_hour, num_login_count, critical_task_count) VALUES ($1, $2, $3, $4, $5)',
+            values: [result.rows[0].user_id , 0, 0, 0, 0],
+          };
+        const metrics_result = await client.query(metrics_query);
 
         res.json({ success: true, message: "User registered successfully.", userID: result.rows[0].user_id });
     } catch (err) {
@@ -154,7 +159,7 @@ router.post("/update-user-wake-time", async (req, res) => {
         
             return shiftedArray;
         }
-        beginningInterval = beginningInterval - 18;
+        beginningInterval = beginningInterval - 17;
         let shifted_circadian_rhythm = []
         shifted_circadian_rhythm = shift_array(circadian_rhythm, beginningInterval);
 

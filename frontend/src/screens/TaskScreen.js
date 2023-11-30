@@ -14,7 +14,7 @@ import AddTaskModal from "../components/AddTaskModal";
 // import CheckBox from "@react-native-community/checkbox";
 import CheckBox from "expo-checkbox";
 import EditTaskModal from "../components/EditTaskModal";
-import axios from "axios";
+import axios, { Axios } from "axios";
 
 const TaskScreen = ({ setSelected }) => {
     const [tasks, setTasks] = useState([]);
@@ -36,8 +36,10 @@ const TaskScreen = ({ setSelected }) => {
     };
 
     const getTasks = async () => {
-        const response = await vercel.get(`get-due-tasks?user_id=${userID}`);
-
+        const url = `http://capstone-backend-charles-tran.vercel.app/get-due-tasks?user_id=${userID}`
+        console.log("here", url)
+        const response = await axios.get(url);
+        console.log("tasks:", response.data)
         if (response.data) {
             setTasks(response.data);
         } else {

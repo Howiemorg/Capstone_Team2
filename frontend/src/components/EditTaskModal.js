@@ -53,7 +53,6 @@ const EditTaskModal = ({
             return "Critical";
         }
     };
-    console.log(taskObject);
     const fetchTemplates = async () => {
         try {
             const response = await axios.get(
@@ -128,14 +127,10 @@ const EditTaskModal = ({
             )}-${padWithZero(
                 taskDueDate.getDate()
             )} 23:59:59&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&priority_level=${priority_level}&template_name='${selectedTemplateLabel}'&user_id=${userID}`;
-            console.log("url: ", params);
-            console.log(subtasks);
-            console.log("template_name:", selectedTemplateLabel);
             try {
                 const response = await axios.put(params, {
                     subtasks: subtasks,
                 });
-                console.log("update response: ", response.data);
             } catch (e) {
                 setError(e.data.message);
             }
