@@ -129,7 +129,7 @@ const UpdateEventModal = ({ onAddEvent, onHideModal, userID, eventID }) => {
         try {
           const response = await axios.put(
             // Define your API endpoint to update the event by eventID
-            `https://capstone-backend-charles-tran.vercel.app/update-set-event?event_block_id=${eventID}&event_name='${eventName}'&event_start_time='${startTime}'&event_end_time='${endTime}'&event_date='${date}'`
+            `https://capstone-backend-charles-tran.vercel.app/update-set-event?event_block_id=${eventID}&event_name='${eventName}'&event_start_time='${startTime}'&event_end_time='${endTime}'&event_date=${date}`
             
           );
       

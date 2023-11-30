@@ -88,19 +88,19 @@ const EditTaskModal = ({
                 priority_level = 1;
             }
             const taskId = taskObject.task_id;
-            const params = `https://capstone-backend-charles-tran.vercel.app/update-task?task_id=${taskId}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${padWithZero(
+            const params = `https://capstone-backend-charles-tran.vercel.app/update-task?task_id=${taskId}&task_name='${taskName}'&task_start_date=${taskStartDate.getFullYear()}-${padWithZero(
                 taskStartDate.getMonth() + 1
             )}-${padWithZero(taskStartDate.getDate())} ${padWithZero(
                 taskStartDate.getHours()
             )}:${padWithZero(
                 taskStartDate.getMinutes()
-            )}:00'&task_due_date='${taskDueDate.getFullYear()}-${padWithZero(
+            )}:00&task_due_date=${taskDueDate.getFullYear()}-${padWithZero(
                 taskDueDate.getMonth() + 1
             )}-${padWithZero(taskDueDate.getDate())} ${padWithZero(
                 taskDueDate.getHours()
             )}:${padWithZero(
                 taskDueDate.getMinutes()
-            )}:00'&progress_percent=0&priority_level=${priority_level}&estimate_completion_time=${estimateCompletionTime}`;
+            )}:00&progress_percent=0&priority_level=${priority_level}&estimate_completion_time=${estimateCompletionTime}`;
             console.log(params);
             const response = await axios.put(params);
             console.log(response.data);
