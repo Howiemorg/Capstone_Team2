@@ -84,11 +84,11 @@ const TaskScreen = ({ setSelected }) => {
     };
 
     const generateSchedule = async () => {
-        const today = new Date();
+        let today = new Date();
+        today.setMilliseconds(today.getMilliseconds() - 6 * 60 * 60 * 1000);
+        today = today.toISOString().split('T')[0].slice(0, 15)+" "+ today.toISOString().split('T')[1].slice(0, 8);
         const response = await vercel.post(
-            `/get-recommendations?user_id=1&selected_date=${today
-                .toISOString()
-                .substring(0, 10)}&selected_tasks=(${generateTasks})`
+            `/get-recommendations?user_id=1&selected_date=${today}&selected_tasks=(${generateTasks})`
         );
 
         console.log(response.data);
