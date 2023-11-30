@@ -122,44 +122,15 @@ router.post("/register-user", async (req, res) => {
     }
 });
 
-
-// // Endpoint to update user wake time
-// router.post("/update-user-wake-time", async (req, res) => {
-//     const { user_id, wake_time } = req.body;
-//     try {
-//         const query = 'UPDATE users SET wake_time = $1 WHERE user_id = $2';
-//         await client.query(query, [wake_time, user_id]);
-//         res.status(200).send('Wake time updated successfully');
-//     } catch (error) {
-//         console.error('Error updating wake time', error);
-//         res.status(500).send('Error updating wake time');
-//     }
-// });
-
-
-// // Endpoint to update user sleep time
-// router.post("/update-user-sleep-time", async (req, res) => {
-//     const { user_id, sleep_time } = req.body;
-//     try {
-//         const query = 'UPDATE users SET sleep_time = $1 WHERE user_id = $2';
-//         await client.query(query, [sleep_time, user_id]);
-//         res.status(200).send('Sleep time updated successfully');
-//     } catch (error) {
-//         console.error('Error updating sleep time', error);
-//         res.status(500).send('Error updating sleep time');
-//     }
-// });
-
 router.post("/update-user-wake-time", async (req, res) => {
     const { user_id, wake_time } = req.query;
 
     try {
-        // Convert wake_time to a Date object for manipulation
+        
         const wakeTimeParts = wake_time.replace(/'/g, '').split(':')
         const wakeDate = new Date();
         wakeDate.setHours(parseInt(wakeTimeParts[0]), parseInt(wakeTimeParts[1]), 0);
 
-        // Calculate the sleep time to be 8 hours after the wake time
         let sleepDate = new Date(wakeDate);
         sleepDate.setHours(sleepDate.getHours() - 8);
 
@@ -168,11 +139,11 @@ router.post("/update-user-wake-time", async (req, res) => {
         const hourPart = wakeTimeParts[0];
         const minutesPart = wakeTimeParts[1];
 
-        // Convert to a number if needed
+        
         const hour = parseInt(hourPart, 10);
         const minutes = parseInt(minutesPart, 10);
 
-        // find the slice to put the beginning of the interval
+        
         let beginningInterval = hour*2;
         if (minutes>=30){
             beginningInterval = beginningInterval+1
@@ -186,19 +157,13 @@ router.post("/update-user-wake-time", async (req, res) => {
             return shiftedArray;
         }
         
-        // Find the interval position from 9:00 am which is our base circadian_rhythm then shift array depending on value
-        beginningInterval = beginningInterval - 18;
         let shifted_circadian_rhythm = []
         shifted_circadian_rhythm = shift_array(circadian_rhythm, beginningInterval);
 
-        // Format sleep time to match database format (HH:MM:SS)
+        
         const sleepTimeFormatted = sleepDate.toISOString().split('T')[1].substr(0, 8);
-
-        // Update circadian rythmn to shift based on new wake time
         const shift_query = 'UPDATE users SET circadian_rhythm = $1 WHERE user_id = $2';
         await client.query(shift_query, [shifted_circadian_rhythm, user_id]);
-
-        // Update both wake time and sleep time in the database
         const query = 'UPDATE users SET wake_time = $1, sleep_time = $2 WHERE user_id = $3';
         await client.query(query, [wake_time, sleepTimeFormatted, user_id]);
         
@@ -213,11 +178,11 @@ router.post("/increment-user-login", async (req, res) => {
     const user_id = req.query.user_id;
     try {
         const query = {
-          text: 'UPDATE user_weekly_metrics SET num_login_count = num_login_count + 1 WHERE user_id=$1',
+          text: 'UPDATE user_weekly_metrics SET num_login_count = num_login_count + 1 WHERE user_id=$1 RETURNING num_login_count',
           values: [user_id],
         };
         const result = await client.query(query);
-        res.status(200).send(result);
+        res.status(200).send(result.rows);
     } catch (error) {
         console.error('Error updating num_login_count', error);
         res.status(500).send('Error updating num_login_count');
