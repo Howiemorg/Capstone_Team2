@@ -27,17 +27,22 @@ function isConflicting(
   );
 }
 
-function get_available_intervals(events, circadian_rhythm, startDate, curr_day) {
+function get_available_intervals(
+  events,
+  circadian_rhythm,
+  startDate,
+  curr_day
+) {
   const available_intervals = [];
-  let begin = startDate.getDate() === curr_day.getDate()
-    ? Math.max(
-        parseInt(startDate.toTimeString().split(":")[0]) * 2 +
-          (parseInt(startDate.toTimeString().split(":")[1]) >
-          0) + (parseInt(startDate.toTimeString().split(":")[1]) >
-          30),
-        circadian_rhythm.findIndex((score) => score > 0)
-      )
-    : circadian_rhythm.findIndex((score) => score > 0);
+  let begin =
+    startDate.getDate() === curr_day.getDate()
+      ? Math.max(
+          parseInt(startDate.toTimeString().split(":")[0]) * 2 +
+            (parseInt(startDate.toTimeString().split(":")[1]) > 0) +
+            (parseInt(startDate.toTimeString().split(":")[1]) > 30),
+          circadian_rhythm.findIndex((score) => score > 0)
+        )
+      : circadian_rhythm.findIndex((score) => score > 0);
 
   events.forEach((event) => {
     if (timeIndex(event.event_start_time) - 1 >= begin) {
@@ -104,8 +109,10 @@ const generateWeeklyArray = (tasks, startDate) => {
     tasks_per_day[task.task_id] = [];
     // console.log(task.task_start_date.toString())
     // console.log(typeof(task.task_start_date.toString()))
-    const taskStartDate = task.task_start_date;
-    const taskDueDate = task.task_due_date;
+    let taskStartDate = task.task_start_date;
+    taskStartDate = new Date(taskStartDate.getTime() - 6 * 60 * 60 * 1000);
+    let taskDueDate = task.task_due_date;
+    taskDueDate = new Date(taskDueDate.getTime() - 6 * 60 * 60 * 1000);
     console.log(taskStartDate, taskDueDate);
     let avg_time =
       task.estimate_completion_time /
@@ -157,6 +164,8 @@ const algorithm = (
   // console.log(typeof(start_date))
   const startDate = stringToDate(start_date);
   const task_time_per_day = generateWeeklyArray(tasks, startDate);
+
+  console.log("TIMES PER DAY: ", task_time_per_day)
 
   for (let i = 0; i < 7; ++i) {
     const curr_day = new Date();
@@ -285,9 +294,15 @@ const algorithm = (
         task_time_per_day[task.task_id][i]
     );
 
-    const free_time = get_available_intervals(daily_events, circadian_rhythm, startDate, curr_day);
+    const free_time = get_available_intervals(
+      daily_events,
+      circadian_rhythm,
+      startDate,
+      curr_day
+    );
 
     let ith_available_interval = 0;
+    console.log("TASKS NOT SCHEDULED: ", tasks_not_scheduled)
 
     //free time
     for (let ith_task = 0; ith_task < tasks_not_scheduled.length; ++ith_task) {
@@ -300,6 +315,9 @@ const algorithm = (
         const free_time_for_interval =
           free_time[ith_available_interval].end -
           free_time[ith_available_interval].start;
+        if(free_time_for_interval == 0){
+          continue;
+        }
         let time_left =
           task_time_per_day[tasks_not_scheduled[ith_task].task_id][i];
         if (time_left < free_time_for_interval) {
@@ -356,6 +374,10 @@ const algorithm = (
           }
           task_time_per_day[tasks_not_scheduled[ith_task].task_id][i + 1] +=
             task_time_per_day[tasks_not_scheduled[ith_task].task_id][i];
+          console.log(
+            "AMOUNT OF TIME TM: ",
+            task_time_per_day[tasks_not_scheduled[ith_task].task_id][i + 1]
+          );
         }
         break;
       }
@@ -370,6 +392,7 @@ const algorithm = (
   }
 
   console.log();
+  console.log(returnEvents);
   return returnEvents;
 };
 
