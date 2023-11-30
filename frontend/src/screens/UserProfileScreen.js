@@ -10,6 +10,7 @@ const UserProfileScreen = ({ navigation }) => {
     const [user, setUser] = useState(null);
     const [wakeTime, setWakeTime] = useState(new Date());
     const [showWakePicker, setShowWakePicker] = useState(false);
+    const [loginCount, setLoginCount] = useState(0);
 
     const { userID } = useSelector(state => state.user);
 
@@ -30,6 +31,10 @@ const UserProfileScreen = ({ navigation }) => {
             wakeDate.setHours(response.data[0].wake_time.split(':')[0]);
             wakeDate.setMinutes(response.data[0].wake_time.split(':')[1]);
             setWakeTime(wakeDate);
+            const loginMetricsResponse = await vercel.get(`/get-weekly-login-metrics?user_id=${userID}`);
+            const adjustedLoginCount = Math.round(loginMetricsResponse.data[0].num_login_count / 2); // Halving the count
+            setLoginCount(adjustedLoginCount);
+            setLoginCount(adjustedLoginCount >= 0 ? adjustedLoginCount : 0); 
         } catch (error) {
             Alert.alert('Error', 'Could not fetch user data.');
         }
@@ -84,6 +89,9 @@ const UserProfileScreen = ({ navigation }) => {
             <Text style={styles.name}>Last Name: {user[0].user_last_name}</Text>
             <Text style={styles.time}>Current Wake Time: {user[0].wake_time}</Text>
             <Text style={styles.time}>Current Sleep Time: {user[0].sleep_time}</Text>
+
+            <Text style={styles.userMetricsTitle}>User Metrics</Text>
+            <Text style={styles.metric}>Times Logged In: {loginCount}</Text>
 
             <Button onPress={() => setShowWakePicker(true)} title="Change Wake Time" />
             {showWakePicker && (
@@ -177,6 +185,15 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         marginTop: 50, 
         color: '#333333',
+    },
+    userMetricsTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginTop: 15,
+    },
+    metric: {
+        fontSize: 16,
+        marginVertical: 5,
     },
 });
 
