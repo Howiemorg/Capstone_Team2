@@ -161,11 +161,14 @@ router.post("/update-user-wake-time", async (req, res) => {
 
         
         const sleepTimeFormatted = sleepDate.toISOString().split('T')[1].substr(0, 8);
+        const wakeTimeFormatted = wakeDate.toISOString().split('T')[1].substr(0, 8);
         const shift_query = 'UPDATE users SET circadian_rhythm = $1 WHERE user_id = $2';
         await client.query(shift_query, [shifted_circadian_rhythm, user_id]);
-        const query = 'UPDATE users SET wake_time = $1, sleep_time = $2 WHERE user_id = $3';
-        await client.query(query, [wake_time, sleepTimeFormatted, user_id]);
-        
+        const query = {
+            text: 'UPDATE users SET wake_time = $1, sleep_time = $2 WHERE user_id = $3;',
+            values:  [wakeTimeFormatted, sleepTimeFormatted, user_id],
+          };
+        const result = await client.query(query);
         res.status(200).send('Wake time and sleep time updated successfully');
     } catch (error) {
         console.error('Error updating wake and sleep time', error);
