@@ -11,6 +11,8 @@ import {
   ScrollView,
 } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
+import vercel from "../api/vercel";
+import axios from "axios";
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("");
@@ -31,6 +33,7 @@ const LoginScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (userID) {
+      incrementLoginCount();
       navigation.navigate("Home");
       setUsername("");
       setPassword("");
@@ -38,6 +41,17 @@ const LoginScreen = ({ navigation }) => {
     } 
     setError("");
   }, [userID, username, password]);
+
+  const incrementLoginCount = async () => {
+    try {
+      
+      await axios.post(`https://capstone-backend-charles-tran.vercel.app/increment-user-login?user_id=${userID}`);
+      
+      console.log('Login count incremented');
+    } catch (error) {
+      console.error('Error incrementing login count', error);
+    }
+  };
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" enabled>
