@@ -27,9 +27,9 @@ const PriorityDropdown = ({
             case "High":
                 return "orange";
             case "Medium":
-                return "#DAA520"; // Darker yellow color
+                return "lightgreen"; // Darker yellow color
             case "Low":
-                return "green";
+                return "skyblue";
             default:
                 return "black";
         }
@@ -68,9 +68,9 @@ const PriorityDropdown = ({
                     <Picker.Item
                         label='Medium'
                         value='Medium'
-                        color='#DAA520'
+                        color='lightgreen'
                     />
-                    <Picker.Item label='Low' value='Low' color='green' />
+                    <Picker.Item label='Low' value='Low' color='skyblue' />
                 </Picker>
             )}
         </View>
