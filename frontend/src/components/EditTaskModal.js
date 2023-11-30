@@ -77,6 +77,8 @@ const EditTaskModal = ({
 
         try {
             const taskStartDate = new Date();
+            // taskStartDate.setMilliseconds(taskStartDate.getMilliseconds() - 6 * 60 * 60 * 1000);
+
             var priority_level = 0;
             if (selectedPriority == "Critical") {
                 priority_level = 4;
@@ -96,11 +98,7 @@ const EditTaskModal = ({
                 taskStartDate.getMinutes()
             )}:00&task_due_date=${taskDueDate.getFullYear()}-${padWithZero(
                 taskDueDate.getMonth() + 1
-            )}-${padWithZero(taskDueDate.getDate())} ${padWithZero(
-                taskDueDate.getHours()
-            )}:${padWithZero(
-                taskDueDate.getMinutes()
-            )}:00&progress_percent=0&priority_level=${priority_level}&estimate_completion_time=${estimateCompletionTime}`;
+            )}-${padWithZero(taskDueDate.getDate())} 23:59:00&progress_percent=0&priority_level=${priority_level}&estimate_completion_time=${estimateCompletionTime}`;
             console.log(params);
             const response = await axios.put(params);
             console.log(response.data);

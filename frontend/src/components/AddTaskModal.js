@@ -23,7 +23,7 @@ import SubtasksInput from "./SubtasksInput";
 const AddTaskModal = ({ onAddTask, onHideModal }) => {
     const [taskName, setTaskName] = useState("");
     const [estimateCompletionTime, setEstimateCompletionTime] = useState("");
-    const [taskDueDate, setTaskDueDate] = useState(new Date());
+    let [taskDueDate, setTaskDueDate] = useState(new Date());
     const [isDueDateShow, setIsDueDateShow] = useState(false);
     const [isStartDateShow, setIsStartDateShow] = useState(false);
     const [error, setError] = useState("");
@@ -79,7 +79,9 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
         }
 
         try {
-            const taskStartDate = new Date();
+            taskDueDate.setMilliseconds(taskDueDate.getMilliseconds() - 6 * 60 * 60 * 1000);
+            let taskStartDate = new Date();
+            taskStartDate.setMilliseconds(taskStartDate.getMilliseconds() - 6 * 60 * 60 * 1000);
             var priority_level = 0;
             if (selectedPriority == "Critical") {
                 priority_level = 4;
