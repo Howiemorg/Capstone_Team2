@@ -128,9 +128,8 @@ router.post("/update-user-wake-time", async (req, res) => {
     try {
         
         const wakeTimeParts = wake_time.replace(/'/g, '').split(':')
-        let wakeDate = new Date();
+        const wakeDate = new Date();
         wakeDate.setHours(parseInt(wakeTimeParts[0]), parseInt(wakeTimeParts[1]), 0);
-        wakeDate.setHours(wakeDate.getHours() - 6);
         let sleepDate = new Date(wakeDate);
         sleepDate.setHours(sleepDate.getHours() - 8);
 
