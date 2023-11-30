@@ -408,7 +408,7 @@ const runAlgo = async (
       for (const task of tasks){
         if (task.template_name && task.template_name != "No Template"){
           console.log(task.template_name);
-          console.log((task.task_id))
+          console.log((task.task_id));
           // query for subtask info
           const query = {
             text: "SELECT * FROM subtasks where task_id = $1 ORDER BY subtask_id",
@@ -429,7 +429,7 @@ const runAlgo = async (
           let subtask_remaining_time = subtasks[0].estimate_completion_time;
           let new_event_index = 0;
           while (subtask_index<=subtask_length-1){
-
+              // console.log(subtasks[subtask_index])
               let new_event = new_events[new_event_index];
               // console.log(new_event)
               const new_event_start = new_event.event_start_time;
@@ -453,9 +453,7 @@ const runAlgo = async (
               // console.log(event_update_query)
               const update_result = await client.query(event_update_query);
               new_event_index++;
-              if(new_event_index==new_events.length){
-                break;
-              }
+              
               while(subtask_remaining_time<=0){
                 subtask_index++;
                 // if the subtask_remaining_time is less than zero then there are two subtasks for the time block
@@ -470,7 +468,11 @@ const runAlgo = async (
                 subtask_remaining_time = subtask_remaining_time + subtasks[subtask_index].estimate_completion_time;
                 console.log("new remaining time "+ subtask_remaining_time);
               }
+              if(new_event_index==new_events.length){
+                break;
+              }
               console.log(subtask_index,subtask_length)
+              // console.log(new_event_index)
           }
         
       }
