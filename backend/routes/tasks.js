@@ -278,11 +278,13 @@ router.delete("/delete-task", async (req, res) => {
 
 router.put("/update-task", async (req, res) => {
   const task_id = req.query.task_id;
+  const user_id = req.query.user_id;
   const task_name = req.query.task_name;
   const task_start_date = req.query.task_start_date;
   const task_due_date = req.query.task_due_date;
   const priority_level = req.query.priority_level;
   const progress_percent = req.query.progress_percent;
+  const template_name = req.query.template_name;
   const subtasks = req.body.subtasks;
   let estimate_completion_time =
     subtasks && subtasks.length ? 0 : req.query.estimate_completion_time;
@@ -296,6 +298,8 @@ router.put("/update-task", async (req, res) => {
     current_tasks = "(" + current_tasks.join(", ") + ")";
 
     if (subtasks) {
+      const deleteSubtasks = await client.query(`DELETE FROM subtasks WHERE task_id = ${task_id}`);
+
       for (let i = 0; i < subtasks.length; ++i) {
         const {
           task_name: subtask_name,
@@ -303,9 +307,16 @@ router.put("/update-task", async (req, res) => {
         } = subtasks[i];
 
         const subtask_result = await client.query(
-          `UPDATE subtasks SET estimate_completion_time = $1, priority_level = ${priority_level} 
-          WHERE task_id = $2 AND subtask_name = $3`,
-          [subtask_time, task_id, subtask_name]
+          "INSERT INTO subtasks (user_id, subtask_name, subtask_start_date, subtask_due_date, priority_level, estimate_completion_time, task_id) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+          [
+            user_id,
+            subtask_name,
+            `'${task_start_date}'`,
+            `'${task_due_date}'`,
+            priority_level,
+            subtask_time,
+            task_id,
+          ]
         );
 
         estimate_completion_time += parseInt(subtask_time);
@@ -320,7 +331,8 @@ router.put("/update-task", async (req, res) => {
               task_due_date = '${task_due_date}',
               progress_percent = ${progress_percent},
               priority_level = ${priority_level},
-              estimate_completion_time = ${estimate_completion_time}
+              estimate_completion_time = ${estimate_completion_time},
+              template_name = ${template_name}
             WHERE
               task_id = ${task_id}
             RETURNING
