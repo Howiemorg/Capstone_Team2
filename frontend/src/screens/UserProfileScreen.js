@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert, Button, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Alert, Button, Dimensions, ScrollView } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import vercel from "../api/vercel";
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -91,6 +91,7 @@ const UserProfileScreen = ({ navigation }) => {
     });
 
     return (
+      <ScrollView style={styles.scrollView}>
         <View style={styles.container}>
             <Text style={styles.name}>First Name: {user[0].user_first_name}</Text>
             <Text style={styles.name}>Last Name: {user[0].user_last_name}</Text>
@@ -164,6 +165,7 @@ const UserProfileScreen = ({ navigation }) => {
                 color="#841584"
             />
         </View>
+      </ScrollView>
     );
 };
 
