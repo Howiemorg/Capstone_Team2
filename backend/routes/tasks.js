@@ -377,12 +377,17 @@ const runAlgo = async (
 ) => {
   // get all the tasks from DB
   try {
+    if(selected_tasks === "()"){
+      return "No tasks to reschedule";
+    }
     const query = {
       text: `SELECT * FROM tasks WHERE user_id = ${user_id} AND completion_date IS NULL AND task_id IN ${selected_tasks};`,
     };
+
     let tasks = await client.query(query);
+
     tasks = tasks.rows;
-    console.log(tasks);
+  
 
     // let subtasks = await client.query(
     //   `SELECT * FROM subtasks WHERE task_id IN (${selected_tasks});`
