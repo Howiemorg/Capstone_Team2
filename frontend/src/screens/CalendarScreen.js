@@ -125,12 +125,10 @@ const CalendarScreen = () => {
     };
 
     const getEndUserSurveys = async () => {
-        const response = await axios.get(
-            `https://howiemorgenthaler-capstone-team2.vercel.app/get-user-survey-events?user_id=${userID}`
-        );
-        setNeededSurverys(response.data)
-        if(response.data.length > 0){
-            setEndSurveyShow(true)
+        const response = await vercel.get(`get-user-survey-events?user_id=${userID}`);
+        setNeededSurverys(response.data);
+        if (response.data.length > 0) {
+            setEndSurveyShow(true);
         }
     };
 

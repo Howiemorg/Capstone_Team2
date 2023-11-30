@@ -33,8 +33,8 @@ const SubtasksInput = ({
         if (template != null) {
             template["steps"].map((item) => {
                 new_times.push({
-                    "task_name": item,
-                    "estimate_completion_time": "",
+                    task_name: item,
+                    estimate_completion_time: "",
                 });
             });
             setTimes(new_times);
@@ -45,11 +45,18 @@ const SubtasksInput = ({
         new_times[index]["estimate_completion_time"] = value;
         setTimes(new_times);
     };
-
+    const getTime = (index) => {
+        if(times[index] !== undefined){
+            return times[index]["estimate_completion_time"]
+        }
+        else{
+            return ""
+        }
+    }
     const getSteps = () => {
         return template["steps"].map((item, index) => {
             return (
-                <View style={styles.row}>
+                <View style={styles.row} key={index}>
                     <View style={styles.column}>
                         <Text style={styles.item}>{item}</Text>
                     </View>
@@ -58,7 +65,7 @@ const SubtasksInput = ({
                             inputMode='decimal'
                             style={styles.input}
                             onPressIn={hideClickers}
-                            value={times[index]["estimate_completion_time"]}
+                            value={() => getTime(index)}
                             onSubmitEditing={() => Keyboard.dismiss()}
                             onChangeText={(value) => onChange(value, index)}
                         />

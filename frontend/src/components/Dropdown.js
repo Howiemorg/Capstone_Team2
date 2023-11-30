@@ -22,10 +22,14 @@ const Dropdown = ({
         // unmounts or selectedPriority changes again
         return () => clearTimeout(timeoutId);
     }, [selected]);
-
-    const pickerItems = items.map((item) => {
-        return <Picker.Item label={item} value={item} color='red' />;
-    });
+    const pickerItems = () => {
+        if (items === undefined) {
+            return;
+        }
+        return items.map((item) => {
+            return <Picker.Item label={item} value={item} color='red' />;
+        });
+    };
     return (
         <View style={styles.container}>
             <Text style={styles.label}>{label}</Text>
@@ -40,7 +44,7 @@ const Dropdown = ({
                     }
                     style={styles.picker}
                 >
-                    {pickerItems}
+                    {pickerItems()}
                 </Picker>
             )}
         </View>

@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     Platform,
     Keyboard,
+    ActivityIndicator,
 } from "react-native";
 import {
     TextInput,
@@ -34,7 +35,7 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
         useState("No Template");
     const [selectedTemplate, setSelectedTemplate] = useState(null);
     const [templateShow, setTemplateShow] = useState(false);
-    const [templateNames, setTemplateNames] = useState(["No Template"]);
+    const [templateNames, setTemplateNames] = useState([]);
     const [subtasks, setSubtasks] = useState([]);
 
     const { userID } = useSelector((state) => state.user);
@@ -53,7 +54,6 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
                         templatenames.push(item["template_name"]);
                     });
                     setTemplateNames(templatenames);
-                    console.log("template names: ", templatenames);
                 } catch (error) {
                     console.error("There was an error!", error);
                 }
@@ -79,9 +79,13 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
         }
 
         try {
-            taskDueDate.setMilliseconds(taskDueDate.getMilliseconds() - 6 * 60 * 60 * 1000);
+            taskDueDate.setMilliseconds(
+                taskDueDate.getMilliseconds() - 6 * 60 * 60 * 1000
+            );
             let taskStartDate = new Date();
-            taskStartDate.setMilliseconds(taskStartDate.getMilliseconds() - 6 * 60 * 60 * 1000);
+            taskStartDate.setMilliseconds(
+                taskStartDate.getMilliseconds() - 6 * 60 * 60 * 1000
+            );
             var priority_level = 0;
             if (selectedPriority == "Critical") {
                 priority_level = 4;
@@ -92,7 +96,6 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
             } else {
                 priority_level = 1;
             }
-
 
             const url = `/add-tasks?user_id=${userID}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${padWithZero(
                 taskStartDate.getMonth() + 1
@@ -149,9 +152,11 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
     const onTemplateChange = (index, label) => {
         setSelectedTemplateLabel(label);
         const curr_template = index === 0 ? null : templates[index - 1];
-        console.log("template: ", curr_template);
         setSelectedTemplate(curr_template);
     };
+    if (templateNames.length === 0) {
+        return <ActivityIndicator size='large' color='white' />;
+    }
     return (
         <View style={styles.container}>
             <View style={{ marginLeft: "5%" }}>

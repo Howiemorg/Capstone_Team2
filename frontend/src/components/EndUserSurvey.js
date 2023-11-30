@@ -26,7 +26,7 @@ const EndUserSurvey = ({ closeModal, events, userID }) => {
         const event_start_time = curr["event_start_time"];
         const event_end_time = curr["event_end_time"];
         const selected_date = formatDate(new Date());
-        const url = `https://howiemorgenthaler-capstone-team2.vercel.app/event-survey-results?user_id=${userID}&event_block_id=${event_block_id}&task_id=${task_id}&productivity_score=${val}&event_start_time=${event_start_time}&event_end_time=${event_end_time}&selected_date=${selected_date}`;
+        const url = `event-survey-results?user_id=${userID}&event_block_id=${event_block_id}&task_id=${task_id}&productivity_score=${val}&event_start_time=${event_start_time}&event_end_time=${event_end_time}&selected_date=${selected_date}`;
         let subtasks = [];
         let subtask_name = curr["subtask_name"];
         console.log(events[index]);
@@ -48,7 +48,7 @@ const EndUserSurvey = ({ closeModal, events, userID }) => {
         if (index === events.length - 1) {
             closeModal();
         }
-        const response = await axios.put(url, { subtasks });
+        const response = await vercel.put(url, { subtasks });
         console.log(response.data)
         console.log(subtasks);
 

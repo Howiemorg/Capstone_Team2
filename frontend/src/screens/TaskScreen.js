@@ -37,7 +37,6 @@ const TaskScreen = ({ setSelected }) => {
 
     const getTasks = async () => {
         const response = await vercel.get(`get-due-tasks?user_id=${userID}`);
-        console.log(response.data)
 
         if (response.data) {
             setTasks(response.data);
@@ -86,12 +85,15 @@ const TaskScreen = ({ setSelected }) => {
     const generateSchedule = async () => {
         let today = new Date();
         today.setMilliseconds(today.getMilliseconds() - 6 * 60 * 60 * 1000);
-        today = today.toISOString().split('T')[0].slice(0, 15)+" "+ today.toISOString().split('T')[1].slice(0, 8);
+        today =
+            today.toISOString().split("T")[0].slice(0, 15) +
+            " " +
+            today.toISOString().split("T")[1].slice(0, 8);
         const response = await vercel.post(
             `/get-recommendations?user_id=1&selected_date=${today}&selected_tasks=(${generateTasks})`
         );
 
-        console.log(response.data);
+        console.log("generate-schedule", response.data);
         if (response.data.success) {
             setSelected("Calendar");
         } else {
@@ -126,7 +128,7 @@ const TaskScreen = ({ setSelected }) => {
             const response = await axios.delete(
                 `http://capstone-backend-charles-tran.vercel.app/delete-task?task_id=${taskId}`
             );
-            console.log(response.data);
+            console.log("deleted task: ", response.data);
             if (response.data.success) {
                 getTasks();
             } else {
@@ -135,6 +137,13 @@ const TaskScreen = ({ setSelected }) => {
             }
         } catch (err) {
             setError(err);
+        }
+    };
+    const getTemplateName = (item) => {
+        if (item.template_name === "No Template") {
+            return "";
+        } else {
+            return <Text style={styles.taskName}>Template: {item.template_name}</Text>;
         }
     };
     return (
@@ -209,6 +218,9 @@ const TaskScreen = ({ setSelected }) => {
                                             hours
                                         </Text>
                                         <Text>Due: {formatTime(date)}</Text>
+                                        <Text style={styles.taskName}>
+                                            {getTemplateName(item)}
+                                        </Text>
                                     </View>
                                     <TouchableOpacity
                                         onPress={() => deleteTask(item.task_id)}
@@ -246,6 +258,9 @@ const TaskScreen = ({ setSelected }) => {
                                         hours
                                     </Text>
                                     <Text>Due: {formatTime(date)}</Text>
+                                    <Text style={styles.taskName}>
+                                        {getTemplateName(item)}
+                                    </Text>
                                 </View>
                                 <TouchableOpacity
                                     onPress={() => deleteTask(item.task_id)}
