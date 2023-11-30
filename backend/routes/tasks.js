@@ -481,7 +481,7 @@ const runAlgo = async (
             const update_result = await client.query(event_update_query);
             new_event_index++;
 
-            while (subtask_remaining_time <= 0) {
+            while (subtask_remaining_time < 0) {
               subtask_index++;
               // if the subtask_remaining_time is less than zero then there are two subtasks for the time block
               if (subtask_remaining_time < 0) {

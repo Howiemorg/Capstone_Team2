@@ -156,22 +156,27 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
         alignItems: 'center',
-        padding: 20,
-        paddingHorizontal: 20,
+        padding: 30, 
+        paddingHorizontal: 30,
+        backgroundColor: '#f5f5f5', 
     },
     name: {
-        fontSize: 20,
-        fontWeight: 'bold'
+        fontSize: 22, 
+        fontWeight: 'bold',
+        color: '#333333', 
+        marginBottom: 10, 
     },
     time: {
-        fontSize: 16,
-        marginVertical: 5,
+        fontSize: 18, 
+        marginVertical: 10, 
+        color: '#555555', 
     },
     chartTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 10,
-        marginTop: 40,
+        marginBottom: 15,
+        marginTop: 50, 
+        color: '#333333',
     },
 });
 
