@@ -357,7 +357,7 @@ router.put("/event-survey-results", async (req, res) => {
     }
 
     if (time_remaining <= 0) {
-        const taskUpdateResult = await client.query(`
+      const taskUpdateResult = await client.query(`
         UPDATE tasks 
         SET estimate_completion_time=0, completion_date='${today
           .toISOString()
@@ -376,12 +376,17 @@ router.put("/event-survey-results", async (req, res) => {
       }
     }
 
-    const taskUpdateResult = await client.query(`
+    if (parseInt(productivity_score)) {
+      const taskUpdateResult = await client.query(`
         UPDATE tasks 
-        SET estimate_completion_time=${Math.max(time_remaining, 0)}, task_start_date='${tomorrow
-      .toISOString()
-      .substring(0, 10)} 00:00:00'
+        SET estimate_completion_time=${Math.max(
+          time_remaining,
+          0
+        )}, task_start_date='${tomorrow
+        .toISOString()
+        .substring(0, 10)} 00:00:00'
         WHERE task_id=${task_id}`);
+    }
 
     const tasks = await client.query(
       `SELECT * FROM tasks WHERE task_id IN (SELECT task_id FROM events WHERE event_date >= '${tomorrow
