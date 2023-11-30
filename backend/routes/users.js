@@ -99,7 +99,7 @@ router.post("/register-user", async (req, res) => {
     }
     
     // Find the interval position from 9:00 am which is our base circadian_rhythm then shift array depending on value
-    beginningInterval = beginningInterval - 18;
+    beginningInterval = beginningInterval - 17;
     let shifted_circadian_rhythm = []
     shifted_circadian_rhythm = shift_array(circadian_rhythm, beginningInterval);
     
@@ -154,7 +154,7 @@ router.post("/update-user-wake-time", async (req, res) => {
         
             return shiftedArray;
         }
-        beginningInterval = beginningInterval - 18;
+        beginningInterval = beginningInterval - 17;
         let shifted_circadian_rhythm = []
         shifted_circadian_rhythm = shift_array(circadian_rhythm, beginningInterval);
 
