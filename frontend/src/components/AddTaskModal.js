@@ -48,7 +48,6 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
                         "https://capstone-team2.vercel.app/get-templates"
                     );
                     setTemplates(response.data); // Set the data to the templates state
-                    console.log(response.data);
                     const templatenames = ["No Template"];
                     response.data.map((item) => {
                         templatenames.push(item["template_name"]);
@@ -61,7 +60,6 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
             fetchTemplates();
             // Your timeout logic here
             setIsDueDateShow(false);
-            console.log("Date Changed to:", taskDueDate);
         }, 1500); // Wait for 1seconds before executing
 
         // Cleanup function to clear the timeout when the component
@@ -73,7 +71,6 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
 
     const TaskSubmit = async () => {
         if (!taskDueDate || !taskName) {
-            console.log("*All fields must be filled");
             setError("*All fields must be filled");
             return;
         }
@@ -100,18 +97,15 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
             const url = `/add-tasks?user_id=${userID}&task_name='${taskName}'&task_start_date='${taskStartDate.getFullYear()}-${padWithZero(
                 taskStartDate.getMonth() + 1
             )}-${padWithZero(
-                taskStartDate.getDate()
+                taskStartDate.getDate() + 1
             )} 00:00:00'&task_due_date='${taskDueDate.getFullYear()}-${padWithZero(
                 taskDueDate.getMonth() + 1
             )}-${padWithZero(
-                taskDueDate.getDate()
+                taskDueDate.getDate() + 1
             )} 23:59:59'&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'&priority_level=${priority_level}&template_name='${selectedTemplateLabel}'`;
-            console.log("Here is the url: ", url);
-            console.log(subtasks);
             const response = await vercel.post(url, {
                 subtasks: subtasks,
             });
-            console.log(response.data);
             if (!response.data.success) {
                 setError(response.data.message);
                 return;
