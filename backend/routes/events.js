@@ -159,12 +159,20 @@ router.delete("/cancel-recommended-event", async (req, res) => {
   const selected_date = req.query.selected_date;
   const user_id = req.query.user_id;
 
-  const today = new Date(selected_date);
+  let today = new Date(selected_date);
+  today = new Date(today.getTime() - 6 * 60 * 60 * 1000);
 
-  const tomorrow = new Date();
-  tomorrow.setDate(today.getDate() + 1);
+  let tomorrow = new Date();
+  tomorrow = new Date(tomorrow.getTime() - 6 * 60 * 60 * 1000);
+  tomorrow.setUTCDate(today.getUTCDate() + 1);
+
+  console.log("TOMORROW: ", tomorrow)
+  console.log("TODAY: ", today)
 
   try {
+    console.log("TODAY ISO: ", today
+    .toISOString()
+    .substring(0, 10))
     const deleteResult = await client.query(
       `DELETE FROM Events
           WHERE
@@ -173,6 +181,8 @@ router.delete("/cancel-recommended-event", async (req, res) => {
         .substring(0, 10)}'::date) OR event_block_id=${event_block_id};`
     );
 
+    console.log("TOMORROW ISO: ", tomorrow.toISOString().substring(0, 10))
+    console.log("TOMMOROW UTC: ", tomorrow.toUTCString())
     const taskUpdateResult = await client.query(`
         UPDATE tasks 
         SET task_start_date='${tomorrow
@@ -248,8 +258,9 @@ router.put("/event-survey-results", async (req, res) => {
   let today = new Date();
   today = new Date(today.getTime() - 6 * 60 * 60 * 1000);
 
-  const tomorrow = new Date();
-  tomorrow.setDate(today.getDate() + 1);
+  let tomorrow = new Date();
+  tomorrow = new Date(tomorrow.getTime() - 6 * 60 * 60 * 1000);
+  tomorrow.setUTCDate(today.getUTCDate() + 1);
 
   let circadian_start_indx =
     parseInt(event_start_time.split(":")[0]) * 2 +
@@ -265,11 +276,14 @@ router.put("/event-survey-results", async (req, res) => {
 
     for (const subtask of subtasks) {
       const { task_name: subtask_name } = subtask;
+      console.log(subtask_name);
 
       let subtask_completion_time = await client.query(
         `SELECT estimate_completion_time FROM subtasks WHERE task_id=${task_id} AND subtask_name= $1;`,
         [subtask_name]
       );
+
+      console.log(subtask_completion_time)
 
       subtask_completion_time = parseInt(
         subtask_completion_time.rows[0].estimate_completion_time

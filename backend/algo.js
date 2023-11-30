@@ -35,15 +35,23 @@ function get_available_intervals(
 ) {
   const available_intervals = [];
   let begin =
-    startDate.getDate() === curr_day.getDate()
+    startDate.getUTCDate() === curr_day.getUTCDate()
       ? Math.max(
-          parseInt(startDate.toTimeString().split(":")[0]) * 2 +
-            (parseInt(startDate.toTimeString().split(":")[1]) > 0) +
-            (parseInt(startDate.toTimeString().split(":")[1]) > 30),
+          startDate.getUTCHours() * 2 +
+            (startDate.getUTCMinutes() > 0) +
+            (startDate.getUTCMinutes() > 30),
           circadian_rhythm.findIndex((score) => score > 0)
         )
       : circadian_rhythm.findIndex((score) => score > 0);
 
+  while (circadian_rhythm[begin] == 0) {
+    begin++;
+  }
+  console.log("BEGIN: ", begin);
+  console.log("UTC HOURSE: ", startDate.getUTCHours());
+  console.log("UTC MINUTES: ", startDate.getUTCMinutes());
+  console.log("START DATE: ", startDate.getUTCDate());
+  console.log("CURR DATE UTC: ", curr_day.getUTCDate());
   events.forEach((event) => {
     if (timeIndex(event.event_start_time) - 1 >= begin) {
       available_intervals.push({
@@ -58,10 +66,21 @@ function get_available_intervals(
   const start_sleep = circadian_rhythm.findIndex(
     (score, idx) => idx >= begin && score == 0
   );
+  console.log("START SLEEP: ", start_sleep);
   if (begin != 48) {
     available_intervals.push({
       start: begin,
       end: start_sleep != -1 ? start_sleep : 48,
+    });
+  }
+  const wake_time = circadian_rhythm.findIndex(
+    (score, idx) => idx >= start_sleep && score != 0
+  );
+  console.log("WAKE TIME: ", wake_time);
+  if (wake_time != -1 && start_sleep != -1) {
+    available_intervals.push({
+      start: wake_time,
+      end: 48,
     });
   }
   return available_intervals;
@@ -95,13 +114,12 @@ const stringToDate = (string_date) => {
   console.log(typeof string_date);
   console.log(string_date);
   const date = new Date(string_date.substring(0, 10));
-
-  date.setUTCHours(parseInt(string_date.substring(11, 13)),0,0,0);
+  date.setUTCHours(parseInt(string_date.substring(11, 13)), 0, 0, 0);
   date.setUTCMinutes(parseInt(string_date.substring(14, 16)));
   date.setUTCSeconds(parseInt(string_date.substring(17, 19)));
-  console.log("HOURS: ", string_date.substring(11, 13))
-  console.log("MINUTES: ", (string_date.substring(14, 16)))
-  console.log("START DATE CONVERSION: ", date)
+  console.log("HOURS: ", string_date.substring(11, 13));
+  console.log("MINUTES: ", string_date.substring(14, 16));
+  console.log("START DATE CONVERSION: ", date);
   return date;
 };
 
@@ -129,7 +147,11 @@ const generateWeeklyArray = (tasks, startDate) => {
     avg_time = Math.floor(avg_time / 30) + (avg_time % 30 > 0);
     let total_time = 0;
     for (let i = 0; i < 7; ++i) {
-      const currDay = new Date();
+      let currDay = new Date();
+      currDay = new Date(currDay.getTime() - 6 * 60 * 60 * 1000);
+      if(currDay.getUTCDate() > startDate.getUTCDate() + i){
+        currDay.setUTCMonth((currDay.getUTCMonth() + 1) % 12);
+      }
       currDay.setUTCDate(startDate.getUTCDate() + i);
       const start = new Date(currDay);
       start.setUTCHours(23);
@@ -138,8 +160,8 @@ const generateWeeklyArray = (tasks, startDate) => {
       currDay.setUTCHours(0);
       currDay.setUTCMinutes(0);
       currDay.setUTCSeconds(0);
-      console.log("CURR DAY: ", currDay)
-      console.log("START: ", start)
+      console.log("CURR DAY: ", currDay);
+      console.log("START: ", start);
       if (taskStartDate <= start && taskDueDate >= currDay) {
         tasks_per_day[task.task_id].push(avg_time);
         total_time += avg_time * 30;
@@ -169,17 +191,31 @@ const algorithm = (
   // console.log(typeof(start_date))
   const startDate = stringToDate(start_date);
   const task_time_per_day = generateWeeklyArray(tasks, startDate);
+  console.log();
 
-  console.log("TIMES PER DAY: ", task_time_per_day)
+  console.log("TIMES PER DAY: ", task_time_per_day);
 
   for (let i = 0; i < 7; ++i) {
-    const curr_day = new Date();
-    curr_day.setDate(startDate.getDate() + i);
+    let curr_day = new Date();
+    curr_day = new Date(curr_day.getTime() - 6 * 60 * 60 * 1000);
+    if(curr_day.getUTCDate() > startDate.getUTCDate() + i){
+      curr_day.setUTCMonth((curr_day.getUTCMonth() + 1) % 12);
+    }
+    curr_day.setUTCDate(startDate.getUTCDate() + i);
 
     const daily_events = events.filter((event) => {
-      // console.log(event_date)
+      // console.log(event.event_date)
       return event.event_date.getDate() == curr_day.getDate();
     });
+
+    let available_intervals = get_available_intervals(
+      daily_events,
+      circadian_rhythm,
+      startDate,
+      curr_day
+    );
+
+    console.log("CURR DATE: ", curr_day);
 
     tasks.sort((a, b) => {
       a.priority_level =
@@ -203,12 +239,7 @@ const algorithm = (
       return b.priority_level - a.priority_level;
     });
 
-    let available_intervals = get_available_intervals(
-      daily_events,
-      circadian_rhythm,
-      startDate,
-      curr_day
-    );
+    console.log("INTERVALS: ", available_intervals);
 
     const already_recommended = [];
     const already_scheduled = [];
@@ -276,7 +307,7 @@ const algorithm = (
         }:00`,
         task.user_id,
         task.task_id,
-        curr_day,
+        curr_day.toUTCString(),
         task.priority_level,
       ]);
 
@@ -308,7 +339,7 @@ const algorithm = (
     );
 
     let ith_available_interval = 0;
-    console.log("TASKS NOT SCHEDULED: ", tasks_not_scheduled)
+    console.log("TASKS NOT SCHEDULED: ", tasks_not_scheduled);
 
     //free time
     for (let ith_task = 0; ith_task < tasks_not_scheduled.length; ++ith_task) {
@@ -321,7 +352,7 @@ const algorithm = (
         const free_time_for_interval =
           free_time[ith_available_interval].end -
           free_time[ith_available_interval].start;
-        if(free_time_for_interval == 0){
+        if (free_time_for_interval == 0) {
           continue;
         }
         let time_left =
@@ -398,7 +429,7 @@ const algorithm = (
   }
 
   console.log();
-  console.log(returnEvents);
+  console.log("RETURN EVENTS: ", returnEvents);
   return returnEvents;
 };
 

@@ -406,6 +406,7 @@ const runAlgo = async (
     // );
     // subtasks = subtasks.rows;
     // get all the events from the DB
+    console.log("RUN ALGO SELECTED DATE: ", selected_date)
     let events = await client.query(
       `SELECT * FROM events WHERE user_id = ${user_id} AND event_date >= '${selected_date}' ORDER BY event_start_time;`
     );
