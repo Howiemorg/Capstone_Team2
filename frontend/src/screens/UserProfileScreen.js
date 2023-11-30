@@ -11,6 +11,7 @@ const UserProfileScreen = ({ navigation }) => {
     const [wakeTime, setWakeTime] = useState(new Date());
     const [showWakePicker, setShowWakePicker] = useState(false);
     const [loginCount, setLoginCount] = useState(0);
+    const [totalRescheduleCount, setTotalRescheduleCount] = useState(0);
 
     const { userID } = useSelector(state => state.user);
 
@@ -26,7 +27,6 @@ const UserProfileScreen = ({ navigation }) => {
         try {
             const response = await vercel.get(`/get-user-info?user_id=${userID}`);
             setUser(response.data);
-            
             const wakeDate = new Date();
             wakeDate.setHours(response.data[0].wake_time.split(':')[0]);
             wakeDate.setMinutes(response.data[0].wake_time.split(':')[1]);
@@ -35,7 +35,14 @@ const UserProfileScreen = ({ navigation }) => {
             const adjustedLoginCount = Math.round(loginMetricsResponse.data[0].num_login_count / 2); // Halving the count
             setLoginCount(adjustedLoginCount);
             setLoginCount(adjustedLoginCount >= 0 ? adjustedLoginCount : 0); 
+
+            const rescheduleResponse = await vercel.get(`/get-total-reschedule?user_id=${userID}`);
+            if (rescheduleResponse.data && Array.isArray(rescheduleResponse.data) && rescheduleResponse.data.length > 0) {
+                // Set the total reschedule count from the response
+                setTotalRescheduleCount(rescheduleResponse.data[0].num_reschedule);
+            }
         } catch (error) {
+            console.error('Error fetching user data:', error);
             Alert.alert('Error', 'Could not fetch user data.');
         }
     };
@@ -92,6 +99,7 @@ const UserProfileScreen = ({ navigation }) => {
 
             <Text style={styles.userMetricsTitle}>User Metrics</Text>
             <Text style={styles.metric}>Times Logged In: {loginCount}</Text>
+            <Text style={styles.metric}>Total Reschedules: {totalRescheduleCount}</Text>
 
             <Button onPress={() => setShowWakePicker(true)} title="Change Wake Time" />
             {showWakePicker && (
