@@ -98,11 +98,11 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
                 taskStartDate.getMonth() + 1
             )}-${padWithZero(
                 taskStartDate.getDate() + 1
-            )} 23:59:59'&task_due_date='${taskDueDate.getFullYear()}-${padWithZero(
+            )} 00:00:00'&task_due_date='${taskDueDate.getFullYear()}-${padWithZero(
                 taskDueDate.getMonth() + 1
             )}-${padWithZero(
                 taskDueDate.getDate() + 1
-            )} 23:59:59'&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'&priority_level=${priority_level}&template_name='${selectedTemplateLabel}'`;
+            )} 00:00:00'&progress_percent=0&estimate_completion_time=${estimateCompletionTime}&completion_date='2023-12-12'&priority_level=${priority_level}&template_name='${selectedTemplateLabel}'`;
             const response = await vercel.post(url, {
                 subtasks: subtasks,
             });
@@ -110,7 +110,8 @@ const AddTaskModal = ({ onAddTask, onHideModal }) => {
                 setError(response.data.message);
                 return;
             }
-
+            console.log("add item url:", url)
+            console.log("add item response:", response.data)
             onAddTask();
             onHideModal();
         } catch (err) {

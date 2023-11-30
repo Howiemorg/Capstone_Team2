@@ -131,6 +131,7 @@ const EditTaskModal = ({
                 const response = await axios.put(params, {
                     subtasks: subtasks,
                 });
+                console.log("edit tasks:",response.data)
             } catch (e) {
                 setError(e.data.message);
             }
