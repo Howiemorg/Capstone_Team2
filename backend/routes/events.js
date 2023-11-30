@@ -356,8 +356,8 @@ router.put("/event-survey-results", async (req, res) => {
       }
     }
 
-    if (parseInt(time_remaining) <= 0) {
-      const taskUpdateResult = await client.query(`
+    if (time_remaining <= 0) {
+        const taskUpdateResult = await client.query(`
         UPDATE tasks 
         SET estimate_completion_time=0, completion_date='${today
           .toISOString()
@@ -372,12 +372,13 @@ router.put("/event-survey-results", async (req, res) => {
         );
 
         res.json({ success: true, message: "Survey update successful" });
+        return;
       }
     }
 
     const taskUpdateResult = await client.query(`
         UPDATE tasks 
-        SET estimate_completion_time=${time_remaining}, task_start_date='${tomorrow
+        SET estimate_completion_time=${Math.max(time_remaining, 0)}, task_start_date='${tomorrow
       .toISOString()
       .substring(0, 10)} 00:00:00'
         WHERE task_id=${task_id}`);
